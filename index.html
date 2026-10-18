@@ -226,7 +226,7 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .hr .cell .meta{white-space:normal}
 /* ---- Calendario mensual ---- */
 .mhead{display:flex;align-items:center;gap:10px;margin:0 0 10px}
-.mhead .t{flex:1;text-align:center;font-weight:700;font-size:18px;text-transform:capitalize}
+.mhead .t{flex:1;text-align:center;font-weight:700;font-size:18px}
 .cal{background:var(--card);border-radius:16px;padding:8px}
 .cal .dow,.cal .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
 .cal .dow span{text-align:center;font-size:11px;font-weight:600;color:var(--ink2);padding:4px 0;text-transform:uppercase}
@@ -619,8 +619,8 @@ function start(DATA){
       const tag=m&&!out&&m.t!=="rest"?"button":"div";
       return `<${tag} class="${cls}"${tag==="button"?` data-i="${m.i}" aria-label="Jornada ${m.o.j} contra ${esc(sn(m.o.opp))}"`:""}><span class="n">${d.getDate()}</span>${inner}</${tag}>`;
     }).join("");
-    document.getElementById("p-cal").innerHTML=vistaSel()+`<h2>Calendario</h2>
-      <div class="mhead"><button class="round" id="mp" aria-label="Mes anterior" ${canPrev?"":"disabled"}>${ico.left}</button><div class="t">${first.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</div><button class="round" id="mn" aria-label="Mes siguiente" ${canNext?"":"disabled"}>${ico.right}</button></div>
+    document.getElementById("p-cal").innerHTML=vistaSel()+`<h2>Calendario <span style="font-size:15px;font-weight:600;color:var(--ink2)">· Temporada 2026/2027</span></h2>
+      <div class="mhead"><button class="round" id="mp" aria-label="Mes anterior" ${canPrev?"":"disabled"}>${ico.left}</button><div class="t">${(m=>m[0].toUpperCase()+m.slice(1))(first.toLocaleDateString("es-ES",{month:"long"}))}</div><button class="round" id="mn" aria-label="Mes siguiente" ${canNext?"":"disabled"}>${ico.right}</button></div>
       <div class="cal"><div class="dow">${["L","M","X","J","V","S","D"].map(x=>`<span>${x}</span>`).join("")}</div><div class="days">${body}</div></div>
       <div class="calleg"><span><i style="background:color-mix(in srgb,var(--yellow) 30%,transparent);border:1.5px dashed var(--yellow)"></i>Fin de semana de partido (día por confirmar)</span><span><i style="background:var(--yellow)"></i>Día y hora oficiales</span><span><i style="background:repeating-linear-gradient(135deg,var(--fill) 0 3px,transparent 3px 6px)"></i>Descansamos</span></div>
       <p class="note">Cuando la RFFM publica el día y la hora (normalmente el lunes de esa semana), el partido deja de ocupar todo el fin de semana y aparece solo en su día. Toca un partido para verlo en Inicio.</p>`;
