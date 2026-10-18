@@ -1,5 +1,5 @@
 Calendario: 26 jornadas, 156 partidos
-Acta jornada 4 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
+Acta jornada 3 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
 Detalles de 24 partidos del Barajas
 Goleadoras: 46 filas
 data.json actualizado
