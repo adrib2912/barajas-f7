@@ -6,6 +6,10 @@ on:
     - cron: "3 7 * * 1"      # lunes 9:03 en invierno (la RFFM publica los horarios a las 9:00)
     - cron: "3 8 * * 1"      # lunes 9:03 en verano / 10:03 en invierno, por si acaso
   workflow_dispatch:          # botón para lanzarlo a mano
+    inputs:
+      minutos:
+        description: "Minutos máximos leyendo horarios (13 normal; 40 para rellenar de golpe)"
+        default: "13"
 
 concurrency:
   group: actualizar
@@ -17,7 +21,7 @@ permissions:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,6 +31,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Leer la web de la RFFM
         run: node scrape.mjs
+        env:
+          MINUTOS: ${{ github.event.inputs.minutos || '13' }}
       - name: Guardar cambios
         if: always()
         run: |
