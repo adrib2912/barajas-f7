@@ -1,8 +1,3 @@
-Su privacidad es importante para nosotros
-Nosotros y nuestros socios almacenamos y/o accedemos a información en un dispositivo, como cookies, y procesamos datos personales, como identificadores únicos e información estándar enviada por un dispositivo para publicidad y contenido personalizado, medición de publicidad y contenido, investigación de audiencia y desarrollo de servicios. Con su permiso, nosotros y nuestros socios podemos utilizar datos de localización geográfica precisa e identificación mediante las características de dispositivos. Puede hacer clic para otorgarnos su consentimiento a nosotros y a nuestros 1747 socios para que llevemos a cabo el procesamiento previamente descrito. De forma alternativa, puede hacer clic para denegar su consentimiento o acceder a información más detallada y cambiar sus preferencias antes de otorgar su consentimiento. Tenga en cuenta que algún procesamiento de sus datos personales puede no requerir de su consentimiento, pero usted tiene el derecho de rechazar tal procesamiento. Sus preferencias se aplicarán solo a este sitio web. Puede cambiar sus preferencias o retirar su consentimiento en cualquier momento volviendo a este sitio y haciendo clic en el botón "Privacidad" en la parte inferior de la página web.
-MÁS OPCIONES
-NO CONSENTIR
-ACEPTO
 Federación
 Competición
 Fútbol
@@ -58,7 +53,7 @@ TEMPORADA *
 TIPO DE JUEGO *
 Futbol-7
 COMPETICIÓN *
-PRIMERA FEMENINO SENIOR F-7
+​
 GRUPO *
 Grupo 1
 BUSCAR
@@ -132,7 +127,7 @@ C.D. SANFER19
 VER ACTA
 ESCUELA MUNICIPAL DE COBEÑA
 A.D. EL REAL DE MANZANARES
--
+6 - 2
 VER ACTA
 S.A.D. COLEGIO SAN GABRIEL
 
