@@ -157,7 +157,10 @@ if (ok) {
     .filter((x) => x.p);
   const proximos = nuestros.filter((x) => !x.p.g).slice(0, 3);
   const sinDatos = nuestros.filter((x) => !previo[x.j.j] && !proximos.includes(x)).slice(0, 4);
-  for (const { j, p } of [...proximos, ...sinDatos]) {
+  // Partidos ya jugados cuyo acta (goles y jugadoras) aún no tenemos
+  const jugados = nuestros.filter((x) => x.p.g && !(previo[x.j.j] && previo[x.j.j].secciones) && !sinDatos.includes(x)).slice(0, 6);
+  let volcado = false;
+  for (const { j, p } of [...proximos, ...sinDatos, ...jugados]) {
     for (let intento = 1; intento <= 2; intento++) try {
       await page.goto(p.acta, { waitUntil: "domcontentloaded", timeout: 60000 });
       await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: 45000 });
@@ -167,10 +170,26 @@ if (ok) {
       const fh = t.match(/(\d\d)-(\d\d)-(\d{4})\s*\/\s*(\d{1,2}:\d\d)/);
       const iT = L.indexOf("TERRENO DE JUEGO");
       const campo = iT >= 0 && L[iT + 1] && !/^Patrocinador/i.test(L[iT + 1]) ? L[iT + 1] : null;
+      // Secciones del acta (jugadoras, goles, etc.) tal cual aparecen
+      const CAB = ["SUSTITUCIONES", "JUGADORES", "CUERPO TÉCNICO", "GOLES", "TARJETAS", "ÁRBITROS", "TERRENO DE JUEGO"];
+      const secciones = {};
+      let actual = null;
+      const iRes = L.findIndex((x) => x === "RESULTADO");
+      for (const x of L.slice(iRes >= 0 ? iRes : 0)) {
+        if (CAB.includes(x)) { actual = x; secciones[x] = []; continue; }
+        if (/^Patrocinador/i.test(x)) break;
+        if (actual) secciones[actual].push(x);
+      }
+      if (p.g && !volcado) {
+        volcado = true;
+        fs.writeFileSync(`${DEBUG}/acta-jugado.txt`, p.acta + "\n\n" + L.slice(iRes >= 0 ? iRes - 4 : 0).join("\n"));
+        fs.writeFileSync(`${DEBUG}/acta-jugado.html`, await page.content());
+      }
       detalles[j.j] = {
         fecha: fh ? `${fh[3]}-${fh[2]}-${fh[1]}` : null,
         hora: fh && fh[4] !== "00:00" ? fh[4] : null,
         campo,
+        ...(p.g ? { secciones } : {}),
       };
       break;
     } catch (e) {
