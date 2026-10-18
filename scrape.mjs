@@ -8,6 +8,12 @@ const Q = "temporada=22&tipojuego=2&competicion=26738230&grupo=26738231";
 const BASE = "https://www.rffm.es/competicion/";
 const DEBUG = "debug";
 fs.mkdirSync(DEBUG, { recursive: true });
+// Copia de lo que se escribe en pantalla, para poder revisarlo luego
+const LOG = [];
+for (const k of ["log", "error"]) {
+  const orig = console[k];
+  console[k] = (...a) => { LOG.push(a.join(" ")); orig(...a); fs.writeFileSync(`${DEBUG}/log.txt`, LOG.join("\n")); };
+}
 
 const browser = await chromium.launch();
 const page = await browser.newPage({
@@ -171,12 +177,18 @@ try { anterior = JSON.parse(fs.readFileSync("data.json", "utf8")).anterior || nu
 if (ok && !anterior) {
   try {
     const equiposHoy = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])));
-    const comps = await page.evaluate(async () => (await fetch("/api/competitions?temporada=21&tipojuego=2")).json());
+    await abrir("calendario", "VER ACTA");
+    const api = async (ruta) => {
+      const txt = await page.evaluate(async (r) => { const x = await fetch(r, { headers: { accept: "application/json" } }); return x.status + " " + (await x.text()); }, ruta);
+      const sp = txt.indexOf(" ");
+      try { return JSON.parse(txt.slice(sp + 1)); } catch { throw new Error(`${ruta} -> ${txt.slice(0, 300)}`); }
+    };
+    const comps = await api("/api/competitions?temporada=21&tipojuego=2");
     const femSenior = comps.filter((c) => /FEMENINO/i.test(c.nombre) && /SENIOR|AFICIONAD/i.test(c.nombre));
     console.log("Competiciones 2025-26:", femSenior.map((c) => c.nombre).join(" | "));
     const grupos = [];
     for (const c of femSenior) {
-      const gs = await page.evaluate(async (id) => (await fetch("/api/groups?competicion=" + id)).json(), c.codigo);
+      const gs = await api("/api/groups?competicion=" + c.codigo);
       for (const g of gs) {
         await abrir("calendario", "VER ACTA", `temporada=21&tipojuego=2&competicion=${c.codigo}&grupo=${g.codigo}`);
         const js = await leerCalendario();
@@ -193,7 +205,7 @@ if (ok && !anterior) {
     }
     anterior = { temporada: "2025-2026", grupos };
   } catch (e) {
-    console.error("No se pudo leer la temporada anterior:", e.message);
+    console.error("No se pudo leer la temporada anterior:", e.stack || e.message);
   }
 }
 
