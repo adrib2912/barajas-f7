@@ -176,11 +176,15 @@ const shirt=(t,size=28)=>{const k=KITS[t];let body=k?k[0]:"var(--kit)";const sl=
   if(k&&k[2]){const id="st"+(++_sid);defs=`<defs><pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k[0]}"/><rect width="3" height="32" fill="${k[2]}"/></pattern></defs>`;body=`url(#${id})`}
   const txt=k?"":`<text x="16" y="20" text-anchor="middle" font-size="8" font-weight="700" font-family="Barlow, sans-serif" fill="var(--muted)">${esc(ini(t))}</text>`;
   return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true">${defs}<path d="M11 4 L4 8 L2 15 L7 16 L8 13 L8 29 L24 29 L24 13 L25 16 L30 15 L28 8 L21 4 Q16 8 11 4 Z" fill="${body}" stroke="var(--kit-line)" stroke-width="1.2" stroke-linejoin="round"${k&&!k[3]?' stroke-dasharray="2 1.5"':""}/><path d="M4 8 L2 15 L7 16 L8 13 Z M28 8 L30 15 L25 16 L24 13 Z" fill="${sl}" stroke="var(--kit-line)" stroke-width="1.2" stroke-linejoin="round"/>${txt}</svg>`};
+const cap2=s=>s.toLowerCase().replace(/(^|[\s-])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()).replace(/\((ha|hn|t)\)/i,x=>x.toUpperCase());
+const campoDe=(o,cls)=>{const t=o.home?US:o.opp;if(!o.campoActa)return campoHtml(t,cls);const u=mapUrl(t);return `<a class="${cls}" href="${u}" target="_blank" rel="noopener">${esc(cap2(o.campoActa))} ↗</a>`};
 /* our matches */
+const DET=DATA.detalles||{};
 const ours=JORNADAS.map(([j,f,ms,rest])=>{
   const m=ms.find(x=>x[0]===US||x[1]===US);
   if(!m) return {j,f,rest:true};
-  const home=m[0]===US; return {j,f,home,opp:home?m[1]:m[0],g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null};
+  const d=DET[j]||{};
+  const home=m[0]===US; return {j,f:d.fecha||f,hora:d.hora||null,campoActa:d.campo||null,home,opp:home?m[1]:m[0],g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null};
 });
 const next=ours.find(o=>!o.g&&dOf(o.f)>=today);
 
@@ -194,18 +198,18 @@ const next=ours.find(o=>!o.g&&dOf(o.f)>=today);
   const L=next.home?"Barajas":sn(next.opp), V=next.home?sn(next.opp):"Barajas";
   b.innerHTML=`<div class="lbl">Próximo partido · Jornada ${next.j}</div>
   <div class="teams"><div class="tm">${shirt(next.home?US:next.opp,40)}${esc(L)}</div><div class="vs">vs</div><div class="tm">${shirt(next.home?next.opp:US,40)}${esc(V)}</div></div>
-  <div class="meta"><span class="chip">${when}</span><span class="chip ghost">${fmt(next.f)}</span><span class="chip ghost">${next.home?"En casa":"Fuera"}</span></div>
-  ${campoHtml(next.home?US:next.opp,"campo")}`;
+  <div class="meta"><span class="chip">${when}</span><span class="chip ghost">${fmt(next.f)}${next.hora?" · "+next.hora:""}</span><span class="chip ghost">${next.home?"En casa":"Fuera"}</span></div>
+  ${campoDe(next,"campo")}`;
 })();
 
 /* our calendar */
 document.getElementById("p-cal").innerHTML=ours.map(o=>{
-  const jd=`<div class="j">J${o.j}<small>${fmt(o.f)}</small></div>`;
+  const jd=`<div class="j">J${o.j}<small>${fmt(o.f)}${o.hora?"<br>"+o.hora:""}</small></div>`;
   if(o.rest) return `<div class="row rest">${jd}<div class="opp">Descanso</div><div></div></div>`;
   let r;
   if(o.g){const [a,c]=o.g,k=a>c?"W":a<c?"L":"D";r=`<div class="res ${k}">${a}-${c}<i>${k==="W"?"Victoria":k==="L"?"Derrota":"Empate"}</i></div>`}
   else r=`<div class="res pend">${dOf(o.f)<today?"Sin resultado":"—"}</div>`;
-  return `<div class="row${o===next?" next":""}">${jd}<div class="opp"><div class="who">${shirt(o.opp,22)}${esc(sn(o.opp))}</div><span>${o.home?"En casa":"Fuera"}</span>${campoHtml(o.home?US:o.opp,"mini")}</div>${r}</div>`;
+  return `<div class="row${o===next?" next":""}">${jd}<div class="opp"><div class="who">${shirt(o.opp,22)}${esc(sn(o.opp))}</div><span>${o.home?"En casa":"Fuera"}</span>${campoDe(o,"mini")}</div>${r}</div>`;
 }).join("");
 
 /* standings */

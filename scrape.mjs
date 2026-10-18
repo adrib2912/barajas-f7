@@ -122,6 +122,35 @@ try {
   console.error("Fallo leyendo el calendario:", e.message);
 }
 
+// ---------- DETALLES DE NUESTROS PARTIDOS (día, hora y campo del acta) ----------
+let previo = {};
+try { previo = JSON.parse(fs.readFileSync("data.json", "utf8")).detalles || {}; } catch {}
+const detalles = { ...previo };
+if (ok) {
+  for (const j of jornadas) {
+    const p = j.partidos.find((x) => (x.local + x.visit).includes("C.D. BARAJAS") && x.acta);
+    if (!p) continue;
+    try {
+      await page.goto(p.acta, { waitUntil: "domcontentloaded", timeout: 60000 });
+      await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: 30000 });
+      await page.waitForTimeout(800);
+      const t = await page.evaluate(() => document.body.innerText);
+      const L = t.split("\n").map((x) => x.trim()).filter(Boolean);
+      const fh = t.match(/(\d\d)-(\d\d)-(\d{4})\s*\/\s*(\d{1,2}:\d\d)/);
+      const iT = L.indexOf("TERRENO DE JUEGO");
+      const campo = iT >= 0 && L[iT + 1] && !/^Patrocinador/i.test(L[iT + 1]) ? L[iT + 1] : null;
+      detalles[j.j] = {
+        fecha: fh ? `${fh[3]}-${fh[2]}-${fh[1]}` : null,
+        hora: fh && fh[4] !== "00:00" ? fh[4] : null,
+        campo,
+      };
+    } catch (e) {
+      console.error(`Acta jornada ${j.j}: ${e.message}`);
+    }
+  }
+  console.log(`Detalles de ${Object.keys(detalles).length} partidos del Barajas`);
+}
+
 // ---------- GOLEADORAS ----------
 try {
   await abrir("goleadores");
@@ -154,6 +183,7 @@ if (ok) {
     fuente: "rffm.es",
     jornadas: jornadas.map((j) => [j.j, j.fecha, j.partidos.map((p) => [p.local, p.visit, p.g]), j.descansa]),
     goleadoras,
+    detalles,
   };
   fs.writeFileSync("data.json", JSON.stringify(data));
   console.log("data.json actualizado");
