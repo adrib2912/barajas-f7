@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Barajas Femenino F7</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -28,7 +28,8 @@
   --fill:#7676803d; --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
   --hero:#1c1c1e; --us:#f5c4002e; --kit:#3a3a3c; --kit-line:#8e8e93; --bar:rgba(22,22,24,.86); color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0}
+html,body{margin:0;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font:17px/1.35 var(--font);-webkit-font-smoothing:antialiased;
   padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -190,7 +191,7 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .tc.sel{outline:2px solid var(--blue);outline-offset:2px}
 .seg2{display:flex;background:var(--fill);border-radius:10px;padding:2px;margin:0 0 10px}
 .seg2 button{flex:1;padding:7px 4px;border-radius:8px;font-size:14px;font-weight:500}
-.seg2 button[aria-pressed="true"]{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
+.seg2 button[aria-pressed="true"]{background:var(--yellow);color:#111;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
 /* ---- Tabla: barras, duelo y cuadro ---- */
 .bars{background:var(--card);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .bar{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,42%);align-items:center;gap:8px;font-size:14px}
@@ -291,6 +292,10 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 </div></nav>
 
 <script>
+/* Que no se pueda hacer zoom con los dedos ni con doble toque, como en una app */
+["gesturestart","gesturechange","gestureend"].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+document.addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
+let _lastTap=0;document.addEventListener("touchend",e=>{const n=Date.now();if(n-_lastTap<300)e.preventDefault();_lastTap=n},{passive:false});
 
 const US="C.D. BARAJAS";
 const SHORT={"C.D. BARAJAS":"Barajas","A.D. MADRID SUR":"Madrid Sur","S.A.D. COLEGIO SAN GABRIEL":"Colegio San Gabriel","C.D. ALGETE":"Algete","C.D. NUEVO PUERTA BONITA DE CARABANCHEL":"Nuevo Puerta Bonita","A.D. EL REAL DE MANZANARES":"El Real de Manzanares","C.F. SAN AGUSTIN DE GUADALIX":"San Agustín de Guadalix","ESC.FUT. EL OLIVO DE COSLADA":"El Olivo de Coslada","CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":"Olympia Las Rozas","C.D. SANFER19":"Sanfer19","A.D. VILLAVICIOSA DE ODON 'B'":"Villaviciosa de Odón B","C.D. FUTBOL TRES CANTOS":"Tres Cantos","ESCUELA MUNICIPAL DE COBEÑA":"E.M. Cobeña"};
