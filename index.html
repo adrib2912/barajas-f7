@@ -222,6 +222,21 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .mx td.D{background:color-mix(in srgb,var(--orange) 30%,transparent)}
 .mx td.us{box-shadow:inset 0 0 0 2px var(--yellow)}
 .mx th.us{color:var(--ink);background:color-mix(in srgb,var(--yellow) 40%,transparent);border-radius:4px}
+.pick{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pick::-webkit-scrollbar{display:none}
+.pk{display:flex;align-items:center;gap:6px;flex:none;padding:6px 12px 6px 8px;border-radius:999px;background:var(--card);font-size:14px;font-weight:500;white-space:nowrap}
+.pk.on{background:var(--yellow);color:#111;font-weight:700}
+.mx td.dim{opacity:.22;background:var(--fill)}
+.mx td.pend{background:var(--fill);color:var(--ink2);box-shadow:inset 0 0 0 1.5px var(--ink3)}
+.mx td.MW{background:var(--green);color:#fff}
+.mx td.ML{background:var(--red);color:#fff}
+.mx td.MD{background:var(--orange);color:#fff}
+.mx th.sel{background:var(--yellow);color:#111;border-radius:4px}
+.sums{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.sm{background:var(--card);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.4;border-left:0}
+.sm b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+.sm small{color:var(--ink2)}
+.sm.W b{color:var(--green)}.sm.D b{color:var(--orange)}.sm.L b{color:var(--red)}.sm.P b{color:var(--ink2)}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--ink2);margin:8px 4px 0}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:var(--c)}
 .hr{background:var(--card);border-radius:14px;overflow:hidden}
@@ -665,18 +680,9 @@ function start(DATA){
       duel=`<h2>El duelo · J${nx.j}</h2><div class="duel"><div class="hd2"><span>Barajas · ${posOf(US)}ª</span><span>${esc(sn(nx.opp))} · ${posOf(nx.opp)}ª</span></div>
         ${line("puntos",a.pts,b.pts)}${line("goles",a.gf,b.gf)}${line("encajados",a.gc,b.gc)}${line("jugados",a.pj,b.pj)}</div>`;
     }
-    /* Cuadro de resultados: filas = local, columnas = visitante */
+    /* Cuadro de resultados: se elige un equipo y se resalta su fila y su columna */
     const teams=TABLA.map(r=>r.t);
-    const res={};J.forEach(([,,ms])=>ms.forEach(([h,a,g])=>{res[h+"|"+a]=g}));
-    const mx=`<h2>Cuadro de resultados</h2><div class="mx"><table><thead><tr><th class="rh">Local ↓ / Visit. →</th>${teams.map(t=>`<th class="${t===US?"us":""}" title="${esc(sn(t))}">${ABR[t]||"?"}</th>`).join("")}</tr></thead><tbody>`+
-      teams.map(h=>`<tr><th class="rh${h===US?" us":""}">${ABR[h]||"?"}</th>`+teams.map(a=>{
-        if(h===a)return `<td class="diag"></td>`;
-        const g=res[h+"|"+a];const us=h===US||a===US;
-        if(!g)return `<td class="${us?"us":""}">${g===null?"":""}</td>`;
-        const k=g[0]>g[1]?"W":g[0]<g[1]?"L":"D";
-        return `<td class="${k}${us?" us":""}">${g[0]}-${g[1]}</td>`}).join("")+`</tr>`).join("")+
-      `</tbody></table></div><div class="legend"><span style="--c:color-mix(in srgb,var(--green) 45%,transparent)">Gana el local</span><span style="--c:color-mix(in srgb,var(--orange) 45%,transparent)">Empate</span><span style="--c:color-mix(in srgb,var(--red) 45%,transparent)">Gana el visitante</span><span style="--c:var(--yellow)">Partidos del Barajas</span></div>
-      <p class="note">${teams.map(t=>`${ABR[t]} = ${esc(sn(t))}`).join(" · ")}</p>`;
+    const mx=`<h2>Cuadro de resultados</h2><div class="pick" id="mxpick"></div><div id="mxbox"></div>`;
     /* Cuándo juega cada equipo en casa */
     const pats=teams.map(t=>({t,pt:patron(t)})).filter(x=>x.pt);
     const hor=pats.length?`<h2>¿Cuándo juega cada equipo en casa?</h2><div class="hr">`+pats.map(({t,pt})=>`<div class="cell">${shirt(t,26)}<div class="txt"><div class="ttl">${esc(sn(t))}</div><div class="meta">Normalmente el ${pt.dia}${pt.hora?" a las "+pt.hora:""}${pt.horas.length>1?" · también "+pt.horas.slice(1).map(x=>x[0]).join(", "):""}</div></div><div class="end when">${pt.n} partido${pt.n>1?"s":""}</div></div>`).join("")+`</div><p class="note">Sale de las actas de esta temporada y la anterior. Los lunes a partir de las 9:00 la RFFM publica los horarios de la jornada, y la app se actualiza a las 9:03.</p>`:"";
@@ -684,6 +690,35 @@ function start(DATA){
       `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
       TABLA.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
       `</tbody></table></div><p class="note">Calculada con los resultados (3 puntos victoria, 1 empate). Si hay sanciones o aplazados, la oficial de la RFFM es la que vale.</p>`+mx+hor;
+    drawMx();
+  }
+  let mxT=US;
+  function drawMx(){
+    const teams=TABLA.map(r=>r.t);
+    const res={};J.forEach(([,,ms])=>ms.forEach(([h,a,g])=>{res[h+"|"+a]=g}));
+    /* resultado visto desde el equipo elegido */
+    const kOf=(h,a,g)=>{if(!g)return null;const me=h===mxT?g[0]:g[1],ot=h===mxT?g[1]:g[0];return me>ot?"W":me<ot?"L":"D"};
+    document.getElementById("mxpick").innerHTML=teams.map(t=>`<button class="pk${t===mxT?" on":""}" data-t="${esc(t)}" aria-pressed="${t===mxT}">${shirt(t,20)}<span>${esc(sn(t))}</span></button>`).join("");
+    const head=`<tr><th class="rh">Local ↓ / Visit. →</th>${teams.map(t=>`<th class="${t===mxT?"sel":""}" title="${esc(sn(t))}">${ABR[t]||"?"}</th>`).join("")}</tr>`;
+    const rows=teams.map(h=>`<tr><th class="rh${h===mxT?" sel":""}">${ABR[h]||"?"}</th>`+teams.map(a=>{
+      if(h===a)return `<td class="diag"></td>`;
+      const g=res[h+"|"+a],mine=h===mxT||a===mxT;
+      if(!mine)return `<td class="dim">${g?g[0]+"-"+g[1]:""}</td>`;
+      const k=kOf(h,a,g);
+      return `<td class="${k?"M"+k:"pend"}">${g?g[0]+"-"+g[1]:"·"}</td>`}).join("")+`</tr>`).join("");
+    /* resumen en texto */
+    const grp={W:[],D:[],L:[],P:[]};
+    teams.filter(t=>t!==mxT).forEach(t=>{
+      [[mxT,t],[t,mxT]].forEach(([h,a])=>{const g=res[h+"|"+a];if(g===undefined)return;const k=kOf(h,a,g)||"P";
+        if(k==="P"){(grp.Pm??={})[t]=(grp.Pm[t]||[]).concat(h===mxT?"casa":"fuera");return}
+        grp[k].push(`${esc(sn(t))} <small>(${h===mxT?"casa":"fuera"}${g?" "+g[0]+"-"+g[1]:""})</small>`)})});
+    grp.P=Object.entries(grp.Pm||{}).map(([t,w])=>`${esc(sn(t))} <small>(${w.length>1?"casa y fuera":w[0]})</small>`);
+    const line=(cls,lab,arr)=>arr.length?`<div class="sm ${cls}"><b>${lab}</b><span>${arr.join(", ")}</span></div>`:"";
+    document.getElementById("mxbox").innerHTML=`<div class="mx"><table><thead>${head}</thead><tbody>${rows}</tbody></table></div>
+      <div class="legend"><span style="--c:color-mix(in srgb,var(--green) 55%,transparent)">Gana ${esc(sn(mxT))}</span><span style="--c:color-mix(in srgb,var(--orange) 55%,transparent)">Empata</span><span style="--c:color-mix(in srgb,var(--red) 55%,transparent)">Pierde</span><span style="--c:var(--fill)">Por jugar</span></div>
+      <div class="sums">${line("W","Ha ganado a",grp.W)}${line("D","Ha empatado con",grp.D)}${line("L","Ha perdido con",grp.L)}${line("P","Le falta jugar con",grp.P)}</div>
+      <p class="note">Su fila son los partidos en casa y su columna los de fuera. ${teams.map(t=>`${ABR[t]} = ${esc(sn(t))}`).join(" · ")}</p>`;
+    document.querySelectorAll("#mxpick .pk").forEach(b=>b.onclick=()=>{mxT=b.dataset.t;drawMx()});
   }
 
   /* ---------- PLANTILLA ---------- */
