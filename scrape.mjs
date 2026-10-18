@@ -127,9 +127,14 @@ let previo = {};
 try { previo = JSON.parse(fs.readFileSync("data.json", "utf8")).detalles || {}; } catch {}
 const detalles = { ...previo };
 if (ok) {
-  for (const j of jornadas) {
-    const p = j.partidos.find((x) => (x.local + x.visit).includes("C.D. BARAJAS") && x.acta);
-    if (!p) continue;
+  // Para ir rápido solo abrimos: los próximos 3 partidos sin resultado (pueden cambiar de hora o campo)
+  // y, como mucho, 4 partidos que todavía no tengamos guardados.
+  const nuestros = jornadas
+    .map((j) => ({ j, p: j.partidos.find((x) => (x.local + x.visit).includes("C.D. BARAJAS") && x.acta) }))
+    .filter((x) => x.p);
+  const proximos = nuestros.filter((x) => !x.p.g).slice(0, 3);
+  const sinDatos = nuestros.filter((x) => !previo[x.j.j] && !proximos.includes(x)).slice(0, 4);
+  for (const { j, p } of [...proximos, ...sinDatos]) {
     for (let intento = 1; intento <= 2; intento++) try {
       await page.goto(p.acta, { waitUntil: "domcontentloaded", timeout: 60000 });
       await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: 45000 });
