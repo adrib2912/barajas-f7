@@ -7,6 +7,8 @@ import fs from "node:fs";
 const Q = "temporada=22&tipojuego=2&competicion=26738230&grupo=26738231";
 const BASE = "https://www.rffm.es/competicion/";
 const DEBUG = "debug";
+const INICIO = Date.now();
+const minutos = () => (Date.now() - INICIO) / 60000;
 fs.mkdirSync(DEBUG, { recursive: true });
 // Copia de lo que se escribe en pantalla, para poder revisarlo luego
 const LOG = [];
@@ -148,11 +150,11 @@ try {
 // ---------- LECTURA DE UN ACTA ----------
 // Devuelve día, hora, campo y, si el partido se ha jugado, convocadas del Barajas y goles.
 let volcado = false;
-async function leerActa(p) {
+async function leerActa(p, intentos = 2, espera = 45000) {
   let ultimoError;
-  for (let intento = 1; intento <= 2; intento++) try {
+  for (let intento = 1; intento <= intentos; intento++) try {
     await page.goto(p.acta, { waitUntil: "domcontentloaded", timeout: 60000 });
-    await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: 45000 });
+    await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: espera });
     await page.waitForTimeout(800);
     const t = await page.evaluate(() => document.body.innerText);
     const L = t.split("\n").map((x) => x.trim()).filter(Boolean);
@@ -296,6 +298,7 @@ if (ok && anterior && anterior.v >= 2) {
     .filter((m) => m[3] && m[2] && (m[0] === "C.D. BARAJAS" || m[1] === "C.D. BARAJAS") && !(anterior.actas[m[3]] && anterior.actas[m[3]].v === 2) && baseHoy.has(base(m[0] === "C.D. BARAJAS" ? m[1] : m[0])))
     .slice(0, 10);
   for (const m of pendientes) {
+    if (minutos() > 7) break;
     try {
       const r = await leerActa({ acta: m[3], local: m[0], visit: m[1], g: m[2] });
       anterior.actas[m[3]] = { v: 2, goles: r.goles, convocadas: r.convocadas, fecha: r.fecha };
@@ -319,8 +322,9 @@ if (ok) {
   const deAnterior = (anterior && anterior.grupos ? anterior.grupos : []).flatMap((g) => g.jornadas.flatMap((j) => j[2]))
     .filter((m) => m[3] && !horarios[m[3]]).map((m) => ({ acta: m[3], local: m[0], visit: m[1], g: null }));
   for (const p of [...deEsta.slice(0, 16), ...deAnterior.slice(0, 8)]) {
+    if (minutos() > 9) { console.log("Tiempo agotado para horarios; seguimos en la próxima pasada"); break; }
     try {
-      const r = await leerActa({ ...p, g: null });
+      const r = await leerActa({ ...p, g: null }, 1, 20000);
       const v = horarios[p.acta];
       // [local, fecha, hora, cambio anterior {fecha, hora} si la RFFM lo ha movido]
       const cambio = v && v[2] && r.hora && (v[1] !== r.fecha || v[2] !== r.hora) ? { fecha: v[1], hora: v[2] } : (v && v[3]) || null;
