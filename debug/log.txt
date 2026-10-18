@@ -1,7 +1,21 @@
 Calendario: 26 jornadas, 156 partidos
+Acta https://www.rffm.es/acta-partido/5697445?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5697445?temporada=22&competicion=26738230&grupo=26738231 (intento 2): page.waitForFunction: Timeout 45000ms exceeded.
 Detalles de 24 partidos del Barajas
-Acta https://www.rffm.es/acta-partido/5520112?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5520112?temporada=21&competicion=24038103&grupo=24038104 (intento 2): page.waitForFunction: Timeout 45000ms exceeded.
-Actas de la temporada pasada guardadas: 9
+Competiciones 2025-26: AFICIONADO - JUVENIL FEMENINO SENIOR F-7 SIERRA OESTE | PRIMERA FEMENINO SENIOR F-7
+  AFICIONADO - JUVENIL FEMENINO SENIOR F-7 SIERRA OESTE GRUPO UNICO: 21 jornadas, 0 equipos de este año
+  PRIMERA FEMENINO SENIOR F-7 Grupo 1: 21 jornadas, 6 equipos de este año
+  PRIMERA FEMENINO SENIOR F-7 Grupo 2: 21 jornadas, 3 equipos de este año
+Actas de la temporada pasada guardadas: 15
+Acta https://www.rffm.es/acta-partido/5731125?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5697430?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520073?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520074?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520075?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520072?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520076?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520079?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520077?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Horarios guardados: 15
 Goleadoras: 46 filas
 data.json actualizado
