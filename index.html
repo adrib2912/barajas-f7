@@ -77,6 +77,12 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .h2h .r{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
 .h2h .r b{font-family:var(--round)}
 .h2h .r .W{color:var(--green)}.h2h .r .L{color:var(--red)}.h2h .r .D{color:var(--orange)}
+.ant{margin:0 0 6px;font-size:13px;color:var(--hero-ink2)}
+.ant summary{cursor:pointer;list-style:none}
+.ant summary::-webkit-details-marker{display:none}
+.ant summary::after{content:" · ver convocadas";color:var(--yellow)}
+.ant[open] summary::after{content:" · ocultar"}
+.ant .chips{margin-top:6px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:13px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.1)}
 .chip.gol{background:var(--yellow);color:#111;font-weight:600}
@@ -280,8 +286,8 @@ function start(DATA){
     for(const g of ANT){
       const S={};
       const nm=g.jornadas.flatMap(x=>x[2].flatMap(m=>[m[0],m[1]])).find(t=>base(t)===opp0);const opp=nm||"__";
-      g.jornadas.forEach(([j,f,ms])=>ms.forEach(([h,a,r])=>{
-        if((h===US&&a===opp)||(h===opp&&a===US))games.push({f,h:h===opp?oppHoy:h,a:a===opp?oppHoy:a,r});
+      g.jornadas.forEach(([j,f,ms])=>ms.forEach(([h,a,r,acta])=>{
+        if((h===US&&a===opp)||(h===opp&&a===US))games.push({f,h:h===opp?oppHoy:h,a:a===opp?oppHoy:a,r,ac:acta&&DATA.anterior.actas?DATA.anterior.actas[acta]:null});
         [h,a].forEach(t=>S[t]??={t,pj:0,pts:0,gf:0,gc:0});
         if(!r)return;S[h].pj++;S[a].pj++;S[h].gf+=r[0];S[h].gc+=r[1];S[a].gf+=r[1];S[a].gc+=r[0];
         if(r[0]>r[1])S[h].pts+=3;else if(r[0]<r[1])S[a].pts+=3;else{S[h].pts++;S[a].pts++}}));
@@ -307,7 +313,13 @@ function start(DATA){
         html+=`<div class="h2h"><div class="hd">Temporada ${esc(DATA.anterior.temporada)}</div>`+
           games.map(g=>{if(!g.r)return `<div class="r"><span>${esc(sn(g.h))} - ${esc(sn(g.a))}</span><b>–</b></div>`;
             const ourG=g.h===US?g.r[0]:g.r[1],theirG=g.h===US?g.r[1]:g.r[0],k=ourG>theirG?"W":ourG<theirG?"L":"D";
-            return `<div class="r"><span>${esc(sn(g.h))} - ${esc(sn(g.a))}</span><b class="${k}">${g.r[0]} - ${g.r[1]}</b></div>`}).join("")+
+            let det="";
+            if(g.ac){
+              const cnt={};(g.ac.goles||[]).filter(x=>x.nuestro&&!x.propia).forEach(x=>cnt[x.nombre]=(cnt[x.nombre]||0)+1);
+              const gl=Object.entries(cnt).map(([n,c])=>esc(nomC(n))+(c>1?` (${c})`:"")).join(", ");
+              det=`<details class="ant"><summary>${gl?"Goles: "+gl:"Sin goles nuestros"}</summary>${g.ac.convocadas&&g.ac.convocadas.length?`<div class="chips">${g.ac.convocadas.map(n=>`<span class="chip${cnt[n]?" gol":""}">${esc(nomC(n))}</span>`).join("")}</div>`:""}</details>`;
+            }
+            return `<div class="r"><span>${esc(sn(g.h))} - ${esc(sn(g.a))}</span><b class="${k}">${g.r[0]} - ${g.r[1]}</b></div>${det}`}).join("")+
           (tabla?`<div class="r"><span>${esc(sn(o.opp))} acabó ${tabla.pos}ª de ${tabla.n}</span><b>${tabla.pts} pts</b></div><div class="r"><span>Goles a favor / en contra</span><b>${tabla.gf} / ${tabla.gc}</b></div>`:"")+
           `</div>`;
       } else html+=`<div class="h2h"><div class="hd">Temporada ${esc(DATA.anterior.temporada)}</div><div class="r"><span>No jugó en esta liga la temporada pasada</span></div></div>`;

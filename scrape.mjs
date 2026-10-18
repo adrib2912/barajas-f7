@@ -172,18 +172,20 @@ async function leerActa(p) {
       volcado = true;
       fs.writeFileSync(`${DEBUG}/acta-jugado.txt`, p.acta + "\n\n" + L.slice(iRes >= 0 ? iRes - 4 : 0).join("\n"));
     }
-    let convocadas = null, goles = null;
+    let convocadas = null, goles = null, localActa = null;
     if (p.g) {
       const lds = await page.evaluate(() => [...document.querySelectorAll('script[type="application/ld+json"]')].map((x) => x.textContent));
       for (const t of lds) {
         try {
           const ev = JSON.parse(t);
           if (ev["@type"] !== "SportsEvent") continue;
-          const nuestra = (ev.homeTeam?.name || "").trim() === "C.D. BARAJAS" ? ev.homeTeam : ev.awayTeam;
+          localActa = (ev.homeTeam?.name || "").trim() === "C.D. BARAJAS";
+          const nuestra = localActa ? ev.homeTeam : ev.awayTeam;
           convocadas = (nuestra?.members || []).map((m) => m.name);
         } catch {}
       }
-      const somosLocal = p.local.trim() === "C.D. BARAJAS";
+      // El acta manda: a veces el partido se juega con local y visitante cambiados
+      const somosLocal = localActa !== null ? localActa : p.local.trim() === "C.D. BARAJAS";
       goles = [];
       const G = secciones["GOLES"] || [];
       let prev = [0, 0];
@@ -280,12 +282,12 @@ if (ok && anterior && anterior.v === 2) {
   anterior.actas = anterior.actas || {};
   const pendientes = anterior.grupos
     .flatMap((g) => g.jornadas.flatMap((j) => j[2]))
-    .filter((m) => m[3] && m[2] && !anterior.actas[m[3]] && baseHoy.has(base(m[0] === "C.D. BARAJAS" ? m[1] : m[0])))
-    .slice(0, 8);
+    .filter((m) => m[3] && m[2] && !(anterior.actas[m[3]] && anterior.actas[m[3]].v === 2) && baseHoy.has(base(m[0] === "C.D. BARAJAS" ? m[1] : m[0])))
+    .slice(0, 10);
   for (const m of pendientes) {
     try {
       const r = await leerActa({ acta: m[3], local: m[0], visit: m[1], g: m[2] });
-      anterior.actas[m[3]] = { goles: r.goles, convocadas: r.convocadas, fecha: r.fecha };
+      anterior.actas[m[3]] = { v: 2, goles: r.goles, convocadas: r.convocadas, fecha: r.fecha };
     } catch {}
   }
   console.log(`Actas de la temporada pasada guardadas: ${Object.keys(anterior.actas).length}`);
