@@ -67,6 +67,7 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .pill{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.14);color:#fff}
 .pill.W{background:var(--green);color:#fff}.pill.L{background:var(--red);color:#fff}.pill.D{background:var(--orange);color:#fff}
 .old{font-size:13px;color:var(--hero-ink2);text-decoration:line-through;margin-bottom:4px}
+.pill.prov{background:rgba(255,255,255,.14);color:var(--yellow);border:1px dashed var(--yellow)}
 .pill.chg{background:var(--orange);color:#fff}
 .gm .when2{grid-column:1/-1;text-align:center;font-size:12px;color:var(--ink2);margin-top:-2px}
 .gm .when2 s{opacity:.7;margin-right:4px}
@@ -436,7 +437,11 @@ function start(DATA){
       g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2]};
   });
   /* ¿Ya tiene día y hora oficiales? Si no, se habla del fin de semana entero */
-  const oficial=o=>!!(o.raw||o.hora);
+  /* La RFFM publica los horarios oficiales el lunes de la semana del partido a las 9:00.
+     Antes de eso, la hora del acta es solo una previsión y puede cambiar. */
+  const lunes9=o=>{const d=dOf(o.cf);d.setDate(d.getDate()-5);d.setHours(9,0,0,0);return d};
+  const oficial=o=>!!(o.raw||(o.hora&&new Date()>=lunes9(o)));
+  const provisional=o=>!o.raw&&!!o.hora&&!oficial(o);
   const finde=o=>{const a=dOf(o.cf),b=new Date(a);b.setDate(a.getDate()+1);return [a,b]};
   const rango=(o,largo)=>{const [a,b]=finde(o);const m=d=>d.toLocaleDateString("es-ES",{month:largo?"long":"short"});
     return a.getMonth()===b.getMonth()?`${a.getDate()}–${b.getDate()} ${m(b)}`:`${a.getDate()} ${m(a)} – ${b.getDate()} ${m(b)}`};
@@ -485,11 +490,11 @@ function start(DATA){
   function icsUrl(o){
     const L=sn(o.home?US:o.opp),V=sn(o.home?o.opp:US),p=placeOf(o);
     const d=o.f.replace(/-/g,"");let when;
-    if(o.hora){const [hh,mm]=o.hora.split(":");const st=`${d}T${hh.padStart(2,"0")}${mm}00`;const e=new Date(dOf(o.f));e.setHours(+hh+1,+mm);
+    if(oficial(o)&&o.hora){const [hh,mm]=o.hora.split(":");const st=`${d}T${hh.padStart(2,"0")}${mm}00`;const e=new Date(dOf(o.f));e.setHours(+hh+1,+mm);
       const en=`${e.getFullYear()}${String(e.getMonth()+1).padStart(2,"0")}${String(e.getDate()).padStart(2,"0")}T${String(e.getHours()).padStart(2,"0")}${String(e.getMinutes()).padStart(2,"0")}00`;
       when=`DTSTART;TZID=Europe/Madrid:${st}\r\nDTEND;TZID=Europe/Madrid:${en}`}
     else{const [sa,su]=finde(o);const e=new Date(su);e.setDate(e.getDate()+1);const d2=iso(sa).replace(/-/g,"");when=`DTSTART;VALUE=DATE:${d2}\r\nDTEND;VALUE=DATE:${e.getFullYear()}${String(e.getMonth()+1).padStart(2,"0")}${String(e.getDate()).padStart(2,"0")}`}
-    const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Barajas F7//ES\r\nBEGIN:VEVENT\r\nUID:barajas-j${o.j}-${d}@barajas-f7\r\nSUMMARY:${L} - ${V} (J${o.j})${o.hora?"":" · día por confirmar"}\r\n${when}\r\nLOCATION:${p.name}${p.sub?", "+p.sub:""}\r\nURL:${p.url}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
+    const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Barajas F7//ES\r\nBEGIN:VEVENT\r\nUID:barajas-j${o.j}-${d}@barajas-f7\r\nSUMMARY:${L} - ${V} (J${o.j})${oficial(o)?"":" · día por confirmar"}\r\n${when}\r\nLOCATION:${p.name}${p.sub?", "+p.sub:""}\r\nURL:${p.url}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
     return URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
   }
 
@@ -572,6 +577,7 @@ function start(DATA){
       const when=days<0?"Sin resultado":days===0?"Hoy":days===1?"Mañana":`En ${days} días`;
       const cb=o.camb&&o.camb.antes.hora?o.camb.antes:null;
       mid=oficial(o)?`${cb?`<div class="old">${cb.hora} · ${fmt(cb.fecha)}</div>`:""}<div class="big">${o.hora}</div><div class="small">${fmt(o.f)}</div><span class="pill ${cb?"chg":isNext?"next":""}">${cb?"Cambio de horario":when}</span>`
+        :provisional(o)?`<div class="small" style="margin-bottom:4px">Fin de semana</div><div class="big" style="font-size:24px;white-space:nowrap">${rango(o)}</div><div class="small">Previsto: ${fmt(o.f,{weekday:"short"})} a las ${o.hora}</div><span class="pill prov">Sin confirmar</span>`
         :`<div class="small" style="margin-bottom:4px">Fin de semana</div><div class="big" style="font-size:24px;white-space:nowrap">${rango(o)}</div><div class="small">Día y hora por confirmar</div><span class="pill ${isNext?"next":""}">${when}</span>`;
       if(isNext&&days>=0) count=oficial(o)?`<div class="count"><div class="n">${days===0?"HOY":days}</div><div class="w">${days===0?"¡día de partido!":days===1?"día para<br>el partido":"días para<br>el partido"}</div></div>`
         :`<div class="count"><div class="n">${days<=0?"YA":days}</div><div class="w">${days<=0?"es el finde<br>del partido":days===1?"día para el finde<br>del partido":"días para el finde<br>del partido"}</div></div>`;
@@ -640,8 +646,8 @@ function start(DATA){
         const chips=Object.keys(cnt).length?`<div class="chips">${Object.entries(cnt).map(([n,c])=>`<span class="chip">${esc(nomC(n))}${c>1?" ×"+c:""}</span>`).join("")}</div>`:"";
         const L=o.home?US:o.opp,V=o.home?o.opp:US;
         return `<button class="tli" data-i="${i}"><span class="dot ${k||(isN?"next":"")}"></span><div class="tc${isN?" next":""}${!o.g&&!isN?" future":""}${i===sel?" sel":""}">
-          <div class="m1"><span>J${o.j} · ${oficial(o)?fmt(o.f):"finde "+rango(o)} · ${o.home?"En casa":"Fuera"}</span><span>${!o.raw&&o.camb?'<b style="color:var(--orange)">Cambio de horario</b>':k?kindTxt[k]:isN?"Próximo":o.hora||""}</span></div>
-          <div class="m2"><span class="nm">${shirt(o.opp,24)}${esc(sn(L))} – ${esc(sn(V))}</span><span class="sc">${o.raw?o.raw[0]+"-"+o.raw[1]:o.hora&&isN?o.hora:""}</span></div>${chips}</div></button>`;
+          <div class="m1"><span>J${o.j} · ${oficial(o)?fmt(o.f):"finde "+rango(o)} · ${o.home?"En casa":"Fuera"}${provisional(o)?" · prev. "+o.hora:""}</span><span>${!o.raw&&o.camb?'<b style="color:var(--orange)">Cambio de horario</b>':k?kindTxt[k]:isN?"Próximo":o.hora||""}</span></div>
+          <div class="m2"><span class="nm">${shirt(o.opp,24)}${esc(sn(L))} – ${esc(sn(V))}</span><span class="sc">${o.raw?o.raw[0]+"-"+o.raw[1]:oficial(o)&&isN?o.hora:""}</span></div>${chips}</div></button>`;
       }).join("")+`</div><p class="note">Toca un partido para verlo en Inicio con todos sus detalles.</p>`;
     document.querySelectorAll("#p-cal .tli[data-i]").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;drawHero();drawCal();go("home");window.scrollTo({top:0,behavior:"smooth"})});
     document.querySelectorAll("#p-cal .seg2 button[data-f]").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;drawCal()});
@@ -658,8 +664,8 @@ function start(DATA){
     ours.forEach((o,i)=>{
       const sat=dOf(o.cf),sun=new Date(sat);sun.setDate(sat.getDate()+1);
       if(o.rest){M[iso(sat)]={t:"rest",o,i,side:"l"};M[iso(sun)]={t:"rest",o,i,side:"r"};return}
-      const oficial=!!(o.raw||o.hora);
-      if(oficial){M[o.f]={t:"game",o,i}}
+      const oficialD=oficial(o);
+      if(oficialD){M[o.f]={t:"game",o,i}}
       else{M[iso(sat)]={t:"tbd",o,i,side:"l",shirt:true};M[iso(sun)]={t:"tbd",o,i,side:"r"}}
     });
     return M;
@@ -677,7 +683,8 @@ function start(DATA){
       let cls="cd"+(out?" out":"")+(k===iso(today)?" today":"")+(we?" we":""),inner="";
       if(m){
         if(m.t==="rest"){cls+=" rest";inner=m.side==="l"?`<span class="x r">Descanso</span>`:`<span class="x r">J${m.o.j}</span>`}
-        else if(m.t==="tbd"){cls+=" tbd "+m.side;inner=m.shirt?`${shirt(m.o.opp,26)}<span class="x">${m.o.home?"Casa":"Fuera"}</span>`:`<span class="x r">J${m.o.j}</span><span class="x r">¿sáb o dom?</span>`}
+        else if(m.t==="tbd"){cls+=" tbd "+m.side;const pv=provisional(m.o)&&iso(d)===m.o.f;
+          inner=m.shirt?`${shirt(m.o.opp,26)}<span class="x">${m.o.home?"Casa":"Fuera"}</span>${pv?`<span class="x r">prev. ${m.o.hora}</span>`:""}`:pv?`<span class="x r">J${m.o.j}</span><span class="x r">prev. ${m.o.hora}</span>`:`<span class="x r">J${m.o.j}</span><span class="x r">¿sáb o dom?</span>`}
         else{const o=m.o,kd=kind(o);cls+=" game"+(kd?" "+kd:"");inner=`${shirt(o.opp,26)}<span class="x${o.raw?" sc":""}">${o.raw?o.raw[0]+"-"+o.raw[1]:o.hora||""}</span>`}
       }
       const tag=m&&m.t!=="rest"?"button":"div";
@@ -781,7 +788,8 @@ function start(DATA){
         const hr=acta&&DATA.horarios?DATA.horarios[acta]:null;
         const dj=us?DET[j]:null;
         const fh=dj&&dj.hora?{f:dj.fecha,h:dj.hora,c:dj.cambios&&dj.cambios.slice(-1)[0]&&dj.cambios.slice(-1)[0].antes.hora?{fecha:dj.cambios.slice(-1)[0].antes.fecha,hora:dj.cambios.slice(-1)[0].antes.hora}:null}:hr&&hr[2]?{f:hr[1],h:hr[2],c:hr[3]||null}:null;
-        const when2=fh?`<div class="when2">${fh.c?`<s>${fmt(fh.c.fecha)} ${fh.c.hora}</s>`:""}${fmt(fh.f)} · ${fh.h}${fh.c?" <b>cambio</b>":""}</div>`:"";
+        const prov=!g&&new Date()<lunes9({cf:f});
+        const when2=fh?`<div class="when2">${fh.c?`<s>${fmt(fh.c.fecha)} ${fh.c.hora}</s>`:""}${prov?"Previsto ":""}${fmt(fh.f)} · ${fh.h}${fh.c?" <b>cambio</b>":""}${prov?" <i>(sin confirmar)</i>":""}</div>`:"";
         const where=us&&DET[j]&&DET[j].campo?cleanCampo(DET[j].campo):c?c[0]:"";
         return `<div class="gm${us?" us":""}"><div class="h">${n(h)}${shirt(h,24)}</div><div class="s">${g?g[0]+" - "+g[1]:"–"}</div><div class="a">${shirt(a,24)}${n(a)}</div>${when2}${where?`<div class="where"><a href="${placeOf(us?ours.find(o=>o.j===j):{home:false,opp:h}).url}" target="_blank" rel="noopener">${esc(where)}</a></div>`:""}</div>`}).join("")+
       `</div>`+rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("");

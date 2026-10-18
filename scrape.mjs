@@ -147,6 +147,15 @@ try {
   console.error("Fallo leyendo el calendario:", e.message);
 }
 
+// La RFFM publica los horarios oficiales el lunes de la semana del partido a las 9:00 (hora de Madrid).
+// fechaJornada es el sábado del fin de semana de la jornada.
+function yaOficial(fechaJornada) {
+  if (!fechaJornada) return false;
+  const [y, m, d] = fechaJornada.split("-").map(Number);
+  const lunes = new Date(Date.UTC(y, m - 1, d - 5, 7, 0)); // 9:00 en Madrid en invierno (8:00 en verano: margen)
+  return Date.now() >= lunes.getTime();
+}
+
 // ---------- LECTURA DE UN ACTA ----------
 // Devuelve día, hora, campo y, si el partido se ha jugado, convocadas del Barajas y goles.
 let volcado = false;
@@ -237,9 +246,10 @@ if (ok) {
       const viejo = previo[j.j] || {};
       // Si ya había día y hora oficiales y la RFFM los cambia, lo apuntamos
       const cambios = [...(viejo.cambios || [])];
-      if (viejo.hora && nuevo.hora && (viejo.hora !== nuevo.hora || viejo.fecha !== nuevo.fecha))
+      nuevo.of = yaOficial(j.fecha);
+      if (viejo.of && viejo.hora && nuevo.hora && (viejo.hora !== nuevo.hora || viejo.fecha !== nuevo.fecha))
         cambios.push({ antes: { fecha: viejo.fecha, hora: viejo.hora }, ahora: { fecha: nuevo.fecha, hora: nuevo.hora }, visto: new Date().toISOString() });
-      if (viejo.campo && nuevo.campo && viejo.campo !== nuevo.campo)
+      if (viejo.of && viejo.campo && nuevo.campo && viejo.campo !== nuevo.campo)
         cambios.push({ antes: { campo: viejo.campo }, ahora: { campo: nuevo.campo }, visto: new Date().toISOString() });
       detalles[j.j] = { ...nuevo, ...(cambios.length ? { cambios } : {}) };
       if (cambios.length > (viejo.cambios || []).length) console.log(`Cambio en la jornada ${j.j}:`, JSON.stringify(cambios.at(-1)));
@@ -317,7 +327,7 @@ if (ok) {
   const deEsta = jornadas.flatMap((j) => j.partidos.map((p) => ({ p, fecha: j.fecha })))
     .sort((x, y) => (x.fecha >= hoyIso) === (y.fecha >= hoyIso) ? 0 : x.fecha >= hoyIso ? -1 : 1)
     .filter(({ p, fecha }) => p.acta && fecha <= limite && (!horarios[p.acta] || (!horarios[p.acta][2] && fecha >= hoyIso) || (horarios[p.acta][1] >= hoyIso)))
-    .map(({ p }) => p);
+    .map(({ p, fecha }) => ({ ...p, fechaJ: fecha }));
   // Temporada pasada: todos los partidos de los grupos con equipos de este año
   // Temporada pasada: solo los partidos EN CASA de equipos que este año son rivales nuestros
   const baseHoyH = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [base(p.local), base(p.visit)])));
@@ -331,8 +341,10 @@ if (ok) {
       const r = await leerActa({ ...p, g: null }, 1, 20000);
       const v = horarios[p.acta];
       // [local, fecha, hora, cambio anterior {fecha, hora} si la RFFM lo ha movido]
-      const cambio = v && v[2] && r.hora && (v[1] !== r.fecha || v[2] !== r.hora) ? { fecha: v[1], hora: v[2] } : (v && v[3]) || null;
-      horarios[p.acta] = cambio ? [p.local, r.fecha, r.hora, cambio] : [p.local, r.fecha, r.hora];
+      // v[4] = 1 si cuando se leyó ya era oficial; solo entonces un cambio cuenta como "cambio"
+      const cambio = v && v[4] && v[2] && r.hora && (v[1] !== r.fecha || v[2] !== r.hora) ? { fecha: v[1], hora: v[2] } : (v && v[3]) || null;
+      const of = p.fechaJ ? (yaOficial(p.fechaJ) ? 1 : 0) : 1;
+      horarios[p.acta] = [p.local, r.fecha, r.hora, cambio, of];
     } catch {}
   }
   console.log(`Horarios guardados: ${Object.keys(horarios).length}`);
