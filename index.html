@@ -55,7 +55,10 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .arrow{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.12);color:#fff;flex:none}
 .arrow:disabled{opacity:.3}
 .arrow svg{width:16px;height:16px}
-.match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:14px}
+.match{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;margin-top:14px}
+.match .side{padding-top:4px}
+.match .side .shirt{width:54px;height:54px}
+.match .mid{align-self:start}
 .side{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;min-width:0}
 .side .nm{font-weight:600;font-size:15px;line-height:1.2}
 .mid{text-align:center;min-width:92px}
