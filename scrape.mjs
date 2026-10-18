@@ -158,7 +158,7 @@ if (ok) {
   const proximos = nuestros.filter((x) => !x.p.g).slice(0, 3);
   const sinDatos = nuestros.filter((x) => !previo[x.j.j] && !proximos.includes(x)).slice(0, 4);
   // Partidos ya jugados cuyo acta (goles y jugadoras) aún no tenemos
-  const jugados = nuestros.filter((x) => x.p.g && !(previo[x.j.j] && previo[x.j.j].secciones) && !sinDatos.includes(x)).slice(0, 6);
+  const jugados = nuestros.filter((x) => x.p.g && !(previo[x.j.j] && previo[x.j.j].convocadas) && !sinDatos.includes(x)).slice(0, 6);
   let volcado = false;
   for (const { j, p } of [...proximos, ...sinDatos, ...jugados]) {
     for (let intento = 1; intento <= 2; intento++) try {
@@ -185,11 +185,41 @@ if (ok) {
         fs.writeFileSync(`${DEBUG}/acta-jugado.txt`, p.acta + "\n\n" + L.slice(iRes >= 0 ? iRes - 4 : 0).join("\n"));
         fs.writeFileSync(`${DEBUG}/acta-jugado.html`, await page.content());
       }
+      // Convocadas (del bloque de datos estructurados del acta) y goles
+      let convocadas = null, goles = null;
+      if (p.g) {
+        const lds = await page.evaluate(() => [...document.querySelectorAll('script[type="application/ld+json"]')].map((x) => x.textContent));
+        for (const t of lds) {
+          try {
+            const ev = JSON.parse(t);
+            if (ev["@type"] !== "SportsEvent") continue;
+            const nuestra = (ev.homeTeam?.name || "").trim() === "C.D. BARAJAS" ? ev.homeTeam : ev.awayTeam;
+            convocadas = (nuestra?.members || []).map((m) => m.name);
+          } catch {}
+        }
+        const somosLocal = p.local.trim() === "C.D. BARAJAS";
+        goles = [];
+        const G = secciones["GOLES"] || [];
+        let prev = [0, 0];
+        for (let i = 0; i < G.length; i++) {
+          const m = G[i].match(/^(\d+)\s*-\s*(\d+)$/);
+          if (!m) continue;
+          const sc = [+m[1], +m[2]];
+          const min = (G[i + 1] || "").match(/^\((\d+)'\)$/);
+          const nombre = min ? G[i + 2] : G[i + 1];
+          const marcoLocal = sc[0] > prev[0];
+          const nuestro = marcoLocal === somosLocal;
+          const propia = nuestro ? !(convocadas || []).includes(nombre) : (convocadas || []).includes(nombre);
+          goles.push({ min: min ? +min[1] : null, nombre, nuestro, propia, marcador: sc });
+          prev = sc;
+        }
+      }
       detalles[j.j] = {
+        ...(convocadas ? { convocadas } : {}),
+        ...(goles ? { goles } : {}),
         fecha: fh ? `${fh[3]}-${fh[2]}-${fh[1]}` : null,
         hora: fh && fh[4] !== "00:00" ? fh[4] : null,
         campo,
-        ...(p.g ? { secciones } : {}),
       };
       break;
     } catch (e) {

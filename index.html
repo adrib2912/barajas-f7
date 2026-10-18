@@ -77,6 +77,9 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .h2h .r{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
 .h2h .r b{font-family:var(--round)}
 .h2h .r .W{color:var(--green)}.h2h .r .L{color:var(--red)}.h2h .r .D{color:var(--orange)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.1)}
+.chip.gol{background:var(--yellow);color:#111;font-weight:600}
 .dots{display:flex;justify-content:center;gap:5px;margin-top:14px}
 .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25)}
 .dots i.on{background:var(--yellow)}
@@ -253,7 +256,7 @@ function start(DATA){
     const m=ms.find(x=>x[0]===US||x[1]===US);
     if(!m) return {j,f,rest:true};
     const d=DET[j]||{}, home=m[0]===US;
-    return {j,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,home,opp:home?m[1]:m[0],
+    return {j,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,home,opp:home?m[1]:m[0],
       g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2]};
   });
   const kind=o=>!o.g?null:o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D";
@@ -290,6 +293,14 @@ function start(DATA){
   function fillExtra(o){
     const box=document.getElementById("extra");if(!box)return;
     let html="";
+    const nomC=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return capW((no?no.split(" ")[0]+" ":"")+ap.split(" ")[0])};
+    if(o.raw&&o.goles){
+      html+=`<div class="h2h"><div class="hd">Goles</div>`+(o.goles.length?o.goles.map(g=>`<div class="r"><span>${g.nuestro?"<b>"+esc(nomC(g.nombre))+"</b>":esc(nomC(g.nombre))+` <small style="color:var(--hero-ink2)">(${esc(sn(o.opp))})</small>`}${g.propia?' <small style="color:var(--hero-ink2)">en propia</small>':""}</span><b class="${g.nuestro?"W":"L"}">${g.min!=null?g.min+"'":""}</b></div>`).join(""):`<div class="r"><span>Sin goles</span></div>`)+`</div>`;
+    }
+    if(o.raw&&o.conv&&o.conv.length){
+      const scorers=new Set((o.goles||[]).filter(g=>g.nuestro&&!g.propia).map(g=>g.nombre));
+      html+=`<div class="h2h"><div class="hd">Convocadas (${o.conv.length})</div><div class="chips">`+o.conv.map(n=>`<span class="chip${scorers.has(n)?" gol":""}">${esc(nomC(n))}</span>`).join("")+`</div></div>`;
+    }
     if(DATA.anterior){
       const {games,tabla}=h2h(o.opp);
       if(games.length||tabla){
