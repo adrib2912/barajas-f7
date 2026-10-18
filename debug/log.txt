@@ -1,5 +1,12 @@
 Calendario: 26 jornadas, 156 partidos
-Acta jornada 3 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
 Detalles de 24 partidos del Barajas
+Competiciones 2025-26: AFICIONADO - JUVENIL FEMENINO SENIOR F-7 SIERRA OESTE | PRIMERA FEMENINO SENIOR F-7
+  AFICIONADO - JUVENIL FEMENINO SENIOR F-7 SIERRA OESTE GRUPO UNICO: 21 jornadas, 0 equipos de este año
+  PRIMERA FEMENINO SENIOR F-7 Grupo 1: 21 jornadas, 6 equipos de este año
+  PRIMERA FEMENINO SENIOR F-7 Grupo 2: 21 jornadas, 3 equipos de este año
+Acta https://www.rffm.es/acta-partido/5520084?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520112?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520112?temporada=21&competicion=24038103&grupo=24038104 (intento 2): page.waitForFunction: Timeout 45000ms exceeded.
+Actas de la temporada pasada guardadas: 7
 Goleadoras: 46 filas
 data.json actualizado
