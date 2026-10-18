@@ -271,17 +271,19 @@ function start(DATA){
 
   /* Temporada pasada contra el rival seleccionado */
   const ANT=DATA.anterior&&DATA.anterior.grupos||[];
-  function h2h(opp){
-    const games=[];let tabla=null;
+  const base=t=>t.replace(/\s+'[A-Z]'$/,"");
+  function h2h(oppHoy){
+    const games=[];let tabla=null;const opp0=base(oppHoy);
     for(const g of ANT){
       const S={};
+      const nm=g.jornadas.flatMap(x=>x[2].flatMap(m=>[m[0],m[1]])).find(t=>base(t)===opp0);const opp=nm||"__";
       g.jornadas.forEach(([j,f,ms])=>ms.forEach(([h,a,r])=>{
-        if((h===US&&a===opp)||(h===opp&&a===US))games.push({f,h,a,r});
+        if((h===US&&a===opp)||(h===opp&&a===US))games.push({f,h:h===opp?oppHoy:h,a:a===opp?oppHoy:a,r});
         [h,a].forEach(t=>S[t]??={t,pj:0,pts:0,gf:0,gc:0});
         if(!r)return;S[h].pj++;S[a].pj++;S[h].gf+=r[0];S[h].gc+=r[1];S[a].gf+=r[1];S[a].gc+=r[0];
         if(r[0]>r[1])S[h].pts+=3;else if(r[0]<r[1])S[a].pts+=3;else{S[h].pts++;S[a].pts++}}));
       if(S[opp]){const rows=Object.values(S).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf);
-        tabla={pos:rows.findIndex(r=>r.t===opp)+1,n:rows.length,pts:S[opp].pts,pj:S[opp].pj,gf:S[opp].gf,gc:S[opp].gc,comp:g.competicion,grupo:g.grupo}}
+        tabla={opp:oppHoy,pos:rows.findIndex(r=>r.t===opp)+1,n:rows.length,pts:S[opp].pts,pj:S[opp].pj,gf:S[opp].gf,gc:S[opp].gc,comp:g.competicion,grupo:g.grupo}}
     }
     return {games,tabla};
   }
@@ -297,7 +299,7 @@ function start(DATA){
             return `<div class="r"><span>${esc(sn(g.h))} - ${esc(sn(g.a))}</span><b class="${k}">${g.r[0]} - ${g.r[1]}</b></div>`}).join("")+
           (tabla?`<div class="r"><span>${esc(sn(o.opp))} acabó ${tabla.pos}ª de ${tabla.n}</span><b>${tabla.pts} pts</b></div><div class="r"><span>Goles a favor / en contra</span><b>${tabla.gf} / ${tabla.gc}</b></div>`:"")+
           `</div>`;
-      } else html+=`<div class="h2h"><div class="hd">Temporada ${esc(DATA.anterior.temporada)}</div><div class="r"><span>No jugó en nuestra liga la temporada pasada</span></div></div>`;
+      } else html+=`<div class="h2h"><div class="hd">Temporada ${esc(DATA.anterior.temporada)}</div><div class="r"><span>No jugó en esta liga la temporada pasada</span></div></div>`;
     }
     box.innerHTML=html;
     /* Tiempo: solo si faltan 3 días o menos */
