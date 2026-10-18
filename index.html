@@ -67,6 +67,16 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .place .t{min-width:0;font-size:14px;line-height:1.25}
 .place .t span{display:block;font-size:12px;color:var(--hero-ink2)}
 .place .go{margin-left:auto;font-size:14px;font-weight:600;color:var(--yellow);flex:none}
+.extra{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.wx{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);font-size:14px}
+.wx svg{width:26px;height:26px;color:var(--yellow);flex:none}
+.wx .t span{display:block;font-size:12px;color:var(--hero-ink2)}
+.wx .deg{margin-left:auto;font:700 22px var(--round)}
+.h2h{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);font-size:14px}
+.h2h .hd{font-size:12px;font-weight:600;color:var(--hero-ink2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+.h2h .r{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
+.h2h .r b{font-family:var(--round)}
+.h2h .r .W{color:var(--green)}.h2h .r .L{color:var(--red)}.h2h .r .D{color:var(--orange)}
 .dots{display:flex;justify-content:center;gap:5px;margin-top:14px}
 .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25)}
 .dots i.on{background:var(--yellow)}
@@ -179,22 +189,32 @@ const CAMPOS={
 "A.D. VILLAVICIOSA DE ODON 'B'":["Nuevo Municipal","Villaviciosa de Odón"],
 "C.D. FUTBOL TRES CANTOS":["Campo municipal La Foresta","Tres Cantos"],
 "ESCUELA MUNICIPAL DE COBEÑA":["Campo municipal de Cobeña","Cobeña"]};
-/* Colores de camiseta: [cuerpo, mangas, rayas, confirmado] */
+/* Camisetas (colores tomados de Matchapp). b: cuerpo, s: mangas, tr: cuello y puños, st: rayas, v: diseño */
 const KITS={
-"ESCUELA MUNICIPAL DE COBEÑA":["#3f8a3a","#c8262e"],
-"C.D. BARAJAS":["#f5c400","#111111","#111111",1],
-"A.D. MADRID SUR":["#1f5fae","#f39a1e"],
-"S.A.D. COLEGIO SAN GABRIEL":["#d9822b","#10203a"],
-"C.D. ALGETE":["#13138a","#ffffff"],
-"C.D. NUEVO PUERTA BONITA DE CARABANCHEL":["#ffffff","#ffffff",null,1],
-"A.D. EL REAL DE MANZANARES":["#018f67","#f9b052"],
-"C.F. SAN AGUSTIN DE GUADALIX":["#ffffff","#ffffff",null,1],
-"ESC.FUT. EL OLIVO DE COSLADA":["#ffffff","#2f7d4f"],
-"CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":["#192635","#e1b884"],
-"C.D. SANFER19":["#1d961b","#0c160b"],
-"A.D. VILLAVICIOSA DE ODON 'B'":["#ffffff","#ffffff",null,1],
-"C.D. FUTBOL TRES CANTOS":["#ffffff","#ffffff",null,1]};
+"C.D. BARAJAS":{b:"#f5d000",s:"#f5d000",tr:"#111111",st:"#111111"},
+"C.D. FUTBOL TRES CANTOS":{b:"#ffffff",s:"#ffffff",tr:"#6b2fa0"},
+"C.D. ALGETE":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
+"C.F. SAN AGUSTIN DE GUADALIX":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
+"ESC.FUT. EL OLIVO DE COSLADA":{b:"#e8191c",s:"#e8191c",tr:"#ffffff"},
+"CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":{b:"#1f44b8",s:"#1f44b8",tr:"#ffffff"},
+"A.D. MADRID SUR":{b:"#7cc8f0",s:"#7cc8f0",tr:"#ffffff"},
+"C.D. NUEVO PUERTA BONITA DE CARABANCHEL":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7",v:"chev"},
+"C.D. SANFER19":{b:"#ffffff",s:"#ffffff",tr:"#1fa03a"},
+"ESCUELA MUNICIPAL DE COBEÑA":{b:"#e8191c",s:"#e8191c",tr:"#ffffff"},
+"A.D. EL REAL DE MANZANARES":{b:"#ffffff",s:"#ffffff",tr:"#1fa03a",v:"half",h:"#1fa03a"},
+"S.A.D. COLEGIO SAN GABRIEL":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
+"A.D. VILLAVICIOSA DE ODON 'B'":{b:"#ffffff",s:"#ffffff",tr:"#9aa0a6",dudosa:1}};
 
+/* Coordenadas aproximadas del pueblo/barrio de cada club, para el tiempo */
+const GEO={"C.D. BARAJAS":[40.474,-3.578],"A.D. MADRID SUR":[40.385,-3.650],"S.A.D. COLEGIO SAN GABRIEL":[40.482,-3.364],"C.D. ALGETE":[40.597,-3.497],
+"C.D. NUEVO PUERTA BONITA DE CARABANCHEL":[40.386,-3.730],"A.D. EL REAL DE MANZANARES":[40.727,-3.861],"C.F. SAN AGUSTIN DE GUADALIX":[40.678,-3.615],
+"ESC.FUT. EL OLIVO DE COSLADA":[40.426,-3.561],"CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":[40.493,-3.874],"C.D. SANFER19":[40.424,-3.535],
+"A.D. VILLAVICIOSA DE ODON 'B'":[40.358,-3.900],"C.D. FUTBOL TRES CANTOS":[40.600,-3.708],"ESCUELA MUNICIPAL DE COBEÑA":[40.567,-3.505]};
+const WMO=c=>c===0?"Despejado":c<=2?"Poco nuboso":c===3?"Nublado":c<=48?"Niebla":c<=57?"Llovizna":c<=67?"Lluvia":c<=77?"Nieve":c<=82?"Chubascos":c<=86?"Chubascos de nieve":"Tormenta";
+const WICO=c=>c===0?'<circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
+  :c<=3||c<=48?'<path d="M7 18h10a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 18z" fill="currentColor"/>'
+  :'<path d="M7 15h10a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 15z" fill="currentColor"/><path d="M9 18l-1 3M13 18l-1 3M17 18l-1 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>';
+const wCache={};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dOf=iso=>{const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d)};
 const today=(()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())})();
@@ -203,10 +223,17 @@ const capW=s=>s.toLowerCase().replace(/(^|[\s\-.(/])(\p{L})/gu,(m,a,b)=>a+b.toUp
 const cleanCampo=c=>capW(c.replace(/\((h\.?a\.?|hn|t)\)/i,"").trim()).replace(/\bF7\b/i,"F7").replace(/\bNtra\. Sra\./,"Ntra. Sra.");
 let _sid=0;
 function shirt(t,size){
-  const k=KITS[t];let body=k?k[0]:"var(--kit)";const sl=k?k[1]:"var(--kit)";let defs="";
-  if(k&&k[2]){const id="st"+(++_sid);defs=`<defs><pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k[0]}"/><rect width="3" height="32" fill="${k[2]}"/></pattern></defs>`;body=`url(#${id})`}
-  const dash=k&&!k[3]?' stroke-dasharray="2 1.5"':"";
-  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true">${defs}<path d="M11 4 L4 8 L2 15 L7 16 L8 13 L8 29 L24 29 L24 13 L25 16 L30 15 L28 8 L21 4 Q16 8 11 4 Z" fill="${body}" stroke="var(--kit-line)" stroke-width="1.2" stroke-linejoin="round"${dash}/><path d="M4 8 L2 15 L7 16 L8 13 Z M28 8 L30 15 L25 16 L24 13 Z" fill="${sl}" stroke="var(--kit-line)" stroke-width="1.2" stroke-linejoin="round"${dash}/></svg>`;
+  const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
+  const id="k"+(++_sid);let defs="",body=k.b,extra="";
+  if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
+  if(k.v==="half"){defs=`<linearGradient id="${id}"><stop offset=".5" stop-color="${k.h}"/><stop offset=".5" stop-color="${k.b}"/></linearGradient>`;body=`url(#${id})`}
+  if(k.v==="chev")extra=`<path d="M8.6 11.5 L16 17 L23.4 11.5 L23.4 14.6 L16 20.1 L8.6 14.6 Z" fill="${k.tr}"/>`;
+  const leftSl=k.v==="half"?k.h:k.s;
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>${defs}</defs>
+<path d="M11 4 L4 8 L2 15 L7 16 L8 13 L8 29 L24 29 L24 13 L25 16 L30 15 L28 8 L21 4 Q16 8 11 4 Z" fill="${body}" stroke="var(--kit-line)" stroke-width=".9" stroke-linejoin="round"/>
+<path d="M4 8 L2 15 L7 16 L8 13 Z" fill="${leftSl}" stroke="var(--kit-line)" stroke-width=".9" stroke-linejoin="round"/><path d="M28 8 L30 15 L25 16 L24 13 Z" fill="${k.s}" stroke="var(--kit-line)" stroke-width=".9" stroke-linejoin="round"/>
+${extra}<path d="M11.2 4.3 Q16 8.6 20.8 4.3" fill="none" stroke="${k.tr}" stroke-width="1.8" stroke-linecap="round"/>
+<path d="M2.4 13.8 L7.3 14.9 M29.6 13.8 L24.7 14.9" stroke="${k.tr}" stroke-width="1.6" stroke-linecap="round"/></svg>`;
 }
 const ico={
   left:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg>',
@@ -242,6 +269,53 @@ function start(DATA){
     return {name,sub,url:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q)};
   };
 
+  /* Temporada pasada contra el rival seleccionado */
+  const ANT=DATA.anterior&&DATA.anterior.grupos||[];
+  function h2h(opp){
+    const games=[];let tabla=null;
+    for(const g of ANT){
+      const S={};
+      g.jornadas.forEach(([j,f,ms])=>ms.forEach(([h,a,r])=>{
+        if((h===US&&a===opp)||(h===opp&&a===US))games.push({f,h,a,r});
+        [h,a].forEach(t=>S[t]??={t,pj:0,pts:0,gf:0,gc:0});
+        if(!r)return;S[h].pj++;S[a].pj++;S[h].gf+=r[0];S[h].gc+=r[1];S[a].gf+=r[1];S[a].gc+=r[0];
+        if(r[0]>r[1])S[h].pts+=3;else if(r[0]<r[1])S[a].pts+=3;else{S[h].pts++;S[a].pts++}}));
+      if(S[opp]){const rows=Object.values(S).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf);
+        tabla={pos:rows.findIndex(r=>r.t===opp)+1,n:rows.length,pts:S[opp].pts,pj:S[opp].pj,gf:S[opp].gf,gc:S[opp].gc,comp:g.competicion,grupo:g.grupo}}
+    }
+    return {games,tabla};
+  }
+  function fillExtra(o){
+    const box=document.getElementById("extra");if(!box)return;
+    let html="";
+    if(DATA.anterior){
+      const {games,tabla}=h2h(o.opp);
+      if(games.length||tabla){
+        html+=`<div class="h2h"><div class="hd">Temporada ${esc(DATA.anterior.temporada)}</div>`+
+          games.map(g=>{if(!g.r)return `<div class="r"><span>${esc(sn(g.h))} - ${esc(sn(g.a))}</span><b>–</b></div>`;
+            const ourG=g.h===US?g.r[0]:g.r[1],theirG=g.h===US?g.r[1]:g.r[0],k=ourG>theirG?"W":ourG<theirG?"L":"D";
+            return `<div class="r"><span>${esc(sn(g.h))} - ${esc(sn(g.a))}</span><b class="${k}">${g.r[0]} - ${g.r[1]}</b></div>`}).join("")+
+          (tabla?`<div class="r"><span>${esc(sn(o.opp))} acabó ${tabla.pos}ª de ${tabla.n}</span><b>${tabla.pts} pts</b></div><div class="r"><span>Goles a favor / en contra</span><b>${tabla.gf} / ${tabla.gc}</b></div>`:"")+
+          `</div>`;
+      } else html+=`<div class="h2h"><div class="hd">Temporada ${esc(DATA.anterior.temporada)}</div><div class="r"><span>No jugó en nuestra liga la temporada pasada</span></div></div>`;
+    }
+    box.innerHTML=html;
+    /* Tiempo: solo si faltan 3 días o menos */
+    const days=Math.round((dOf(o.f)-today)/864e5);
+    const t=o.home?US:o.opp, geo=GEO[t];
+    if(o.raw||days<0||days>3||!geo)return;
+    const key=t+o.f;
+    const show=w=>{if(!w||sel!==ours.indexOf(o))return;const d=document.createElement("div");d.className="wx";
+      d.innerHTML=`<svg viewBox="0 0 24 24">${WICO(w.code)}</svg><div class="t">${WMO(w.code)}<span>${w.at} · ${w.rain}% prob. de lluvia · viento ${w.wind} km/h</span></div><div class="deg">${w.temp}°</div>`;
+      box.prepend(d)};
+    if(wCache[key])return show(wCache[key]);
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${geo[0]}&longitude=${geo[1]}&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m&timezone=Europe%2FMadrid&start_date=${o.f}&end_date=${o.f}`)
+      .then(r=>r.json()).then(d=>{const H=d.hourly;if(!H)return;
+        let i=o.hora?H.time.findIndex(x=>x.endsWith(o.hora.padStart(5,"0").slice(0,2)+":00")):H.time.findIndex(x=>x.endsWith("12:00"));if(i<0)i=12;
+        wCache[key]={code:H.weather_code[i],temp:Math.round(H.temperature_2m[i]),rain:H.precipitation_probability[i]??0,wind:Math.round(H.wind_speed_10m[i]),at:o.hora?"Previsión a las "+o.hora:"Previsión a mediodía"};
+        show(wCache[key])}).catch(()=>{});
+  }
+
   /* Tarjeta principal: cambia con las flechas, al deslizar o al tocar un partido */
   function drawHero(){
     const o=ours[sel], h=document.getElementById("hero");
@@ -264,8 +338,8 @@ function start(DATA){
       <div class="side">${shirt(L,54)}<div class="nm">${esc(sn(L))}</div></div>
       <div class="mid">${mid}</div>
       <div class="side">${shirt(V,54)}<div class="nm">${esc(sn(V))}</div></div></div>
-      <a class="place" href="${p.url}" target="_blank" rel="noopener">${ico.pin}<div class="t">${esc(p.name)}<span>${esc(p.sub)}</span></div><span class="go">Cómo llegar</span></a>`+dots;
-    bindHero();
+      <a class="place" href="${p.url}" target="_blank" rel="noopener">${ico.pin}<div class="t">${esc(p.name)}<span>${esc(p.sub)}</span></div><span class="go">Cómo llegar</span></a><div class="extra" id="extra"></div>`+dots;
+    bindHero();fillExtra(o);
   }
   function bindHero(){
     document.getElementById("hp").onclick=()=>{if(sel>0){sel--;drawHero();drawCal()}};

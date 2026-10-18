@@ -27,8 +27,8 @@ page.on("response", async (r) => {
   } catch {}
 });
 
-async function abrir(ruta, espera) {
-  await page.goto(BASE + ruta + "?" + Q, { waitUntil: "networkidle", timeout: 90000 });
+async function abrir(ruta, espera, q = Q) {
+  await page.goto(BASE + ruta + "?" + q, { waitUntil: "networkidle", timeout: 90000 });
   if (espera) await page.waitForFunction((t) => document.body.innerText.includes(t), espera, { timeout: 60000 });
   await page.waitForTimeout(1500);
 }
@@ -37,11 +37,9 @@ let ok = true;
 let jornadas = [];
 let goleadoras = [];
 
-// ---------- CALENDARIO ----------
-try {
-  await abrir("calendario", "VER ACTA");
-  fs.writeFileSync(`${DEBUG}/calendario.txt`, await page.evaluate(() => document.body.innerText));
-
+// Lee la página de calendario que esté abierta y devuelve las jornadas
+async function leerCalendario() {
+  const jornadas = [];
   const items = await page.evaluate(() => {
     const all = [...document.querySelectorAll("body *")];
     const txt = (el) => (el.innerText || "").trim();
@@ -92,6 +90,16 @@ try {
     else if (/No asignado/i.test(visit)) cur.descansa.push(local);
     else cur.partidos.push({ local, visit, g: g ? [+g[1], +g[2]] : null, acta: it.acta });
   }
+
+  return jornadas;
+}
+
+// ---------- CALENDARIO ----------
+try {
+  await abrir("calendario", "VER ACTA");
+  fs.writeFileSync(`${DEBUG}/calendario.txt`, await page.evaluate(() => document.body.innerText));
+
+  jornadas = await leerCalendario();
 
   const nPart = jornadas.reduce((n, j) => n + j.partidos.length, 0);
   console.log(`Calendario: ${jornadas.length} jornadas, ${nPart} partidos`);
@@ -157,6 +165,38 @@ if (ok) {
   console.log(`Detalles de ${Object.keys(detalles).length} partidos del Barajas`);
 }
 
+// ---------- TEMPORADA ANTERIOR (solo se lee una vez y se guarda) ----------
+let anterior = null;
+try { anterior = JSON.parse(fs.readFileSync("data.json", "utf8")).anterior || null; } catch {}
+if (ok && !anterior) {
+  try {
+    const equiposHoy = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])));
+    const comps = await page.evaluate(async () => (await fetch("/api/competitions?temporada=21&tipojuego=2")).json());
+    const femSenior = comps.filter((c) => /FEMENINO/i.test(c.nombre) && /SENIOR|AFICIONAD/i.test(c.nombre));
+    console.log("Competiciones 2025-26:", femSenior.map((c) => c.nombre).join(" | "));
+    const grupos = [];
+    for (const c of femSenior) {
+      const gs = await page.evaluate(async (id) => (await fetch("/api/groups?competicion=" + id)).json(), c.codigo);
+      for (const g of gs) {
+        await abrir("calendario", "VER ACTA", `temporada=21&tipojuego=2&competicion=${c.codigo}&grupo=${g.codigo}`);
+        const js = await leerCalendario();
+        const equipos = new Set(js.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])));
+        const comunes = [...equipos].filter((e) => equiposHoy.has(e));
+        console.log(`  ${c.nombre} ${g.nombre}: ${js.length} jornadas, ${comunes.length} equipos de este año`);
+        if (comunes.length)
+          grupos.push({
+            competicion: c.nombre,
+            grupo: g.nombre,
+            jornadas: js.map((j) => [j.j, j.fecha, j.partidos.map((p) => [p.local, p.visit, p.g]), j.descansa]),
+          });
+      }
+    }
+    anterior = { temporada: "2025-2026", grupos };
+  } catch (e) {
+    console.error("No se pudo leer la temporada anterior:", e.message);
+  }
+}
+
 // ---------- GOLEADORAS ----------
 try {
   await abrir("goleadores");
@@ -190,6 +230,7 @@ if (ok) {
     jornadas: jornadas.map((j) => [j.j, j.fecha, j.partidos.map((p) => [p.local, p.visit, p.g]), j.descansa]),
     goleadoras,
     detalles,
+    anterior,
   };
   fs.writeFileSync("data.json", JSON.stringify(data));
   console.log("data.json actualizado");
