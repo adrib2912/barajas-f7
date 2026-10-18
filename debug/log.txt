@@ -1,0 +1,5 @@
+Fallo leyendo el calendario: page.goto: Timeout 90000ms exceeded.
+Call log:
+  - navigating to "https://www.rffm.es/competicion/calendario?temporada=22&tipojuego=2&competicion=26738230&grupo=26738231", waiting until "networkidle"
+
+Goleadoras: 46 filas
