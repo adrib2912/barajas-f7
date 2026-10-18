@@ -224,6 +224,30 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:var(--c)}
 .hr{background:var(--card);border-radius:14px;overflow:hidden}
 .hr .cell .meta{white-space:normal}
+/* ---- Calendario mensual ---- */
+.mhead{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.mhead .t{flex:1;text-align:center;font-weight:700;font-size:18px;text-transform:capitalize}
+.cal{background:var(--card);border-radius:16px;padding:8px}
+.cal .dow,.cal .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cal .dow span{text-align:center;font-size:11px;font-weight:600;color:var(--ink2);padding:4px 0;text-transform:uppercase}
+.cal .dow span:nth-child(n+6){color:var(--ink)}
+.cd{min-height:64px;border-radius:10px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;text-align:center;width:100%}
+.cd .n{font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink2)}
+.cd.out{visibility:hidden}
+.cd.today .n{background:var(--red);color:#fff;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;font-weight:700}
+.cd.we{background:color-mix(in srgb,var(--fill) 60%,transparent)}
+.cd.tbd{background:color-mix(in srgb,var(--yellow) 22%,transparent);border:1.5px dashed color-mix(in srgb,var(--yellow) 85%,var(--ink) 15%)}
+.cd.tbd.l{border-right:0;border-radius:10px 0 0 10px}.cd.tbd.r{border-left:0;border-radius:0 10px 10px 0}
+.cd.game{background:var(--yellow);color:#111}
+.cd.game .n{color:#111;font-weight:700}
+.cd.game.W{background:color-mix(in srgb,var(--green) 30%,var(--card))}.cd.game.L{background:color-mix(in srgb,var(--red) 25%,var(--card))}.cd.game.D{background:color-mix(in srgb,var(--orange) 30%,var(--card))}
+.cd.game.W .n,.cd.game.L .n,.cd.game.D .n{color:var(--ink)}
+.cd.rest{background:repeating-linear-gradient(135deg,var(--fill) 0 4px,transparent 4px 8px)}
+.cd .x{font-size:10px;font-weight:600;line-height:1.1}
+.cd .x.r{color:var(--ink2);font-weight:500}
+.cd .x.sc{font:700 11px var(--round)}
+.calleg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink2);margin:10px 4px 0}
+.calleg i{display:inline-block;width:14px;height:12px;border-radius:4px;margin-right:4px;vertical-align:-2px}
 /* ---- Plantilla ---- */
 .squad{background:#121212;color:#fff;border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:2px}
 .sq{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 44px;align-items:center;gap:8px;padding:9px 2px;border-top:.5px solid #2c2c2e}
@@ -358,9 +382,9 @@ function start(DATA){
   /* Nuestros partidos */
   const ours=J.map(([j,f,ms])=>{
     const m=ms.find(x=>x[0]===US||x[1]===US);
-    if(!m) return {j,f,rest:true};
+    if(!m) return {j,f,cf:f,rest:true};
     const d=DET[j]||{}, home=m[0]===US;
-    return {j,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,home,opp:home?m[1]:m[0],
+    return {j,cf:f,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,home,opp:home?m[1]:m[0],
       g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2]};
   });
   const kind=o=>!o.g?null:o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D";
@@ -539,10 +563,11 @@ function start(DATA){
   }
 
   /* ---------- TEMPORADA: línea de tiempo ---------- */
-  let filtro="todo";
+  let filtro="todo",vista="linea",mes=null;
   function drawCal(){
+    if(vista==="mes")return drawMonth();
     const list=ours.map((o,i)=>({o,i})).filter(({o})=>filtro==="todo"||(!o.rest&&(filtro==="casa"?o.home:!o.home)));
-    document.getElementById("p-cal").innerHTML=`<h2>Nuestro camino</h2>
+    document.getElementById("p-cal").innerHTML=vistaSel()+`<h2>Nuestro camino</h2>
       <div class="seg2" role="group" aria-label="Filtrar partidos">${[["todo","Todo"],["casa","En casa"],["fuera","Fuera"]].map(([k,t])=>`<button data-f="${k}" aria-pressed="${filtro===k}">${t}</button>`).join("")}</div>
       <div class="tl">`+list.map(({o,i})=>{
         if(o.rest)return `<div class="tli"><span class="dot"></span><div class="tc future"><div class="m1"><span>J${o.j} · ${fmt(o.f)}</span></div><div class="m2"><span class="nm">Descanso</span></div></div></div>`;
@@ -555,7 +580,58 @@ function start(DATA){
           <div class="m2"><span class="nm">${shirt(o.opp,24)}${esc(sn(L))} – ${esc(sn(V))}</span><span class="sc">${o.raw?o.raw[0]+"-"+o.raw[1]:o.hora&&isN?o.hora:""}</span></div>${chips}</div></button>`;
       }).join("")+`</div><p class="note">Toca un partido para verlo en Inicio con todos sus detalles.</p>`;
     document.querySelectorAll("#p-cal .tli[data-i]").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;drawHero();drawCal();go("home");window.scrollTo({top:0,behavior:"smooth"})});
-    document.querySelectorAll("#p-cal .seg2 button").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;drawCal()});
+    document.querySelectorAll("#p-cal .seg2 button[data-f]").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;drawCal()});
+    bindVista();
+  }
+  function vistaSel(){return `<div class="seg2" role="group" aria-label="Vista" style="margin-top:18px">${[["linea","Lista"],["mes","Calendario"]].map(([k,t])=>`<button data-v="${k}" aria-pressed="${vista===k}">${t}</button>`).join("")}</div>`}
+  function bindVista(){document.querySelectorAll("#p-cal .seg2 button[data-v]").forEach(b=>b.onclick=()=>{vista=b.dataset.v;try{localStorage.setItem("vista",vista)}catch(e){}drawCal()})}
+  try{const v=localStorage.getItem("vista");if(v==="mes"||v==="linea")vista=v}catch(e){}
+
+  /* Calendario mensual: fin de semana marcado hasta que hay día y hora oficial */
+  const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  function marcas(){
+    const M={};
+    ours.forEach((o,i)=>{
+      const sat=dOf(o.cf),sun=new Date(sat);sun.setDate(sat.getDate()+1);
+      if(o.rest){M[iso(sat)]={t:"rest",o,i,side:"l"};M[iso(sun)]={t:"rest",o,i,side:"r"};return}
+      const oficial=!!(o.raw||o.hora);
+      if(oficial){M[o.f]={t:"game",o,i}}
+      else{M[iso(sat)]={t:"tbd",o,i,side:"l",shirt:true};M[iso(sun)]={t:"tbd",o,i,side:"r"}}
+    });
+    return M;
+  }
+  function drawMonth(){
+    const M=marcas();
+    if(!mes){const n=ours[nextIdx]?dOf(ours[nextIdx].cf):today;mes=new Date(n.getFullYear(),n.getMonth(),1)}
+    const first=new Date(mes),start=new Date(first);start.setDate(1-((first.getDay()+6)%7));
+    const last=new Date(first.getFullYear(),first.getMonth()+1,0);
+    const cells=[];for(let d=new Date(start);d<=last||((d.getDay()+6)%7)!==0;d.setDate(d.getDate()+1))cells.push(new Date(d));
+    const minM=dOf(ours[0].cf),maxM=dOf(ours[ours.length-1].cf);
+    const canPrev=first>new Date(minM.getFullYear(),minM.getMonth(),1),canNext=first<new Date(maxM.getFullYear(),maxM.getMonth(),1);
+    const body=cells.map(d=>{
+      const k=iso(d),m=M[k],out=d.getMonth()!==first.getMonth(),we=d.getDay()===0||d.getDay()===6;
+      let cls="cd"+(out?" out":"")+(k===iso(today)?" today":"")+(we?" we":""),inner="";
+      if(m&&!out){
+        if(m.t==="rest"){cls+=" rest";inner=m.side==="l"?`<span class="x r">Descanso</span>`:`<span class="x r">J${m.o.j}</span>`}
+        else if(m.t==="tbd"){cls+=" tbd "+m.side;inner=m.shirt?`${shirt(m.o.opp,26)}<span class="x">${m.o.home?"Casa":"Fuera"}</span>`:`<span class="x r">J${m.o.j}</span><span class="x r">¿sáb o dom?</span>`}
+        else{const o=m.o,kd=kind(o);cls+=" game"+(kd?" "+kd:"");inner=`${shirt(o.opp,26)}<span class="x${o.raw?" sc":""}">${o.raw?o.raw[0]+"-"+o.raw[1]:o.hora||""}</span>`}
+      }
+      const tag=m&&!out&&m.t!=="rest"?"button":"div";
+      return `<${tag} class="${cls}"${tag==="button"?` data-i="${m.i}" aria-label="Jornada ${m.o.j} contra ${esc(sn(m.o.opp))}"`:""}><span class="n">${d.getDate()}</span>${inner}</${tag}>`;
+    }).join("");
+    document.getElementById("p-cal").innerHTML=vistaSel()+`<h2>Calendario</h2>
+      <div class="mhead"><button class="round" id="mp" aria-label="Mes anterior" ${canPrev?"":"disabled"}>${ico.left}</button><div class="t">${first.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</div><button class="round" id="mn" aria-label="Mes siguiente" ${canNext?"":"disabled"}>${ico.right}</button></div>
+      <div class="cal"><div class="dow">${["L","M","X","J","V","S","D"].map(x=>`<span>${x}</span>`).join("")}</div><div class="days">${body}</div></div>
+      <div class="calleg"><span><i style="background:color-mix(in srgb,var(--yellow) 30%,transparent);border:1.5px dashed var(--yellow)"></i>Fin de semana de partido (día por confirmar)</span><span><i style="background:var(--yellow)"></i>Día y hora oficiales</span><span><i style="background:repeating-linear-gradient(135deg,var(--fill) 0 3px,transparent 3px 6px)"></i>Descansamos</span></div>
+      <p class="note">Cuando la RFFM publica el día y la hora (normalmente el lunes de esa semana), el partido deja de ocupar todo el fin de semana y aparece solo en su día. Toca un partido para verlo en Inicio.</p>`;
+    document.getElementById("mp").onclick=()=>{mes=new Date(mes.getFullYear(),mes.getMonth()-1,1);drawMonth()};
+    document.getElementById("mn").onclick=()=>{mes=new Date(mes.getFullYear(),mes.getMonth()+1,1);drawMonth()};
+    document.querySelectorAll("#p-cal .cd[data-i]").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;drawHero();go("home");window.scrollTo({top:0,behavior:"smooth"})});
+    bindVista();
+    (function(){let x0=null;const c=document.querySelector("#p-cal .cal");
+      c.addEventListener("touchstart",e=>{x0=e.touches[0].clientX},{passive:true});
+      c.addEventListener("touchend",e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;
+        if(dx<-50&&canNext){mes=new Date(mes.getFullYear(),mes.getMonth()+1,1);drawMonth()}else if(dx>50&&canPrev){mes=new Date(mes.getFullYear(),mes.getMonth()-1,1);drawMonth()}},{passive:true});})();
   }
 
   /* ---------- TABLA: barras, duelo, tabla completa, cuadro y horarios ---------- */
