@@ -295,7 +295,7 @@ function start(DATA){
     let html="";
     const nomC=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return capW((no?no.split(" ")[0]+" ":"")+ap.split(" ")[0])};
     if(o.raw&&o.goles){
-      html+=`<div class="h2h"><div class="hd">Goles</div>`+(o.goles.length?o.goles.map(g=>`<div class="r"><span>${g.nuestro?"<b>"+esc(nomC(g.nombre))+"</b>":esc(nomC(g.nombre))+` <small style="color:var(--hero-ink2)">(${esc(sn(o.opp))})</small>`}${g.propia?' <small style="color:var(--hero-ink2)">en propia</small>':""}</span><b class="${g.nuestro?"W":"L"}">${g.min!=null?g.min+"'":""}</b></div>`).join(""):`<div class="r"><span>Sin goles</span></div>`)+`</div>`;
+      html+=`<div class="h2h"><div class="hd">Goles</div>`+(o.goles.length?o.goles.map(g=>`<div class="r"><span>${g.propia?esc(nomC(g.nombre))+' <small style="color:var(--hero-ink2)">en propia puerta</small>':g.nuestro?"<b>"+esc(nomC(g.nombre))+"</b>":esc(nomC(g.nombre))+` <small style="color:var(--hero-ink2)">(${esc(sn(o.opp))})</small>`}</span><b class="${g.nuestro?"W":"L"}">${g.min!=null?g.min+"'":""}</b></div>`).join(""):`<div class="r"><span>Sin goles</span></div>`)+`</div>`;
     }
     if(o.raw&&o.conv&&o.conv.length){
       const scorers=new Set((o.goles||[]).filter(g=>g.nuestro&&!g.propia).map(g=>g.nombre));
