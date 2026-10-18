@@ -2,7 +2,7 @@ name: Actualizar datos RFFM
 
 on:
   schedule:
-    - cron: "17 */6 * * *"   # cada 6 horas
+    - cron: "17 */2 * * *"   # cada 2 horas
     - cron: "3 7 * * 1"      # lunes 9:03 en invierno (la RFFM publica los horarios a las 9:00)
     - cron: "3 8 * * 1"      # lunes 9:03 en verano / 10:03 en invierno, por si acaso
   workflow_dispatch:          # botón para lanzarlo a mano

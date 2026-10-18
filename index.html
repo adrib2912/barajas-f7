@@ -235,7 +235,8 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .cal .dow span:nth-child(n+6){color:var(--ink)}
 .cd{min-height:64px;border-radius:10px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;text-align:center;width:100%}
 .cd .n{font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink2)}
-.cd.out{visibility:hidden}
+.cd.out{opacity:.38}
+.cd.out .n{font-weight:400}
 .cd.today .n{background:var(--red);color:#fff;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;font-weight:700}
 .cd.we{background:color-mix(in srgb,var(--fill) 60%,transparent)}
 .cd.tbd{background:color-mix(in srgb,var(--yellow) 22%,transparent);border:1.5px dashed color-mix(in srgb,var(--yellow) 85%,var(--ink) 15%)}
@@ -629,12 +630,12 @@ function start(DATA){
     const body=cells.map(d=>{
       const k=iso(d),m=M[k],out=d.getMonth()!==first.getMonth(),we=d.getDay()===0||d.getDay()===6;
       let cls="cd"+(out?" out":"")+(k===iso(today)?" today":"")+(we?" we":""),inner="";
-      if(m&&!out){
+      if(m){
         if(m.t==="rest"){cls+=" rest";inner=m.side==="l"?`<span class="x r">Descanso</span>`:`<span class="x r">J${m.o.j}</span>`}
         else if(m.t==="tbd"){cls+=" tbd "+m.side;inner=m.shirt?`${shirt(m.o.opp,26)}<span class="x">${m.o.home?"Casa":"Fuera"}</span>`:`<span class="x r">J${m.o.j}</span><span class="x r">¿sáb o dom?</span>`}
         else{const o=m.o,kd=kind(o);cls+=" game"+(kd?" "+kd:"");inner=`${shirt(o.opp,26)}<span class="x${o.raw?" sc":""}">${o.raw?o.raw[0]+"-"+o.raw[1]:o.hora||""}</span>`}
       }
-      const tag=m&&!out&&m.t!=="rest"?"button":"div";
+      const tag=m&&m.t!=="rest"?"button":"div";
       return `<${tag} class="${cls}"${tag==="button"?` data-i="${m.i}" aria-label="Jornada ${m.o.j} contra ${esc(sn(m.o.opp))}"`:""}><span class="n">${d.getDate()}</span>${inner}</${tag}>`;
     }).join("");
     document.getElementById("p-cal").innerHTML=vistaSel()+`<h2>Calendario <span style="font-size:15px;font-weight:600;color:var(--ink2)">· Temporada 2026/2027</span></h2>
