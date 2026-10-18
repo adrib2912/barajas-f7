@@ -432,6 +432,11 @@ function start(DATA){
     return {j,cf:f,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,camb:(d.cambios||[]).slice(-1)[0]||null,home,opp:home?m[1]:m[0],
       g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2]};
   });
+  /* ¿Ya tiene día y hora oficiales? Si no, se habla del fin de semana entero */
+  const oficial=o=>!!(o.raw||o.hora);
+  const finde=o=>{const a=dOf(o.cf),b=new Date(a);b.setDate(a.getDate()+1);return [a,b]};
+  const rango=(o,largo)=>{const [a,b]=finde(o);const m=d=>d.toLocaleDateString("es-ES",{month:largo?"long":"short"});
+    return a.getMonth()===b.getMonth()?`${a.getDate()}–${b.getDate()} ${m(b)}`:`${a.getDate()} ${m(a)} – ${b.getDate()} ${m(b)}`};
   const kind=o=>!o.g?null:o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D";
   const kindTxt={W:"Victoria",L:"Derrota",D:"Empate"};
   const nextIdx=Math.max(0,ours.findIndex(o=>!o.rest&&!o.g&&dOf(o.f)>=today));
@@ -480,8 +485,8 @@ function start(DATA){
     if(o.hora){const [hh,mm]=o.hora.split(":");const st=`${d}T${hh.padStart(2,"0")}${mm}00`;const e=new Date(dOf(o.f));e.setHours(+hh+1,+mm);
       const en=`${e.getFullYear()}${String(e.getMonth()+1).padStart(2,"0")}${String(e.getDate()).padStart(2,"0")}T${String(e.getHours()).padStart(2,"0")}${String(e.getMinutes()).padStart(2,"0")}00`;
       when=`DTSTART;TZID=Europe/Madrid:${st}\r\nDTEND;TZID=Europe/Madrid:${en}`}
-    else{const e=new Date(dOf(o.f));e.setDate(e.getDate()+1);when=`DTSTART;VALUE=DATE:${d}\r\nDTEND;VALUE=DATE:${e.getFullYear()}${String(e.getMonth()+1).padStart(2,"0")}${String(e.getDate()).padStart(2,"0")}`}
-    const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Barajas F7//ES\r\nBEGIN:VEVENT\r\nUID:barajas-j${o.j}-${d}@barajas-f7\r\nSUMMARY:${L} - ${V} (J${o.j})\r\n${when}\r\nLOCATION:${p.name}${p.sub?", "+p.sub:""}\r\nURL:${p.url}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
+    else{const [sa,su]=finde(o);const e=new Date(su);e.setDate(e.getDate()+1);const d2=iso(sa).replace(/-/g,"");when=`DTSTART;VALUE=DATE:${d2}\r\nDTEND;VALUE=DATE:${e.getFullYear()}${String(e.getMonth()+1).padStart(2,"0")}${String(e.getDate()).padStart(2,"0")}`}
+    const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Barajas F7//ES\r\nBEGIN:VEVENT\r\nUID:barajas-j${o.j}-${d}@barajas-f7\r\nSUMMARY:${L} - ${V} (J${o.j})${o.hora?"":" · día por confirmar"}\r\n${when}\r\nLOCATION:${p.name}${p.sub?", "+p.sub:""}\r\nURL:${p.url}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
     return URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
   }
 
@@ -557,14 +562,16 @@ function start(DATA){
     const dots=`<div class="dots">${ours.map((_,i)=>`<i class="${i===sel?"on":""}"></i>`).slice(Math.max(0,sel-6),sel+7).join("")}</div>`;
     if(o.rest){h.innerHTML=head+`<div class="match"><div></div><div class="mid"><div class="big">Descanso</div><div class="small">${fmt(o.f,{weekday:"long",day:"numeric",month:"long"})}</div></div><div></div></div>`+dots;bindHero();return}
     const L=o.home?US:o.opp, V=o.home?o.opp:US;
-    const days=Math.round((dOf(o.f)-today)/864e5);
+    const days=Math.round(((oficial(o)?dOf(o.f):finde(o)[0])-today)/864e5);
     let mid,count="",pred="",btns="";
     if(o.raw){const k=kind(o);mid=`<div class="big">${o.raw[0]} - ${o.raw[1]}</div><div class="small">${fmt(o.f)}</div><span class="pill ${k}">${kindTxt[k]}</span>`}
     else{
       const when=days<0?"Sin resultado":days===0?"Hoy":days===1?"Mañana":`En ${days} días`;
       const cb=o.camb&&o.camb.antes.hora?o.camb.antes:null;
-      mid=`${cb?`<div class="old">${cb.hora} · ${fmt(cb.fecha)}</div>`:""}<div class="big">${o.hora||fmt(o.f,{day:"numeric",month:"short"})}</div><div class="small">${o.hora?fmt(o.f):"Hora por confirmar"}</div><span class="pill ${cb?"chg":isNext?"next":""}">${cb?"Cambio de horario":when}</span>`;
-      if(isNext&&days>=0) count=`<div class="count"><div class="n">${days===0?"HOY":days}</div><div class="w">${days===0?"¡día de partido!":days===1?"día para<br>el partido":"días para<br>el partido"}</div></div>`;
+      mid=oficial(o)?`${cb?`<div class="old">${cb.hora} · ${fmt(cb.fecha)}</div>`:""}<div class="big">${o.hora}</div><div class="small">${fmt(o.f)}</div><span class="pill ${cb?"chg":isNext?"next":""}">${cb?"Cambio de horario":when}</span>`
+        :`<div class="small" style="margin-bottom:4px">Fin de semana</div><div class="big" style="font-size:24px;white-space:nowrap">${rango(o)}</div><div class="small">Día y hora por confirmar</div><span class="pill ${isNext?"next":""}">${when}</span>`;
+      if(isNext&&days>=0) count=oficial(o)?`<div class="count"><div class="n">${days===0?"HOY":days}</div><div class="w">${days===0?"¡día de partido!":days===1?"día para<br>el partido":"días para<br>el partido"}</div></div>`
+        :`<div class="count"><div class="n">${days<=0?"YA":days}</div><div class="w">${days<=0?"es el finde<br>del partido":days===1?"día para el finde<br>del partido":"días para el finde<br>del partido"}</div></div>`;
       if(!o.hora){const pt=patron(L);if(pt){
         pred=pt.fiable?`<div class="pred">${esc(sn(L))} suele jugar en casa el <b>${pt.lab}</b> (normalmente ${pt.hora}) · ${pt.nl} de ${pt.n} partidos</div>`
           :`<div class="pred">Pocos datos de ${esc(sn(L))} en casa (${pt.n} partido${pt.n>1?"s":""}): ${pt.todos.map(x=>fmt(x.f,{weekday:"short"})+" "+x.h).join(", ")}</div>`}}
@@ -630,7 +637,7 @@ function start(DATA){
         const chips=Object.keys(cnt).length?`<div class="chips">${Object.entries(cnt).map(([n,c])=>`<span class="chip">${esc(nomC(n))}${c>1?" ×"+c:""}</span>`).join("")}</div>`:"";
         const L=o.home?US:o.opp,V=o.home?o.opp:US;
         return `<button class="tli" data-i="${i}"><span class="dot ${k||(isN?"next":"")}"></span><div class="tc${isN?" next":""}${!o.g&&!isN?" future":""}${i===sel?" sel":""}">
-          <div class="m1"><span>J${o.j} · ${fmt(o.f)} · ${o.home?"En casa":"Fuera"}</span><span>${!o.raw&&o.camb?'<b style="color:var(--orange)">Cambio de horario</b>':k?kindTxt[k]:isN?"Próximo":o.hora||""}</span></div>
+          <div class="m1"><span>J${o.j} · ${oficial(o)?fmt(o.f):"finde "+rango(o)} · ${o.home?"En casa":"Fuera"}</span><span>${!o.raw&&o.camb?'<b style="color:var(--orange)">Cambio de horario</b>':k?kindTxt[k]:isN?"Próximo":o.hora||""}</span></div>
           <div class="m2"><span class="nm">${shirt(o.opp,24)}${esc(sn(L))} – ${esc(sn(V))}</span><span class="sc">${o.raw?o.raw[0]+"-"+o.raw[1]:o.hora&&isN?o.hora:""}</span></div>${chips}</div></button>`;
       }).join("")+`</div><p class="note">Toca un partido para verlo en Inicio con todos sus detalles.</p>`;
     document.querySelectorAll("#p-cal .tli[data-i]").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;drawHero();drawCal();go("home");window.scrollTo({top:0,behavior:"smooth"})});
