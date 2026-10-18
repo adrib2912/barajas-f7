@@ -17,7 +17,8 @@
 :root{
   --bg:#f2f2f7; --card:#ffffff; --ink:#000000; --ink2:#3c3c4399; --ink3:#3c3c434d; --sep:#c6c6c8;
   --fill:#7676801f; --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
-  --yellow:#f5c400; --hero:#121212; --hero-ink:#ffffff; --hero-ink2:#ffffffa6;
+  --yellow:#f5c400; --hero:#ffffff; --hero-ink:#000000; --hero-ink2:#3c3c4399;
+  --hf:rgba(0,0,0,.045); --hf2:rgba(0,0,0,.07); --hf3:rgba(0,0,0,.18); --acc:#a37f00;
   --us:#f5c40026; --kit:#e5e5ea; --kit-line:#8e8e93;
   --bar:rgba(249,249,249,.86);
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
@@ -26,11 +27,11 @@
 :root[data-theme="dark"]{
   --bg:#000000; --card:#1c1c1e; --ink:#ffffff; --ink2:#ebebf599; --ink3:#ebebf54d; --sep:#38383a;
   --fill:#7676803d; --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
-  --hero:#1c1c1e; --us:#f5c4002e; --kit:#3a3a3c; --kit-line:#8e8e93; --bar:rgba(22,22,24,.86); color-scheme:dark}
+  --hero:#1c1c1e; --hero-ink:#ffffff; --hero-ink2:#ffffffa6; --hf:rgba(255,255,255,.08); --hf2:rgba(255,255,255,.13); --hf3:rgba(255,255,255,.25); --acc:#f5c400; --us:#f5c4002e; --kit:#3a3a3c; --kit-line:#8e8e93; --bar:rgba(22,22,24,.86); color-scheme:dark}
 @media (prefers-color-scheme: dark){:root[data-theme="auto"]{
   --bg:#000000; --card:#1c1c1e; --ink:#ffffff; --ink2:#ebebf599; --ink3:#ebebf54d; --sep:#38383a;
   --fill:#7676803d; --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
-  --hero:#1c1c1e; --us:#f5c4002e; --kit:#3a3a3c; --kit-line:#8e8e93; --bar:rgba(22,22,24,.86); color-scheme:dark}}
+  --hero:#1c1c1e; --hero-ink:#ffffff; --hero-ink2:#ffffffa6; --hf:rgba(255,255,255,.08); --hf2:rgba(255,255,255,.13); --hf3:rgba(255,255,255,.25); --acc:#f5c400; --us:#f5c4002e; --kit:#3a3a3c; --kit-line:#8e8e93; --bar:rgba(22,22,24,.86); color-scheme:dark}}
 html[data-size="g"] .wrap{zoom:1.13}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -56,8 +57,8 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
   background:repeating-linear-gradient(90deg,var(--yellow) 0 14px,#111 14px 28px)}
 .hero .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
 .hero .lbl{font-size:13px;font-weight:600;color:var(--hero-ink2);text-align:center;flex:1}
-.hero .lbl b{color:var(--yellow);font-weight:700}
-.arrow{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.12);color:#fff;flex:none}
+.hero .lbl b{color:var(--acc);font-weight:700}
+.arrow{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--hf2);color:var(--hero-ink);flex:none}
 .arrow:disabled{opacity:.3}
 .arrow svg{width:16px;height:16px}
 .match{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;margin-top:14px}
@@ -69,26 +70,26 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .mid{text-align:center;min-width:92px}
 .mid .big{font:700 34px/1 var(--round);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .mid .small{font-size:13px;color:var(--hero-ink2);margin-top:4px}
-.pill{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.14);color:#fff}
+.pill{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--hf2);color:var(--hero-ink)}
 .pill.W{background:var(--green);color:#fff}.pill.L{background:var(--red);color:#fff}.pill.D{background:var(--orange);color:#fff}
 .old{font-size:13px;color:var(--hero-ink2);text-decoration:line-through;margin-bottom:4px}
-.pill.prov{background:rgba(255,255,255,.14);color:var(--yellow);border:1px dashed var(--yellow)}
+.pill.prov{background:var(--hf2);color:var(--acc);border:1px dashed var(--acc)}
 .pill.chg{background:var(--orange);color:#fff}
 .gm .when2{grid-column:1/-1;text-align:center;font-size:12px;color:var(--ink2);margin-top:-2px}
 .gm .when2 s{opacity:.7;margin-right:4px}
 .gm .when2 b{color:var(--orange);font-weight:600}
 .pill.next{background:var(--yellow);color:#111}
-.place{display:flex;align-items:center;gap:10px;margin-top:16px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);color:#fff}
-.place svg{width:18px;height:18px;flex:none;color:var(--yellow)}
+.place{display:flex;align-items:center;gap:10px;margin-top:16px;padding:10px 12px;border-radius:14px;background:var(--hf);color:var(--hero-ink)}
+.place svg{width:18px;height:18px;flex:none;color:var(--acc)}
 .place .t{min-width:0;font-size:14px;line-height:1.25}
 .place .t span{display:block;font-size:12px;color:var(--hero-ink2)}
-.place .go{margin-left:auto;font-size:14px;font-weight:600;color:var(--yellow);flex:none}
+.place .go{margin-left:auto;font-size:14px;font-weight:600;color:var(--acc);flex:none}
 .extra{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.wx{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);font-size:14px}
-.wx svg{width:26px;height:26px;color:var(--yellow);flex:none}
+.wx{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--hf);font-size:14px}
+.wx svg{width:26px;height:26px;color:var(--acc);flex:none}
 .wx .t span{display:block;font-size:12px;color:var(--hero-ink2)}
 .wx .deg{margin-left:auto;font:700 22px var(--round)}
-.h2h{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);font-size:14px}
+.h2h{padding:10px 12px;border-radius:14px;background:var(--hf);font-size:14px}
 .h2h .hd{font-size:12px;font-weight:600;color:var(--hero-ink2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
 .h2h .r{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
 .h2h .r b{font-family:var(--round)}
@@ -101,15 +102,15 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .ant{margin:0 0 6px;font-size:13px;color:var(--hero-ink2)}
 .ant summary{cursor:pointer;list-style:none}
 .ant summary::-webkit-details-marker{display:none}
-.ant summary::after{content:" · ver convocadas";color:var(--yellow)}
+.ant summary::after{content:" · ver convocadas";color:var(--acc)}
 .ant[open] summary::after{content:" · ocultar"}
 .ant .chips{margin-top:6px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.1)}
+.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--hf2)}
 .chip .dn{font:700 12px var(--round);margin-right:5px;opacity:.75}
 .chip.gol{background:var(--yellow);color:#111;font-weight:600}
 .dots{display:flex;justify-content:center;gap:5px;margin-top:14px}
-.dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25)}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--hf3)}
 .dots i.on{background:var(--yellow)}
 
 /* Secciones tipo lista agrupada */
@@ -177,14 +178,14 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 
 /* ---- Inicio: cuenta atrás y widgets ---- */
 .count{display:flex;align-items:center;gap:12px;margin-top:12px}
-.count .n{font:800 58px/1 var(--round);color:var(--yellow);font-variant-numeric:tabular-nums}
-.count .w{font-size:17px;font-weight:600;color:var(--hero-ink2);line-height:1.2}
+.count .n{font:800 58px/1 var(--round);color:var(--acc);font-variant-numeric:tabular-nums}
+.count .cw{font-size:17px;font-weight:600;color:var(--hero-ink2);line-height:1.2}
 .btns{display:flex;gap:8px;margin-top:10px}
 .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:14px;background:var(--yellow);color:#111;font-weight:600;font-size:15px}
-.btn.ghost{background:rgba(255,255,255,.1);color:#fff;flex:none;width:46px}
+.btn.ghost{background:var(--hf2);color:var(--hero-ink);flex:none;width:46px}
 .btn svg{width:18px;height:18px}
 .pred{font-size:13px;color:var(--hero-ink2);text-align:center;margin-top:6px;line-height:1.35}
-.pred b{color:var(--yellow);font-weight:600}
+.pred b{color:var(--acc);font-weight:600}
 .wg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .w{background:var(--card);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .w.wide{grid-column:1/-1}
@@ -637,8 +638,8 @@ function start(DATA){
       mid=oficial(o)?`${cb?`<div class="old">${cb.hora} · ${fmt(cb.fecha)}</div>`:""}<div class="big">${o.hora}</div><div class="small">${fmt(o.f)}</div><span class="pill ${cb?"chg":isNext?"next":""}">${cb?"Cambio de horario":when}</span>`
         :provisional(o)?`<div class="small" style="margin-bottom:4px">Fin de semana</div><div class="big" style="font-size:24px;white-space:nowrap">${rango(o)}</div><div class="small">Previsto: ${fmt(o.f,{weekday:"short"})} a las ${o.hora}</div><span class="pill prov">Sin confirmar</span>`
         :`<div class="small" style="margin-bottom:4px">Fin de semana</div><div class="big" style="font-size:24px;white-space:nowrap">${rango(o)}</div><div class="small">Día y hora por confirmar</div><span class="pill ${isNext?"next":""}">${when}</span>`;
-      if(isNext&&days>=0) count=oficial(o)?`<div class="count"><div class="n">${days===0?"HOY":days}</div><div class="w">${days===0?"¡día de partido!":days===1?"día para<br>el partido":"días para<br>el partido"}</div></div>`
-        :`<div class="count"><div class="n">${days<=0?"YA":days}</div><div class="w">${days<=0?"es el finde<br>del partido":days===1?"día para el finde<br>del partido":"días para el finde<br>del partido"}</div></div>`;
+      if(isNext&&days>=0) count=oficial(o)?`<div class="count"><div class="n">${days===0?"HOY":days}</div><div class="cw">${days===0?"¡día de partido!":days===1?"día para<br>el partido":"días para<br>el partido"}</div></div>`
+        :`<div class="count"><div class="n">${days<=0?"YA":days}</div><div class="cw">${days<=0?"es el finde<br>del partido":days===1?"día para el finde<br>del partido":"días para el finde<br>del partido"}</div></div>`;
       if(!o.hora){const pt=patron(L);if(pt){
         pred=pt.fiable?`<div class="pred">${esc(sn(L))} suele jugar en casa el <b>${pt.lab}</b> (normalmente ${pt.hora}) · ${pt.nl} de ${pt.n} partidos</div>`
           :`<div class="pred">Pocos datos de ${esc(sn(L))} en casa (${pt.n} partido${pt.n>1?"s":""}): ${pt.todos.map(x=>fmt(x.f,{weekday:"short"})+" "+x.h).join(", ")}</div>`}}
