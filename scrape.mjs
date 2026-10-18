@@ -20,7 +20,7 @@ const page = await browser.newPage({
 const api = [];
 page.on("response", async (r) => {
   const ct = r.headers()["content-type"] || "";
-  if (!ct.includes("json")) return;
+  if (!ct.includes("json") || !r.url().includes("rffm.es/api")) return;
   try {
     const body = await r.json();
     api.push({ url: r.url(), body });
@@ -101,11 +101,17 @@ try {
   }
 
   // Guardamos un acta de ejemplo para ver si trae campo y hora
-  const conActa = jornadas.flatMap((j) => j.partidos).find((p) => p.acta);
+  const conActa =
+    jornadas.flatMap((j) => j.partidos).find((p) => p.acta && !p.g && (p.local + p.visit).includes("BARAJAS")) ||
+    jornadas.flatMap((j) => j.partidos).find((p) => p.acta);
   if (conActa) {
     try {
       await page.goto(conActa.acta, { waitUntil: "networkidle", timeout: 60000 });
-      await page.waitForTimeout(2000);
+      await page
+        .waitForFunction(() => /ARBITR|CAMPO|ESTADIO|INSTALACI|HORA/i.test(document.querySelector("main")?.innerText || document.body.innerText.slice(0, 20000)), null, { timeout: 25000 })
+        .catch(() => {});
+      await page.waitForTimeout(5000);
+      fs.writeFileSync(`${DEBUG}/acta-ejemplo.html`, await page.content());
       fs.writeFileSync(`${DEBUG}/acta-ejemplo.txt`, conActa.acta + "\n\n" + (await page.evaluate(() => document.body.innerText)));
     } catch (e) {
       fs.writeFileSync(`${DEBUG}/acta-ejemplo.txt`, "Error: " + e.message);
@@ -121,12 +127,19 @@ try {
   await abrir("goleadores");
   const texto = await page.evaluate(() => document.body.innerText);
   fs.writeFileSync(`${DEBUG}/goleadores.txt`, texto);
-  goleadoras = await page.evaluate(() => {
-    const rows = [...document.querySelectorAll("table tr")];
-    return rows
-      .map((tr) => [...tr.querySelectorAll("td")].map((td) => td.innerText.trim()))
-      .filter((c) => c.length >= 3);
-  });
+  // Bloques: NOMBRE / EQUIPO / Grupo n / goles / (nP)
+  const L = texto.split("\n").map((x) => x.trim()).filter(Boolean);
+  const ini = L.findIndex((x, i) => x === "Jugador" && L[i + 1] === "Equipo");
+  if (ini >= 0) {
+    for (let i = ini + 4; i + 3 < L.length; ) {
+      if (/^Grupo\s/i.test(L[i + 2]) && /^\d+$/.test(L[i + 3])) {
+        const pen = /^\((\d+)P\)$/i.exec(L[i + 4] || "");
+        goleadoras.push({ n: L[i], eq: L[i + 1], g: +L[i + 3], p: pen ? +pen[1] : 0 });
+        i += pen ? 5 : 4;
+      } else if (goleadoras.length) break;
+      else i++;
+    }
+  }
   console.log(`Goleadoras: ${goleadoras.length} filas`);
 } catch (e) {
   console.error("No se pudieron leer las goleadoras:", e.message);

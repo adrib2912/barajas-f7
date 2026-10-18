@@ -69,6 +69,7 @@ td.p{font-weight:700}
 tr.us td{background:var(--us-soft);color:var(--us);font-weight:700}
 tr:last-child td{border-bottom:0}
 .note{font-size:13px;color:var(--muted)}
+.pen{font-size:12px;color:var(--muted);font-weight:500}
 .jsel{display:flex;align-items:center;gap:8px}
 .jsel button{font:700 18px var(--display);width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .jsel .jt{flex:1;text-align:center;font-family:var(--display);font-weight:700;font-size:19px}
@@ -241,8 +242,16 @@ document.querySelectorAll("nav button").forEach(btn=>btn.onclick=()=>{
 });
 try{const t=localStorage.getItem("tab");if(t)document.querySelector(`nav button[data-p="${t}"]`)?.click()}catch(e){}
 
-const G=(DATA.goleadoras||[]).filter(r=>r.length);
-if(G.length){document.getElementById("gol").innerHTML="<tbody>"+G.map(r=>`<tr${r.join(" ").includes("BARAJAS")?' class="us"':""}>${r.map((c,i)=>`<td${i===1||i===2?' class="t"':""}>${esc(c)}</td>`).join("")}</tr>`).join("")+"</tbody>";document.getElementById("golnote").textContent="Según la RFFM."}
+const G=(DATA.goleadoras||[]).filter(r=>r&&r.n);
+if(G.length){
+  const cap=s=>s.toLowerCase().replace(/(^|[\s-])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase());
+  const nom=n=>{const [ap,no]=n.split(",").map(x=>x.trim());return cap((no?no+" ":"")+ap)};
+  const norm=t=>t.replace("VILLAVICIOSA DE ODON B","VILLAVICIOSA DE ODON 'B'");
+  let pos=0,prev=null;
+  document.getElementById("gol").innerHTML=`<thead><tr><th>#</th><th class="t">Jugadora</th><th class="t">Equipo</th><th>Goles</th></tr></thead><tbody>`+
+    G.map((r,i)=>{if(r.g!==prev){pos=i+1;prev=r.g}const eq=norm(r.eq);return `<tr${eq===US?' class="us"':""}><td>${pos}</td><td class="t">${esc(nom(r.n))}${r.p?` <span class="pen">(${r.p} de penalti)</span>`:""}</td><td class="t"><span class="who">${shirt(eq,18)}${esc(sn(eq))}</span></td><td class="p">${r.g}</td></tr>`}).join("")+"</tbody>";
+  document.getElementById("golnote").textContent="Según la RFFM. Las del Barajas aparecen resaltadas.";
+}
 const up=document.getElementById("upd");
 if(DATA.actualizado){const d=new Date(DATA.actualizado);up.textContent="Datos de la RFFM actualizados el "+d.toLocaleString("es-ES",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})+"."}
 }).catch(()=>{document.getElementById("board").innerHTML='<div class="tm">No se han podido cargar los datos. Prueba a recargar la página.</div>'});
