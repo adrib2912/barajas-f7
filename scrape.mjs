@@ -22,6 +22,14 @@ const page = await browser.newPage({
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36",
 });
 
+// Bloqueamos anuncios, imágenes y webs de terceros: va mucho más rápido y no se queda colgado
+await page.route("**/*", (route) => {
+  const req = route.request();
+  const host = new URL(req.url()).hostname;
+  if (!host.endsWith("rffm.es") || ["image", "media", "font"].includes(req.resourceType())) return route.abort();
+  return route.continue();
+});
+
 // Guardamos las respuestas JSON que use la web por dentro (sirven para mejorar esto más adelante)
 const api = [];
 page.on("response", async (r) => {
@@ -34,8 +42,9 @@ page.on("response", async (r) => {
 });
 
 async function abrir(ruta, espera, q = Q) {
-  await page.goto(BASE + ruta + "?" + q, { waitUntil: "networkidle", timeout: 90000 });
+  await page.goto(BASE + ruta + "?" + q, { waitUntil: "domcontentloaded", timeout: 90000 });
   if (espera) await page.waitForFunction((t) => document.body.innerText.includes(t), espera, { timeout: 60000 });
+  if (!espera) await page.waitForFunction(() => /Jugador|Goles|RESULTADOS/i.test(document.body.innerText), null, { timeout: 30000 }).catch(() => {});
   await page.waitForTimeout(1500);
 }
 
@@ -120,7 +129,7 @@ try {
     jornadas.flatMap((j) => j.partidos).find((p) => p.acta);
   if (conActa) {
     try {
-      await page.goto(conActa.acta, { waitUntil: "networkidle", timeout: 60000 });
+      await page.goto(conActa.acta, { waitUntil: "domcontentloaded", timeout: 60000 });
       await page
         .waitForFunction(() => /ARBITR|CAMPO|ESTADIO|INSTALACI|HORA/i.test(document.querySelector("main")?.innerText || document.body.innerText.slice(0, 20000)), null, { timeout: 25000 })
         .catch(() => {});
