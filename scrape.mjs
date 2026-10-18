@@ -183,7 +183,7 @@ async function leerActa(p, intentos = 2, espera = 45000) {
       volcado = true;
       fs.writeFileSync(`${DEBUG}/acta-jugado.txt`, p.acta + "\n\n" + L.slice(iRes >= 0 ? iRes - 4 : 0).join("\n"));
     }
-    let convocadas = null, goles = null, localActa = null;
+    let convocadas = null, goles = null, localActa = null, dorsales = null;
     if (p.g) {
       const lds = await page.evaluate(() => [...document.querySelectorAll('script[type="application/ld+json"]')].map((x) => x.textContent));
       for (const t of lds) {
@@ -197,6 +197,29 @@ async function leerActa(p, intentos = 2, espera = 45000) {
       }
       // El acta manda: a veces el partido se juega con local y visitante cambiados
       const somosLocal = localActa !== null ? localActa : p.local.trim() === "C.D. BARAJAS";
+      // Dorsales: cada fila de jugadoras es [dorsal local, nombre local, nombre visitante, dorsal visitante]
+      dorsales = {};
+      const filas = await page.evaluate(() => {
+        const out = [];
+        const links = [...document.querySelectorAll('a[href^="/fichajugador/"]')];
+        const vistos = new Set();
+        for (const a of links) {
+          let row = a.parentElement;
+          while (row && row.parentElement && row.querySelectorAll('a[href^="/fichajugador/"]').length < 2 && !/^\s*\d+\s*$/.test(row.firstElementChild?.innerText || "")) row = row.parentElement;
+          if (!row || vistos.has(row)) continue;
+          vistos.add(row);
+          out.push(row.innerText.split("\n").map((x) => x.trim()).filter((x) => x && !/^\(\d+'\)$/.test(x)));
+        }
+        return out;
+      });
+      for (const f of filas) {
+        for (const n of convocadas || []) {
+          const i = f.indexOf(n);
+          if (i < 0) continue;
+          const d = somosLocal ? f[i - 1] : f[i + 1];
+          if (/^\d{1,2}$/.test(d || "")) dorsales[n] = +d;
+        }
+      }
       goles = [];
       const G = secciones["GOLES"] || [];
       let prev = [0, 0];
@@ -215,6 +238,7 @@ async function leerActa(p, intentos = 2, espera = 45000) {
     return {
       ...(convocadas ? { convocadas } : {}),
       ...(goles ? { goles } : {}),
+      ...(dorsales && Object.keys(dorsales).length ? { dorsales } : {}),
       fecha: fh ? `${fh[3]}-${fh[2]}-${fh[1]}` : null,
       hora: fh && fh[4] !== "00:00" ? fh[4] : null,
       campo,
@@ -239,7 +263,7 @@ if (ok) {
     .filter((x) => x.p);
   const proximos = nuestros.filter((x) => !x.p.g).slice(0, 3);
   const sinDatos = nuestros.filter((x) => !previo[x.j.j] && !proximos.includes(x)).slice(0, 4);
-  const jugados = nuestros.filter((x) => x.p.g && !(previo[x.j.j] && previo[x.j.j].convocadas) && !sinDatos.includes(x)).slice(0, 6);
+  const jugados = nuestros.filter((x) => x.p.g && !(previo[x.j.j] && previo[x.j.j].dorsales) && !sinDatos.includes(x)).slice(0, 6);
   for (const { j, p } of [...proximos, ...sinDatos, ...jugados]) {
     try {
       const nuevo = await leerActa(p);

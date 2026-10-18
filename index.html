@@ -106,6 +106,7 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .ant .chips{margin-top:6px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:13px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.1)}
+.chip .dn{font:700 12px var(--round);margin-right:5px;opacity:.75}
 .chip.gol{background:var(--yellow);color:#111;font-weight:600}
 .dots{display:flex;justify-content:center;gap:5px;margin-top:14px}
 .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25)}
@@ -476,7 +477,7 @@ function start(DATA){
     const m=ms.find(x=>x[0]===US||x[1]===US);
     if(!m) return {j,f,cf:f,rest:true};
     const d=DET[j]||{}, home=m[0]===US;
-    return {j,cf:f,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,camb:(d.cambios||[]).slice(-1)[0]||null,home,opp:home?m[1]:m[0],
+    return {j,cf:f,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,dors:d.dorsales||{},camb:(d.cambios||[]).slice(-1)[0]||null,home,opp:home?m[1]:m[0],
       g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2]};
   });
   /* ¿Ya tiene día y hora oficiales? Si no, se habla del fin de semana entero */
@@ -581,7 +582,7 @@ function start(DATA){
     }
     if(o.raw&&o.conv&&o.conv.length){
       const scorers=new Set((o.goles||[]).filter(g=>g.nuestro&&!g.propia).map(g=>g.nombre));
-      html+=`<details class="h2h fold"><summary class="hd">Convocadas (${o.conv.length})</summary><div class="chips">`+o.conv.map(n=>`<span class="chip${scorers.has(n)?" gol":""}">${esc(nomC(n))}</span>`).join("")+`</div></details>`;
+      html+=`<details class="h2h fold"><summary class="hd">Convocadas (${o.conv.length})</summary><div class="chips">`+o.conv.slice().sort((a,b)=>(o.dors[a]??99)-(o.dors[b]??99)).map(n=>`<span class="chip${scorers.has(n)?" gol":""}">${o.dors[n]!=null?`<b class="dn">${o.dors[n]}</b>`:""}${esc(nomC(n))}</span>`).join("")+`</div></details>`;
     }
     if(DATA.anterior){
       const {games,tabla}=h2h(o.opp);
@@ -669,8 +670,10 @@ function start(DATA){
 
   /* Goles y partidos de cada jugadora (de las actas de esta temporada) */
   const PL={};
-  ours.forEach(o=>{if(!o.conv)return;o.conv.forEach(n=>{(PL[n]??={n,pj:0,g:0}).pj++});(o.goles||[]).forEach(g=>{if(g.nuestro&&!g.propia)(PL[g.nombre]??={n:g.nombre,pj:0,g:0}).g++})});
+  ours.forEach(o=>{if(!o.conv)return;o.conv.forEach(n=>{const p=(PL[n]??={n,pj:0,g:0,ds:{}});p.pj++;const d=o.dors[n];if(d!=null)p.ds[d]=(p.ds[d]||0)+1});(o.goles||[]).forEach(g=>{if(g.nuestro&&!g.propia)(PL[g.nombre]??={n:g.nombre,pj:0,g:0}).g++})});
   const players=Object.values(PL);
+  players.forEach(p=>{const t=Object.entries(p.ds||{}).sort((a,b)=>b[1]-a[1])[0];p.dorsal=t?+t[0]:null});
+  const DORSAL={};players.forEach(p=>{if(p.dorsal!=null)DORSAL[p.n]=p.dorsal});
 
   /* ---------- INICIO: widgets ---------- */
   function drawWidgets(){
@@ -826,7 +829,7 @@ function start(DATA){
     document.getElementById("p-pla").innerHTML=`<h2>La plantilla</h2><div class="squad">
       <div class="seg2" role="group" aria-label="Ordenar">${[["goles","Goles"],["pj","Partidos"],["az","A–Z"]].map(([k,t])=>`<button data-o="${k}" aria-pressed="${orden===k}">${t}</button>`).join("")}</div>
       <div class="sq h"><span></span><span>Jugadora</span><span style="text-align:center">PJ</span><span style="text-align:center">Goles</span></div>`+
-      (P.length?P.map(p=>`<div class="sq"><span class="av${p.g?" g":""}">${esc(ini(p.n))}</span><span class="nm">${esc(nomL(p.n))}</span><span class="pj">${p.pj}</span><span class="n${p.g?"":" z"}">${p.g}</span></div>`).join(""):`<div class="sq"><span></span><span class="nm">Aún no hay actas con convocatoria</span></div>`)+
+      (P.length?P.map(p=>`<div class="sq"><span class="av${p.g?" g":""}">${p.dorsal!=null?p.dorsal:esc(ini(p.n))}</span><span class="nm">${esc(nomL(p.n))}</span><span class="pj">${p.pj}</span><span class="n${p.g?"":" z"}">${p.g}</span></div>`).join(""):`<div class="sq"><span></span><span class="nm">Aún no hay actas con convocatoria</span></div>`)+
       `</div><p class="note">PJ = partidos convocada.</p>`+
       (G.length?`<h2>Goleadoras de la liga</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Jugadora</th><th>Goles</th></tr></thead><tbody>`+
       G.map((r,i)=>{if(r.g!==prev){pos=i+1;prev=r.g}const eq=norm(r.eq);return `<tr${eq===US?' class="us"':""}><td class="pos">${pos}</td><td class="t"><span class="who">${shirt(eq,22)}<span>${esc(nomL(r.n))}<br><small style="color:var(--ink2)">${esc(sn(eq))}</small></span></span></td><td class="p">${r.g}</td></tr>`}).join("")+
