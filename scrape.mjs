@@ -237,7 +237,7 @@ if (ok) {
 
 // ---------- TEMPORADA ANTERIOR (se lee una vez y se guarda) ----------
 const base = (t) => t.trim().replace(/\s+'[A-Z]'$/, "");
-if (ok && !(anterior && anterior.v === 2)) {
+if (ok && !(anterior && anterior.v === 3)) {
   try {
     const equiposHoy = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])));
     await abrir("calendario", "VER ACTA");
@@ -265,24 +265,24 @@ if (ok && !(anterior && anterior.v === 2)) {
             grupo: g.nombre,
             jornadas: js.map((j) => [
               j.j, j.fecha,
-              j.partidos.map((p) => ((p.local + p.visit).includes("C.D. BARAJAS") ? [p.local, p.visit, p.g, p.acta] : [p.local, p.visit, p.g])),
+              j.partidos.map((p) => [p.local, p.visit, p.g, p.acta]),
               j.descansa,
             ]),
           });
       }
     }
-    anterior = { v: 2, temporada: "2025-2026", grupos, actas: (anterior && anterior.actas) || {} };
+    anterior = { v: 3, temporada: "2025-2026", grupos, actas: (anterior && anterior.actas) || {} };
   } catch (e) {
     console.error("No se pudo leer la temporada anterior:", e.stack || e.message);
   }
 }
 // Actas de la temporada pasada: nuestros partidos contra rivales de este año (8 por pasada)
-if (ok && anterior && anterior.v === 2) {
+if (ok && anterior && anterior.v >= 2) {
   const baseHoy = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [base(p.local), base(p.visit)])));
   anterior.actas = anterior.actas || {};
   const pendientes = anterior.grupos
     .flatMap((g) => g.jornadas.flatMap((j) => j[2]))
-    .filter((m) => m[3] && m[2] && !(anterior.actas[m[3]] && anterior.actas[m[3]].v === 2) && baseHoy.has(base(m[0] === "C.D. BARAJAS" ? m[1] : m[0])))
+    .filter((m) => m[3] && m[2] && (m[0] === "C.D. BARAJAS" || m[1] === "C.D. BARAJAS") && !(anterior.actas[m[3]] && anterior.actas[m[3]].v === 2) && baseHoy.has(base(m[0] === "C.D. BARAJAS" ? m[1] : m[0])))
     .slice(0, 10);
   for (const m of pendientes) {
     try {
@@ -291,6 +291,28 @@ if (ok && anterior && anterior.v === 2) {
     } catch {}
   }
   console.log(`Actas de la temporada pasada guardadas: ${Object.keys(anterior.actas).length}`);
+}
+
+// ---------- HORARIOS DE TODOS LOS PARTIDOS (para saber a qué hora suele jugar cada equipo en casa) ----------
+let horarios = {};
+try { horarios = JSON.parse(fs.readFileSync("data.json", "utf8")).horarios || {}; } catch {}
+if (ok) {
+  const limite = new Date(Date.now() + 12 * 864e5).toISOString().slice(0, 10);
+  const hoyIso = new Date().toISOString().slice(0, 10);
+  // Esta temporada: partidos ya jugados o de los próximos días (cuando la RFFM ya ha puesto la hora)
+  const deEsta = jornadas.flatMap((j) => j.partidos.map((p) => ({ p, fecha: j.fecha })))
+    .filter(({ p, fecha }) => p.acta && fecha <= limite && (!horarios[p.acta] || (!horarios[p.acta][2] && fecha >= hoyIso) || (horarios[p.acta][1] >= hoyIso)))
+    .map(({ p }) => p);
+  // Temporada pasada: todos los partidos de los grupos con equipos de este año
+  const deAnterior = (anterior && anterior.grupos ? anterior.grupos : []).flatMap((g) => g.jornadas.flatMap((j) => j[2]))
+    .filter((m) => m[3] && !horarios[m[3]]).map((m) => ({ acta: m[3], local: m[0], visit: m[1], g: null }));
+  for (const p of [...deEsta.slice(0, 14), ...deAnterior.slice(0, 8)]) {
+    try {
+      const r = await leerActa({ ...p, g: null });
+      horarios[p.acta] = [p.local, r.fecha, r.hora];
+    } catch {}
+  }
+  console.log(`Horarios guardados: ${Object.keys(horarios).length}`);
 }
 
 // ---------- GOLEADORAS ----------
@@ -327,6 +349,7 @@ if (ok) {
     goleadoras,
     detalles,
     anterior,
+    horarios,
   };
   fs.writeFileSync("data.json", JSON.stringify(data));
   console.log("data.json actualizado");
