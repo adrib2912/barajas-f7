@@ -595,7 +595,7 @@ function start(DATA){
     h.innerHTML=head+count+`<div class="match fade">
       <div class="side">${shirt(L,54)}<div class="nm">${esc(sn(L))}</div></div>
       <div class="mid">${mid}</div>
-      <div class="side">${shirt(V,54)}<div class="nm">${esc(sn(V))}</div></div></div>${!o.raw&&provisional(o)?`<div class="pred">De momento la web de la RFFM pone <b>${fmt(o.f,{weekday:"long"})} a las ${o.hora}</b>. Los horarios oficiales salen el lunes ${lunes9(o).getDate()} a las 9:00; si luego cambia, no se marca como cambio.</div>`:pred}
+      <div class="side">${shirt(V,54)}<div class="nm">${esc(sn(V))}</div></div></div>${!o.raw&&provisional(o)?`<div class="pred">Horario provisional · oficial el lunes ${lunes9(o).getDate()} a las 9:00</div>`:pred}
       <a class="place" href="${p.url}" target="_blank" rel="noopener">${ico.pin}<div class="t">${o.camb&&o.camb.antes.campo?`<s style="opacity:.6">${esc(cleanCampo(o.camb.antes.campo))}</s><br>`:""}${esc(p.name)}<span>${esc(p.sub)}</span></div><span class="go">Cómo llegar</span></a>${btns}<div class="extra" id="extra"></div>`+dots;
     bindHero();fillExtra(o);
     const ic=document.getElementById("ics");if(ic)ic.href=icsUrl(o);
@@ -653,7 +653,7 @@ function start(DATA){
         return `<button class="tli" data-i="${i}"><span class="dot ${k||(isN?"next":"")}"></span><div class="tc${isN?" next":""}${!o.g&&!isN?" future":""}${i===sel?" sel":""}">
           <div class="m1"><span>J${o.j} · ${oficial(o)?fmt(o.f):"finde "+rango(o)} · ${o.home?"En casa":"Fuera"}${provisional(o)?" · prev. "+o.hora:""}</span><span>${!o.raw&&o.camb?'<b style="color:var(--orange)">Cambio de horario</b>':k?kindTxt[k]:isN?"Próximo":o.hora||""}</span></div>
           <div class="m2"><span class="nm">${shirt(o.opp,24)}${esc(sn(L))} – ${esc(sn(V))}</span><span class="sc">${o.raw?o.raw[0]+"-"+o.raw[1]:oficial(o)&&isN?o.hora:""}</span></div>${chips}</div></button>`;
-      }).join("")+`</div><p class="note">Toca un partido para verlo en Inicio con todos sus detalles.</p>`;
+      }).join("")+`</div>`;
     document.querySelectorAll("#p-cal .tli[data-i]").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;drawHero();drawCal();go("home");window.scrollTo({top:0,behavior:"smooth"})});
     document.querySelectorAll("#p-cal .seg2 button[data-f]").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;drawCal()});
     bindVista();
@@ -698,8 +698,7 @@ function start(DATA){
     document.getElementById("p-cal").innerHTML=vistaSel()+`<h2>Calendario <span style="font-size:15px;font-weight:600;color:var(--ink2)">· Temporada 2026/2027</span></h2>
       <div class="mhead"><button class="round" id="mp" aria-label="Mes anterior" ${canPrev?"":"disabled"}>${ico.left}</button><div class="t">${(m=>m[0].toUpperCase()+m.slice(1))(first.toLocaleDateString("es-ES",{month:"long"}))}</div><button class="round" id="mn" aria-label="Mes siguiente" ${canNext?"":"disabled"}>${ico.right}</button></div>
       <div class="cal"><div class="dow">${["L","M","X","J","V","S","D"].map(x=>`<span>${x}</span>`).join("")}</div><div class="days">${body}</div></div>
-      <div class="calleg"><span><i style="background:color-mix(in srgb,var(--yellow) 30%,transparent);border:1.5px dashed var(--yellow)"></i>Fin de semana de partido (día por confirmar)</span><span><i style="background:var(--yellow)"></i>Día y hora oficiales</span><span><b style="color:var(--ink)">prev.</b> = hora que pone de momento la RFFM, sin confirmar</span><span><i style="background:repeating-linear-gradient(135deg,var(--fill) 0 3px,transparent 3px 6px)"></i>Descansamos</span></div>
-      <p class="note">Cuando la RFFM publica el día y la hora (normalmente el lunes de esa semana), el partido deja de ocupar todo el fin de semana y aparece solo en su día. Toca un partido para verlo en Inicio.</p>`;
+      <div class="calleg"><span><i style="background:color-mix(in srgb,var(--yellow) 30%,transparent);border:1.5px dashed var(--yellow)"></i>Día por confirmar</span><span><i style="background:var(--yellow)"></i>Día y hora oficiales</span><span><b style="color:var(--ink)">prev.</b> = horario provisional</span><span><i style="background:repeating-linear-gradient(135deg,var(--fill) 0 3px,transparent 3px 6px)"></i>Descansamos</span></div>`;
     document.getElementById("mp").onclick=()=>{mes=new Date(mes.getFullYear(),mes.getMonth()-1,1);drawMonth()};
     document.getElementById("mn").onclick=()=>{mes=new Date(mes.getFullYear(),mes.getMonth()+1,1);drawMonth()};
     document.querySelectorAll("#p-cal .cd[data-i]").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;drawHero();go("home");window.scrollTo({top:0,behavior:"smooth"})});
@@ -729,11 +728,11 @@ function start(DATA){
     const pats=teams.map(t=>({t,pt:patron(t)})).filter(x=>x.pt);
     const hor=pats.length?`<h2>¿Cuándo juega cada equipo en casa?</h2><div class="hr">`+pats.map(({t,pt})=>`<details class="hd3"><summary class="cell">${shirt(t,26)}<div class="txt"><div class="ttl">${esc(sn(t))}</div><div class="meta">${pt.fiable?`Suele ser el <b>${pt.lab}</b>, sobre las ${pt.hora}`:pt.empate?"Sin patrón claro todavía":`Pocos datos todavía`}</div></div><div class="end when">${pt.n?`${pt.nl} de ${pt.n}<br><small>jugados</small>`:"<small>sin jugados</small>"}</div></summary>
       <div class="lst">${pt.todos.map(x=>`<div${x.prev?' class="pv"':""}><span>${fmt(x.f,{weekday:"short",day:"numeric",month:"short"})}${x.prev?" · previsto":""}</span><span>${x.h}</span><small>${x.prev?"sin confirmar":x.temp}</small></div>`).join("")}</div></details>`).join("")+`</div>
-      <p class="note">Cuenta todos los partidos en casa de cada equipo de los que ya hay acta, de esta temporada y de la anterior. Se agrupan por día (sábado, domingo o entre semana) y franja (mañana hasta las 14:00, tarde hasta las 19:00, noche desde las 19:00). Toca un equipo para ver todos sus partidos. Los marcados como "previsto" son próximos partidos con la hora que pone de momento el acta de la RFFM: se enseñan, pero no cuentan para el cálculo. Solo se da como fiable con al menos 3 partidos y si el mismo día y franja se repite en la mitad o más.</p>`:"";
+      <p class="note">Según sus partidos jugados en casa esta temporada y la anterior.</p>`:"";
     document.getElementById("p-tab").innerHTML=`<h2>Clasificación</h2>`+bars+duel+
       `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
       TABLA.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
-      `</tbody></table></div><p class="note">Calculada con los resultados (3 puntos victoria, 1 empate). Si hay sanciones o aplazados, la oficial de la RFFM es la que vale.</p>`+mx+hor;
+      `</tbody></table></div><p class="note">Calculada con los resultados.</p>`+mx+hor;
     drawMx();
   }
   let mxT=US;
@@ -761,7 +760,7 @@ function start(DATA){
     document.getElementById("mxbox").innerHTML=`<div class="mx"><table><thead>${head}</thead><tbody>${rows}</tbody></table></div>
       <div class="legend"><span style="--c:color-mix(in srgb,var(--green) 55%,transparent)">Gana ${esc(sn(mxT))}</span><span style="--c:color-mix(in srgb,var(--orange) 55%,transparent)">Empata</span><span style="--c:color-mix(in srgb,var(--red) 55%,transparent)">Pierde</span><span style="--c:var(--fill)">Por jugar</span></div>
       <div class="sums">${line("W","Ha ganado a",grp.W)}${line("D","Ha empatado con",grp.D)}${line("L","Ha perdido con",grp.L)}${line("P","Le falta jugar con",grp.P)}</div>
-      <p class="note">Su fila son los partidos en casa y su columna los de fuera. ${teams.map(t=>`${ABR[t]} = ${esc(sn(t))}`).join(" · ")}</p>`;
+      <p class="note">${teams.map(t=>`${ABR[t]} = ${esc(sn(t))}`).join(" · ")}</p>`;
     document.querySelectorAll("#mxpick .pk").forEach(b=>b.onclick=()=>{mxT=b.dataset.t;drawMx()});
   }
 
@@ -776,7 +775,7 @@ function start(DATA){
       <div class="seg2" role="group" aria-label="Ordenar">${[["goles","Goles"],["pj","Partidos"],["az","A–Z"]].map(([k,t])=>`<button data-o="${k}" aria-pressed="${orden===k}">${t}</button>`).join("")}</div>
       <div class="sq h"><span></span><span>Jugadora</span><span style="text-align:center">PJ</span><span style="text-align:center">Goles</span></div>`+
       (P.length?P.map(p=>`<div class="sq"><span class="av${p.g?" g":""}">${esc(ini(p.n))}</span><span class="nm">${esc(nomL(p.n))}</span><span class="pj">${p.pj}</span><span class="n${p.g?"":" z"}">${p.g}</span></div>`).join(""):`<div class="sq"><span></span><span class="nm">Aún no hay actas con convocatoria</span></div>`)+
-      `</div><p class="note">PJ = partidos en los que ha sido convocada, según las actas de la RFFM.</p>`+
+      `</div><p class="note">PJ = partidos convocada.</p>`+
       (G.length?`<h2>Goleadoras de la liga</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Jugadora</th><th>Goles</th></tr></thead><tbody>`+
       G.map((r,i)=>{if(r.g!==prev){pos=i+1;prev=r.g}const eq=norm(r.eq);return `<tr${eq===US?' class="us"':""}><td class="pos">${pos}</td><td class="t"><span class="who">${shirt(eq,22)}<span>${esc(nomL(r.n))}<br><small style="color:var(--ink2)">${esc(sn(eq))}</small></span></span></td><td class="p">${r.g}</td></tr>`}).join("")+
       `</tbody></table></div>`:"");
@@ -797,7 +796,7 @@ function start(DATA){
         const when2=fh?`<div class="when2">${fh.c?`<s>${fmt(fh.c.fecha)} ${fh.c.hora}</s>`:""}${prov?"Previsto ":""}${fmt(fh.f)} · ${fh.h}${fh.c?" <b>cambio</b>":""}${prov?" <i>(sin confirmar)</i>":""}</div>`:"";
         const where=us&&DET[j]&&DET[j].campo?cleanCampo(DET[j].campo):c?c[0]:"";
         return `<div class="gm${us?" us":""}"><div class="h">${n(h)}${shirt(h,24)}</div><div class="s">${g?g[0]+" - "+g[1]:"–"}</div><div class="a">${shirt(a,24)}${n(a)}</div>${when2}${where?`<div class="where"><a href="${placeOf(us?ours.find(o=>o.j===j):{home:false,opp:h}).url}" target="_blank" rel="noopener">${esc(where)}</a></div>`:""}</div>`}).join("")+
-      `</div>`+rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("")+(new Date()<lunes9({cf:f})&&!ms.some(m=>m[2])?`<p class="note">"Previsto (sin confirmar)" es lo que pone de momento el acta de cada partido en la web de la RFFM. Los horarios oficiales de esta jornada se publican el lunes ${lunes9({cf:f}).getDate()} a las 9:00.</p>`:"");
+      `</div>`+rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("")+(new Date()<lunes9({cf:f})&&!ms.some(m=>m[2])?`<p class="note">Horarios oficiales: lunes ${lunes9({cf:f}).getDate()} a las 9:00.</p>`:"");
     document.getElementById("jp").onclick=()=>{if(cur>0){cur--;drawJor();syncHero(J[cur][0])}};
     document.getElementById("jn").onclick=()=>{if(cur<J.length-1){cur++;drawJor();syncHero(J[cur][0])}};
   }
