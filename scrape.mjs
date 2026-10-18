@@ -230,7 +230,18 @@ if (ok) {
   const sinDatos = nuestros.filter((x) => !previo[x.j.j] && !proximos.includes(x)).slice(0, 4);
   const jugados = nuestros.filter((x) => x.p.g && !(previo[x.j.j] && previo[x.j.j].convocadas) && !sinDatos.includes(x)).slice(0, 6);
   for (const { j, p } of [...proximos, ...sinDatos, ...jugados]) {
-    try { detalles[j.j] = await leerActa(p); } catch {}
+    try {
+      const nuevo = await leerActa(p);
+      const viejo = previo[j.j] || {};
+      // Si ya había día y hora oficiales y la RFFM los cambia, lo apuntamos
+      const cambios = [...(viejo.cambios || [])];
+      if (viejo.hora && nuevo.hora && (viejo.hora !== nuevo.hora || viejo.fecha !== nuevo.fecha))
+        cambios.push({ antes: { fecha: viejo.fecha, hora: viejo.hora }, ahora: { fecha: nuevo.fecha, hora: nuevo.hora }, visto: new Date().toISOString() });
+      if (viejo.campo && nuevo.campo && viejo.campo !== nuevo.campo)
+        cambios.push({ antes: { campo: viejo.campo }, ahora: { campo: nuevo.campo }, visto: new Date().toISOString() });
+      detalles[j.j] = { ...nuevo, ...(cambios.length ? { cambios } : {}) };
+      if (cambios.length > (viejo.cambios || []).length) console.log(`Cambio en la jornada ${j.j}:`, JSON.stringify(cambios.at(-1)));
+    } catch {}
   }
   console.log(`Detalles de ${Object.keys(detalles).length} partidos del Barajas`);
 }
@@ -301,15 +312,19 @@ if (ok) {
   const hoyIso = new Date().toISOString().slice(0, 10);
   // Esta temporada: partidos ya jugados o de los próximos días (cuando la RFFM ya ha puesto la hora)
   const deEsta = jornadas.flatMap((j) => j.partidos.map((p) => ({ p, fecha: j.fecha })))
+    .sort((x, y) => (x.fecha >= hoyIso) === (y.fecha >= hoyIso) ? 0 : x.fecha >= hoyIso ? -1 : 1)
     .filter(({ p, fecha }) => p.acta && fecha <= limite && (!horarios[p.acta] || (!horarios[p.acta][2] && fecha >= hoyIso) || (horarios[p.acta][1] >= hoyIso)))
     .map(({ p }) => p);
   // Temporada pasada: todos los partidos de los grupos con equipos de este año
   const deAnterior = (anterior && anterior.grupos ? anterior.grupos : []).flatMap((g) => g.jornadas.flatMap((j) => j[2]))
     .filter((m) => m[3] && !horarios[m[3]]).map((m) => ({ acta: m[3], local: m[0], visit: m[1], g: null }));
-  for (const p of [...deEsta.slice(0, 14), ...deAnterior.slice(0, 8)]) {
+  for (const p of [...deEsta.slice(0, 16), ...deAnterior.slice(0, 8)]) {
     try {
       const r = await leerActa({ ...p, g: null });
-      horarios[p.acta] = [p.local, r.fecha, r.hora];
+      const v = horarios[p.acta];
+      // [local, fecha, hora, cambio anterior {fecha, hora} si la RFFM lo ha movido]
+      const cambio = v && v[2] && r.hora && (v[1] !== r.fecha || v[2] !== r.hora) ? { fecha: v[1], hora: v[2] } : (v && v[3]) || null;
+      horarios[p.acta] = cambio ? [p.local, r.fecha, r.hora, cambio] : [p.local, r.fecha, r.hora];
     } catch {}
   }
   console.log(`Horarios guardados: ${Object.keys(horarios).length}`);
@@ -345,7 +360,7 @@ if (ok) {
   const data = {
     actualizado: new Date().toISOString(),
     fuente: "rffm.es",
-    jornadas: jornadas.map((j) => [j.j, j.fecha, j.partidos.map((p) => [p.local, p.visit, p.g]), j.descansa]),
+    jornadas: jornadas.map((j) => [j.j, j.fecha, j.partidos.map((p) => [p.local, p.visit, p.g, p.acta]), j.descansa]),
     goleadoras,
     detalles,
     anterior,

@@ -63,6 +63,11 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .mid .small{font-size:13px;color:var(--hero-ink2);margin-top:4px}
 .pill{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.14);color:#fff}
 .pill.W{background:var(--green);color:#fff}.pill.L{background:var(--red);color:#fff}.pill.D{background:var(--orange);color:#fff}
+.old{font-size:13px;color:var(--hero-ink2);text-decoration:line-through;margin-bottom:4px}
+.pill.chg{background:var(--orange);color:#fff}
+.gm .when2{grid-column:1/-1;text-align:center;font-size:12px;color:var(--ink2);margin-top:-2px}
+.gm .when2 s{opacity:.7;margin-right:4px}
+.gm .when2 b{color:var(--orange);font-weight:600}
 .pill.next{background:var(--yellow);color:#111}
 .place{display:flex;align-items:center;gap:10px;margin-top:16px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);color:#fff}
 .place svg{width:18px;height:18px;flex:none;color:var(--yellow)}
@@ -418,7 +423,7 @@ function start(DATA){
     const m=ms.find(x=>x[0]===US||x[1]===US);
     if(!m) return {j,f,cf:f,rest:true};
     const d=DET[j]||{}, home=m[0]===US;
-    return {j,cf:f,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,home,opp:home?m[1]:m[0],
+    return {j,cf:f,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,camb:(d.cambios||[]).slice(-1)[0]||null,home,opp:home?m[1]:m[0],
       g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2]};
   });
   const kind=o=>!o.g?null:o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D";
@@ -544,7 +549,8 @@ function start(DATA){
     if(o.raw){const k=kind(o);mid=`<div class="big">${o.raw[0]} - ${o.raw[1]}</div><div class="small">${fmt(o.f)}</div><span class="pill ${k}">${kindTxt[k]}</span>`}
     else{
       const when=days<0?"Sin resultado":days===0?"Hoy":days===1?"Mañana":`En ${days} días`;
-      mid=`<div class="big">${o.hora||fmt(o.f,{day:"numeric",month:"short"})}</div><div class="small">${o.hora?fmt(o.f):"Hora por confirmar"}</div><span class="pill ${isNext?"next":""}">${when}</span>`;
+      const cb=o.camb&&o.camb.antes.hora?o.camb.antes:null;
+      mid=`${cb?`<div class="old">${cb.hora} · ${fmt(cb.fecha)}</div>`:""}<div class="big">${o.hora||fmt(o.f,{day:"numeric",month:"short"})}</div><div class="small">${o.hora?fmt(o.f):"Hora por confirmar"}</div><span class="pill ${cb?"chg":isNext?"next":""}">${cb?"Cambio de horario":when}</span>`;
       if(isNext&&days>=0) count=`<div class="count"><div class="n">${days===0?"HOY":days}</div><div class="w">${days===0?"¡día de partido!":days===1?"día para<br>el partido":"días para<br>el partido"}</div></div>`;
       if(!o.hora){const pt=patron(L);if(pt){
         pred=`<div class="pred">${esc(sn(L))} suele jugar en casa el <b>${pt.dia}</b>${pt.hora?` a las <b>${pt.hora}</b>`:""} <span>(${pt.hora?pt.nh:pt.nd} de ${pt.n} partidos)</span></div>`}}
@@ -555,7 +561,7 @@ function start(DATA){
       <div class="side">${shirt(L,54)}<div class="nm">${esc(sn(L))}</div></div>
       <div class="mid">${mid}</div>
       <div class="side">${shirt(V,54)}<div class="nm">${esc(sn(V))}</div></div></div>${pred}
-      <a class="place" href="${p.url}" target="_blank" rel="noopener">${ico.pin}<div class="t">${esc(p.name)}<span>${esc(p.sub)}</span></div><span class="go">Cómo llegar</span></a>${btns}<div class="extra" id="extra"></div>`+dots;
+      <a class="place" href="${p.url}" target="_blank" rel="noopener">${ico.pin}<div class="t">${o.camb&&o.camb.antes.campo?`<s style="opacity:.6">${esc(cleanCampo(o.camb.antes.campo))}</s><br>`:""}${esc(p.name)}<span>${esc(p.sub)}</span></div><span class="go">Cómo llegar</span></a>${btns}<div class="extra" id="extra"></div>`+dots;
     bindHero();fillExtra(o);
     const ic=document.getElementById("ics");if(ic)ic.href=icsUrl(o);
     const sh=document.getElementById("shr");if(sh)sh.onclick=()=>{
@@ -610,7 +616,7 @@ function start(DATA){
         const chips=Object.keys(cnt).length?`<div class="chips">${Object.entries(cnt).map(([n,c])=>`<span class="chip">${esc(nomC(n))}${c>1?" ×"+c:""}</span>`).join("")}</div>`:"";
         const L=o.home?US:o.opp,V=o.home?o.opp:US;
         return `<button class="tli" data-i="${i}"><span class="dot ${k||(isN?"next":"")}"></span><div class="tc${isN?" next":""}${!o.g&&!isN?" future":""}${i===sel?" sel":""}">
-          <div class="m1"><span>J${o.j} · ${fmt(o.f)} · ${o.home?"En casa":"Fuera"}</span><span>${k?kindTxt[k]:isN?"Próximo":o.hora||""}</span></div>
+          <div class="m1"><span>J${o.j} · ${fmt(o.f)} · ${o.home?"En casa":"Fuera"}</span><span>${!o.raw&&o.camb?'<b style="color:var(--orange)">Cambio de horario</b>':k?kindTxt[k]:isN?"Próximo":o.hora||""}</span></div>
           <div class="m2"><span class="nm">${shirt(o.opp,24)}${esc(sn(L))} – ${esc(sn(V))}</span><span class="sc">${o.raw?o.raw[0]+"-"+o.raw[1]:o.hora&&isN?o.hora:""}</span></div>${chips}</div></button>`;
       }).join("")+`</div><p class="note">Toca un partido para verlo en Inicio con todos sus detalles.</p>`;
     document.querySelectorAll("#p-cal .tli[data-i]").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;drawHero();drawCal();go("home");window.scrollTo({top:0,behavior:"smooth"})});
@@ -745,9 +751,13 @@ function start(DATA){
     const [j,f,ms,rest]=J[cur];
     const n=t=>t===US?`<b>${esc(sn(t))}</b>`:esc(sn(t));
     document.getElementById("p-jor").innerHTML=`<h2>Jornadas</h2><div class="seg"><button class="round" id="jp" aria-label="Jornada anterior" ${cur===0?"disabled":""}>${ico.left}</button><div class="lbl2">Jornada ${j}<span>${fmt(f,{weekday:"long",day:"numeric",month:"long"})}</span></div><button class="round" id="jn" aria-label="Jornada siguiente" ${cur===J.length-1?"disabled":""}>${ico.right}</button></div>
-      <div class="group">`+ms.map(([h,a,g])=>{const us=h===US||a===US;const c=CAMPOS[h];
+      <div class="group">`+ms.map(([h,a,g,acta])=>{const us=h===US||a===US;const c=CAMPOS[h];
+        const hr=acta&&DATA.horarios?DATA.horarios[acta]:null;
+        const dj=us?DET[j]:null;
+        const fh=dj&&dj.hora?{f:dj.fecha,h:dj.hora,c:dj.cambios&&dj.cambios.slice(-1)[0]&&dj.cambios.slice(-1)[0].antes.hora?{fecha:dj.cambios.slice(-1)[0].antes.fecha,hora:dj.cambios.slice(-1)[0].antes.hora}:null}:hr&&hr[2]?{f:hr[1],h:hr[2],c:hr[3]||null}:null;
+        const when2=fh?`<div class="when2">${fh.c?`<s>${fmt(fh.c.fecha)} ${fh.c.hora}</s>`:""}${fmt(fh.f)} · ${fh.h}${fh.c?" <b>cambio</b>":""}</div>`:"";
         const where=us&&DET[j]&&DET[j].campo?cleanCampo(DET[j].campo):c?c[0]:"";
-        return `<div class="gm${us?" us":""}"><div class="h">${n(h)}${shirt(h,24)}</div><div class="s">${g?g[0]+" - "+g[1]:"–"}</div><div class="a">${shirt(a,24)}${n(a)}</div>${where?`<div class="where"><a href="${placeOf(us?ours.find(o=>o.j===j):{home:false,opp:h}).url}" target="_blank" rel="noopener">${esc(where)}</a></div>`:""}</div>`}).join("")+
+        return `<div class="gm${us?" us":""}"><div class="h">${n(h)}${shirt(h,24)}</div><div class="s">${g?g[0]+" - "+g[1]:"–"}</div><div class="a">${shirt(a,24)}${n(a)}</div>${when2}${where?`<div class="where"><a href="${placeOf(us?ours.find(o=>o.j===j):{home:false,opp:h}).url}" target="_blank" rel="noopener">${esc(where)}</a></div>`:""}</div>`}).join("")+
       `</div>`+rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("");
     document.getElementById("jp").onclick=()=>{if(cur>0){cur--;drawJor();syncHero(J[cur][0])}};
     document.getElementById("jn").onclick=()=>{if(cur<J.length-1){cur++;drawJor();syncHero(J[cur][0])}};
