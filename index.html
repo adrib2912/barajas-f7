@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Barajas Femenino F7</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column like a club noticeboard; scoreboard card on top, tabs below, tables scroll inside their own box */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#14213d; --muted:#5d6b85; --line:#dde3ec;
+  --accent:#e8b923; --accent-ink:#14213d; --us:#1f4fd1; --us-soft:#e6edff;
+  --win:#1e8a4c; --draw:#8a7a1e; --loss:#c23b3b;
+  --kit:#e9edf3; --kit-line:#9aa7bd;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1424; --surface:#16203a; --ink:#e9eef8; --muted:#9aa7c2; --line:#26324f;
+  --accent:#f0c63c; --accent-ink:#14213d; --us:#7ea2ff; --us-soft:#1d2b52;
+  --win:#4cc27e; --draw:#d4c25a; --loss:#ff7b7b; --kit:#2a3656; --kit-line:#6f7fa3; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1424; --surface:#16203a; --ink:#e9eef8; --muted:#9aa7c2; --line:#26324f;
+  --accent:#f0c63c; --accent-ink:#14213d; --us:#7ea2ff; --us-soft:#1d2b52;
+  --win:#4cc27e; --draw:#d4c25a; --loss:#ff7b7b; --kit:#2a3656; --kit-line:#6f7fa3; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2{font-family:var(--display);margin:0;text-wrap:balance}
+header .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+header h1{font-size:34px;line-height:1;font-weight:800;letter-spacing:.01em}
+.board{background:var(--ink);color:var(--bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+:root[data-theme="dark"] .board{background:var(--surface);color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .board{background:var(--surface);color:var(--ink)}}
+.board .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;opacity:.75}
+.board .teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;text-align:center}
+.board .tm{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.05;min-width:0}
+.board .vs{font-family:var(--display);font-size:16px;opacity:.7}
+.board .meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.chip.ghost{background:transparent;border:1px solid currentColor;color:inherit;opacity:.85}
+.count{font-family:var(--display);font-size:15px;font-weight:600}
+nav{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px}
+nav button{flex:1;font:600 13px var(--body);color:var(--muted);background:none;border:0;border-radius:9px;padding:9px 4px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+:root[data-theme="dark"] nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}}
+button:focus-visible{outline:2px solid var(--us);outline-offset:2px}
+.panel{display:flex;flex-direction:column;gap:10px}
+.row{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center}
+.row .j{font-family:var(--display);font-weight:700;font-size:15px;color:var(--muted);line-height:1.1}
+.row .j small{display:block;font-family:var(--body);font-weight:500;font-size:12px}
+.row .opp{min-width:0;font-weight:600}
+.row .opp span{display:block;font-size:12px;font-weight:500;color:var(--muted)}
+.res{font-family:var(--display);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;text-align:right;min-width:48px}
+.res i{font-style:normal;display:block;font-family:var(--body);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.W i{color:var(--win)} .D i{color:var(--draw)} .L i{color:var(--loss)}
+.res.pend{color:var(--muted);font-size:14px}
+.row.rest{opacity:.65}
+.next{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.t,th.t{text-align:left;white-space:normal;min-width:130px}
+td.p{font-weight:700}
+tr.us td{background:var(--us-soft);color:var(--us);font-weight:700}
+tr:last-child td{border-bottom:0}
+.note{font-size:13px;color:var(--muted)}
+.jsel{display:flex;align-items:center;gap:8px}
+.jsel button{font:700 18px var(--display);width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.jsel .jt{flex:1;text-align:center;font-family:var(--display);font-weight:700;font-size:19px}
+.jsel .jt small{display:block;font-family:var(--body);font-weight:500;font-size:12px;color:var(--muted)}
+.m{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-size:14px}
+.m .h{text-align:right;min-width:0} .m .a{min-width:0}
+.m .s{font-family:var(--display);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums;min-width:44px;text-align:center}
+.m.us{border-color:var(--us);background:var(--us-soft)}
+.m b{color:var(--us)}
+.campo{color:inherit;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px;opacity:.9}
+.mini{display:block;font-size:12px;font-weight:500;color:var(--us);text-decoration:none;margin-top:2px}
+.mini:hover,.campo:hover{text-decoration:underline}
+.shirt{flex:none;display:block}
+.board .tm{display:flex;flex-direction:column;align-items:center;gap:6px}
+.who{display:flex;align-items:center;gap:8px}
+.m .h{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.m .a{display:flex;align-items:center;gap:6px}
+.m .where{grid-column:1/-1;text-align:center}
+.m .where .mini{margin-top:0}
+@media (prefers-reduced-motion:no-preference){nav button{transition:background .15s}}
+</style>
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Primera Femenino Senior F-7 · Grupo 1 · 2026-27</div>
+  <h1>C.D. Barajas</h1>
+</header>
+
+<section class="board" id="board" aria-live="polite"></section>
+
+<nav role="tablist">
+  <button id="tab-cal" role="tab" aria-selected="true" data-p="cal">Nuestros partidos</button>
+  <button id="tab-tab" role="tab" aria-selected="false" data-p="tab">Clasificación</button>
+  <button id="tab-jor" role="tab" aria-selected="false" data-p="jor">Jornadas</button>
+  <button id="tab-gol" role="tab" aria-selected="false" data-p="gol">Goleadoras</button>
+</nav>
+
+<section class="panel" id="p-cal"></section>
+<section class="panel" id="p-tab" hidden>
+  <div class="tablebox"><table id="tbl"></table></div>
+  <p class="note">Calculada a partir de los resultados del calendario (3 puntos victoria, 1 empate). Si la federación aplica sanciones o hay partidos aplazados, la oficial de la RFFM es la que vale.</p>
+</section>
+<section class="panel" id="p-jor" hidden>
+  <div class="jsel"><button id="jprev" aria-label="Jornada anterior">‹</button><div class="jt" id="jt"></div><button id="jnext" aria-label="Jornada siguiente">›</button></div>
+  <div class="panel" id="jlist"></div>
+</section>
+
+<section class="panel" id="p-gol" hidden>
+  <div class="tablebox"><table id="gol"></table></div>
+  <p class="note" id="golnote">Aún no hay datos de goleadoras. Aparecerán cuando la actualización automática lea la RFFM.</p>
+</section>
+
+<p class="note"><span id="upd">Datos de la RFFM.</span> Los horarios no aparecen en el calendario de la federación. Las camisetas con borde discontinuo llevan los colores del escudo porque aún no hemos confirmado su equipación. Los campos son los habituales de cada club; confirmadlo en el acta o la ficha del partido, porque un equipo puede jugar en otra instalación.</p>
+</div>
+
+<script>
+fetch("data.json?v="+Date.now()).then(r=>r.json()).then(DATA=>{
+const JORNADAS=DATA.jornadas;
+
+const US="C.D. BARAJAS";
+const SHORT={"C.D. BARAJAS":"Barajas","A.D. MADRID SUR":"Madrid Sur","S.A.D. COLEGIO SAN GABRIEL":"Colegio San Gabriel","C.D. ALGETE":"Algete","C.D. NUEVO PUERTA BONITA DE CARABANCHEL":"Nuevo Puerta Bonita","A.D. EL REAL DE MANZANARES":"El Real de Manzanares","C.F. SAN AGUSTIN DE GUADALIX":"San Agustín de Guadalix","ESC.FUT. EL OLIVO DE COSLADA":"El Olivo de Coslada","CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":"Olympia Las Rozas","C.D. SANFER19":"Sanfer19","A.D. VILLAVICIOSA DE ODON 'B'":"Villaviciosa de Odón B","C.D. FUTBOL TRES CANTOS":"Tres Cantos","ESCUELA MUNICIPAL DE COBEÑA":"E.M. Cobeña"};
+const sn=t=>SHORT[t]||t;
+const fmt=iso=>{const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"})};
+const today=(()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())})();
+const dOf=iso=>{const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d)};
+const esc=s=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const CAMPOS={
+"C.D. BARAJAS":["Campo municipal Nuestra Señora de la Soledad","C/ Ayerbe, Barajas (Madrid)",1],
+"A.D. MADRID SUR":["Campo José Durán","Av. del Parque de Palomeras Bajas 10, Puente de Vallecas (Madrid)",1],
+"S.A.D. COLEGIO SAN GABRIEL":["Centro Deportivo San Gabriel","Av. de Pasionistas 10, Alcalá de Henares",1],
+"C.D. ALGETE":["Campo de fútbol municipal de Algete","Algete",0],
+"C.D. NUEVO PUERTA BONITA DE CARABANCHEL":["Antiguo Canódromo de Carabanchel","Vía Carpetana, Carabanchel (Madrid)",1],
+"A.D. EL REAL DE MANZANARES":["Campo municipal Las Ermitas","Manzanares el Real",1],
+"C.F. SAN AGUSTIN DE GUADALIX":["Campo municipal de San Agustín del Guadalix","San Agustín del Guadalix",1],
+"ESC.FUT. EL OLIVO DE COSLADA":["Estadio El Olivo","C/ Mar Cantábrico s/n, Coslada",1],
+"CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":["Polideportivo Dehesa de Navalcarbón","Las Rozas de Madrid",1],
+"C.D. SANFER19":["Campo por confirmar","San Fernando de Henares",0],
+"A.D. VILLAVICIOSA DE ODON 'B'":["Nuevo Municipal","Villaviciosa de Odón",1],
+"C.D. FUTBOL TRES CANTOS":["Campo municipal La Foresta","Tres Cantos",1],
+"ESCUELA MUNICIPAL DE COBEÑA":["Campo de fútbol municipal de Cobeña","Cobeña",1]};
+const mapUrl=t=>{const c=CAMPOS[t];return c?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent((c[2]?c[0]+", ":"campo de fútbol ")+c[1]):null};
+const campoHtml=(t,cls)=>{const c=CAMPOS[t];if(!c)return"";return `<a class="${cls}" href="${mapUrl(t)}" target="_blank" rel="noopener">${esc(c[0])}${c[2]?"":" (por confirmar)"} · ${esc(c[1])} ↗</a>`};
+const KITS={
+"ESCUELA MUNICIPAL DE COBEÑA":["#3f8a3a","#c8262e"],
+"C.D. BARAJAS":["#f2c200","#111111","#111111",1],
+"A.D. MADRID SUR":["#1f5fae","#f39a1e"],
+"S.A.D. COLEGIO SAN GABRIEL":["#d9822b","#10203a"],
+"C.D. ALGETE":["#13138a","#ffffff"],
+"C.D. NUEVO PUERTA BONITA DE CARABANCHEL":["#ffffff","#ffffff",null,1],
+"A.D. EL REAL DE MANZANARES":["#018f67","#f9b052"],
+"C.F. SAN AGUSTIN DE GUADALIX":["#ffffff","#ffffff",null,1],
+"ESC.FUT. EL OLIVO DE COSLADA":["#ffffff","#2f7d4f"],
+"CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":["#192635","#e1b884"],
+"C.D. SANFER19":["#1d961b","#0c160b"],
+"A.D. VILLAVICIOSA DE ODON 'B'":["#ffffff","#ffffff",null,1],
+"C.D. FUTBOL TRES CANTOS":["#ffffff","#ffffff",null,1]};
+const ini=t=>sn(t).replace(/^(E\.M\.|C\.D\.)\s*/,"").split(/\s+/).filter(w=>w.length>2||/^\d/.test(w)).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+let _sid=0;
+const shirt=(t,size=28)=>{const k=KITS[t];let body=k?k[0]:"var(--kit)";const sl=k?k[1]:"var(--kit)";let defs="";
+  if(k&&k[2]){const id="st"+(++_sid);defs=`<defs><pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k[0]}"/><rect width="3" height="32" fill="${k[2]}"/></pattern></defs>`;body=`url(#${id})`}
+  const txt=k?"":`<text x="16" y="20" text-anchor="middle" font-size="8" font-weight="700" font-family="Barlow, sans-serif" fill="var(--muted)">${esc(ini(t))}</text>`;
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true">${defs}<path d="M11 4 L4 8 L2 15 L7 16 L8 13 L8 29 L24 29 L24 13 L25 16 L30 15 L28 8 L21 4 Q16 8 11 4 Z" fill="${body}" stroke="var(--kit-line)" stroke-width="1.2" stroke-linejoin="round"${k&&!k[3]?' stroke-dasharray="2 1.5"':""}/><path d="M4 8 L2 15 L7 16 L8 13 Z M28 8 L30 15 L25 16 L24 13 Z" fill="${sl}" stroke="var(--kit-line)" stroke-width="1.2" stroke-linejoin="round"/>${txt}</svg>`};
+/* our matches */
+const ours=JORNADAS.map(([j,f,ms,rest])=>{
+  const m=ms.find(x=>x[0]===US||x[1]===US);
+  if(!m) return {j,f,rest:true};
+  const home=m[0]===US; return {j,f,home,opp:home?m[1]:m[0],g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null};
+});
+const next=ours.find(o=>!o.g&&dOf(o.f)>=today);
+
+/* board */
+(function(){
+  const b=document.getElementById("board");
+  if(!next){b.innerHTML='<div class="lbl">Próximo partido</div><div class="tm">No hay más partidos en el calendario cargado</div>';return}
+  const days=Math.round((dOf(next.f)-today)/864e5);
+  const when=days===0?"Hoy":days===1?"Mañana":`En ${days} días`;
+  if(next.rest){b.innerHTML=`<div class="lbl">Jornada ${next.j} · ${fmt(next.f)}</div><div class="tm">Descansamos</div>`;return}
+  const L=next.home?"Barajas":sn(next.opp), V=next.home?sn(next.opp):"Barajas";
+  b.innerHTML=`<div class="lbl">Próximo partido · Jornada ${next.j}</div>
+  <div class="teams"><div class="tm">${shirt(next.home?US:next.opp,40)}${esc(L)}</div><div class="vs">vs</div><div class="tm">${shirt(next.home?next.opp:US,40)}${esc(V)}</div></div>
+  <div class="meta"><span class="chip">${when}</span><span class="chip ghost">${fmt(next.f)}</span><span class="chip ghost">${next.home?"En casa":"Fuera"}</span></div>
+  ${campoHtml(next.home?US:next.opp,"campo")}`;
+})();
+
+/* our calendar */
+document.getElementById("p-cal").innerHTML=ours.map(o=>{
+  const jd=`<div class="j">J${o.j}<small>${fmt(o.f)}</small></div>`;
+  if(o.rest) return `<div class="row rest">${jd}<div class="opp">Descanso</div><div></div></div>`;
+  let r;
+  if(o.g){const [a,c]=o.g,k=a>c?"W":a<c?"L":"D";r=`<div class="res ${k}">${a}-${c}<i>${k==="W"?"Victoria":k==="L"?"Derrota":"Empate"}</i></div>`}
+  else r=`<div class="res pend">${dOf(o.f)<today?"Sin resultado":"—"}</div>`;
+  return `<div class="row${o===next?" next":""}">${jd}<div class="opp"><div class="who">${shirt(o.opp,22)}${esc(sn(o.opp))}</div><span>${o.home?"En casa":"Fuera"}</span>${campoHtml(o.home?US:o.opp,"mini")}</div>${r}</div>`;
+}).join("");
+
+/* standings */
+(function(){
+  const S={};const add=t=>S[t]??={t,pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0};
+  JORNADAS.forEach(([,,ms])=>ms.forEach(([h,a,g])=>{add(h);add(a);if(!g)return;const H=S[h],A=S[a];
+    H.pj++;A.pj++;H.gf+=g[0];H.gc+=g[1];A.gf+=g[1];A.gc+=g[0];
+    if(g[0]>g[1]){H.g++;A.p++;H.pts+=3}else if(g[0]<g[1]){A.g++;H.p++;A.pts+=3}else{H.e++;A.e++;H.pts++;A.pts++}}));
+  const rows=Object.values(S).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf||sn(x.t).localeCompare(sn(y.t)));
+  document.getElementById("tbl").innerHTML=`<thead><tr><th>#</th><th class="t">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th></tr></thead><tbody>`+
+  rows.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td>${i+1}</td><td class="t">${esc(sn(r.t))}</td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf}</td><td>${r.gc}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+"</tbody>";
+})();
+
+/* jornadas browser */
+let cur=Math.max(0,JORNADAS.findIndex(([,f])=>dOf(f)>=today));
+function drawJ(){
+  const [j,f,ms,rest]=JORNADAS[cur];
+  document.getElementById("jt").innerHTML=`Jornada ${j}<small>${fmt(f)}</small>`;
+  document.getElementById("jlist").innerHTML=ms.map(([h,a,g])=>{const us=h===US||a===US;
+    const n=t=>t===US?`<b>${esc(sn(t))}</b>`:esc(sn(t));
+    return `<div class="m${us?" us":""}"><div class="h">${n(h)}${shirt(h,22)}</div><div class="s">${g?g[0]+"-"+g[1]:"–"}</div><div class="a">${shirt(a,22)}${n(a)}</div><div class="where">${campoHtml(h,"mini")}</div></div>`}).join("")+
+    rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("");
+  document.getElementById("jprev").disabled=cur===0;document.getElementById("jnext").disabled=cur===JORNADAS.length-1;
+}
+document.getElementById("jprev").onclick=()=>{if(cur>0){cur--;drawJ()}};
+document.getElementById("jnext").onclick=()=>{if(cur<JORNADAS.length-1){cur++;drawJ()}};
+drawJ();
+
+/* tabs */
+document.querySelectorAll("nav button").forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x===btn));
+  ["cal","tab","jor","gol"].forEach(p=>document.getElementById("p-"+p).hidden=p!==btn.dataset.p);
+  try{localStorage.setItem("tab",btn.dataset.p)}catch(e){}
+});
+try{const t=localStorage.getItem("tab");if(t)document.querySelector(`nav button[data-p="${t}"]`)?.click()}catch(e){}
+
+const G=(DATA.goleadoras||[]).filter(r=>r.length);
+if(G.length){document.getElementById("gol").innerHTML="<tbody>"+G.map(r=>`<tr${r.join(" ").includes("BARAJAS")?' class="us"':""}>${r.map((c,i)=>`<td${i===1||i===2?' class="t"':""}>${esc(c)}</td>`).join("")}</tr>`).join("")+"</tbody>";document.getElementById("golnote").textContent="Según la RFFM."}
+const up=document.getElementById("upd");
+if(DATA.actualizado){const d=new Date(DATA.actualizado);up.textContent="Datos de la RFFM actualizados el "+d.toLocaleString("es-ES",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})+"."}
+}).catch(()=>{document.getElementById("board").innerHTML='<div class="tm">No se han podido cargar los datos. Prueba a recargar la página.</div>'});
+</script>
+
+</body>
+</html>

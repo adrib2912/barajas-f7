@@ -1,0 +1,8 @@
+{
+  "name": "barajas-f7",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.48.2"
+  }
+}
