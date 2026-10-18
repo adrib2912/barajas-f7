@@ -177,7 +177,7 @@ const shirt=(t,size=28)=>{const k=KITS[t];let body=k?k[0]:"var(--kit)";const sl=
   const txt=k?"":`<text x="16" y="20" text-anchor="middle" font-size="8" font-weight="700" font-family="Barlow, sans-serif" fill="var(--muted)">${esc(ini(t))}</text>`;
   return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true">${defs}<path d="M11 4 L4 8 L2 15 L7 16 L8 13 L8 29 L24 29 L24 13 L25 16 L30 15 L28 8 L21 4 Q16 8 11 4 Z" fill="${body}" stroke="var(--kit-line)" stroke-width="1.2" stroke-linejoin="round"${k&&!k[3]?' stroke-dasharray="2 1.5"':""}/><path d="M4 8 L2 15 L7 16 L8 13 Z M28 8 L30 15 L25 16 L24 13 Z" fill="${sl}" stroke="var(--kit-line)" stroke-width="1.2" stroke-linejoin="round"/>${txt}</svg>`};
 const cap2=s=>s.toLowerCase().replace(/(^|[\s-])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()).replace(/\((ha|hn|t)\)/i,x=>x.toUpperCase());
-const campoDe=(o,cls)=>{const t=o.home?US:o.opp;if(!o.campoActa)return campoHtml(t,cls);const u=mapUrl(t);return `<a class="${cls}" href="${u}" target="_blank" rel="noopener">${esc(cap2(o.campoActa))} ↗</a>`};
+const campoDe=(o,cls)=>{const t=o.home?US:o.opp;if(!o.campoActa)return campoHtml(t,cls);const c=CAMPOS[t];const u="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent("campo de fútbol "+o.campoActa.replace(/\(.*?\)/g,"").trim()+(c?", "+c[1]:", Madrid"));return `<a class="${cls}" href="${u}" target="_blank" rel="noopener">${esc(cap2(o.campoActa))} ↗</a>`};
 /* our matches */
 const DET=DATA.detalles||{};
 const ours=JORNADAS.map(([j,f,ms,rest])=>{

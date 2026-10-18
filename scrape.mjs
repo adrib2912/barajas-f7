@@ -130,9 +130,9 @@ if (ok) {
   for (const j of jornadas) {
     const p = j.partidos.find((x) => (x.local + x.visit).includes("C.D. BARAJAS") && x.acta);
     if (!p) continue;
-    try {
+    for (let intento = 1; intento <= 2; intento++) try {
       await page.goto(p.acta, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: 30000 });
+      await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: 45000 });
       await page.waitForTimeout(800);
       const t = await page.evaluate(() => document.body.innerText);
       const L = t.split("\n").map((x) => x.trim()).filter(Boolean);
@@ -144,8 +144,9 @@ if (ok) {
         hora: fh && fh[4] !== "00:00" ? fh[4] : null,
         campo,
       };
+      break;
     } catch (e) {
-      console.error(`Acta jornada ${j.j}: ${e.message}`);
+      console.error(`Acta jornada ${j.j} (intento ${intento}): ${e.message}`);
     }
   }
   console.log(`Detalles de ${Object.keys(detalles).length} partidos del Barajas`);
