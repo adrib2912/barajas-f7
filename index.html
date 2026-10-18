@@ -8,8 +8,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Barajas F7">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#000000">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("tema")||"dark";document.documentElement.dataset.size=localStorage.getItem("letra")||"n"}catch(e){document.documentElement.dataset.theme="dark"}</script>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <style>
@@ -23,10 +23,15 @@
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --round:"SF Pro Rounded",ui-rounded,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
-@media (prefers-color-scheme: dark){:root{
+:root[data-theme="dark"]{
+  --bg:#000000; --card:#1c1c1e; --ink:#ffffff; --ink2:#ebebf599; --ink3:#ebebf54d; --sep:#38383a;
+  --fill:#7676803d; --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
+  --hero:#1c1c1e; --us:#f5c4002e; --kit:#3a3a3c; --kit-line:#8e8e93; --bar:rgba(22,22,24,.86); color-scheme:dark}
+@media (prefers-color-scheme: dark){:root[data-theme="auto"]{
   --bg:#000000; --card:#1c1c1e; --ink:#ffffff; --ink2:#ebebf599; --ink3:#ebebf54d; --sep:#38383a;
   --fill:#7676803d; --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
   --hero:#1c1c1e; --us:#f5c4002e; --kit:#3a3a3c; --kit-line:#8e8e93; --bar:rgba(22,22,24,.86); color-scheme:dark}}
+html[data-size="g"] .wrap{zoom:1.13}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 *{touch-action:manipulation}
@@ -88,6 +93,11 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .h2h .r{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
 .h2h .r b{font-family:var(--round)}
 .h2h .r .W{color:var(--green)}.h2h .r .L{color:var(--red)}.h2h .r .D{color:var(--orange)}
+.fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:0}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--hero-ink2);border-bottom:2px solid var(--hero-ink2);transform:rotate(45deg);margin:0 4px 4px 0;transition:transform .2s}
+.fold[open]>summary::after{transform:rotate(-135deg);margin-bottom:-2px}
+.fold[open]>summary{margin-bottom:6px}
 .ant{margin:0 0 6px;font-size:13px;color:var(--hero-ink2)}
 .ant summary{cursor:pointer;list-style:none}
 .ant summary::-webkit-details-marker{display:none}
@@ -222,9 +232,11 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .dl .c b{font-family:var(--round)}
 .mx{overflow-x:auto;background:var(--card);border-radius:14px;padding:8px}
 .mx table{border-collapse:separate;border-spacing:3px;font-size:11px;width:auto}
-.mx th{font-size:10px;font-weight:700;color:var(--ink2);padding:2px;text-align:center}
+.mx th{font-size:9px;font-weight:700;color:var(--ink2);padding:1px;text-align:center}
+.mx table{border-spacing:2px!important}
+.mx{padding:6px!important}
 .mx th.rh{text-align:right;padding-right:4px;white-space:nowrap}
-.mx td{width:30px;height:28px;padding:0;text-align:center;border-radius:6px;background:var(--fill);font:600 11px var(--round);white-space:nowrap}
+.mx td{width:24px;min-width:24px;height:24px;padding:0;text-align:center;border-radius:5px;background:var(--fill);font:600 9.5px var(--round);white-space:nowrap}
 .mx td.diag{background:repeating-linear-gradient(45deg,var(--sep) 0 3px,transparent 3px 6px)}
 .mx td.W{background:color-mix(in srgb,var(--green) 30%,transparent)}
 .mx td.L{background:color-mix(in srgb,var(--red) 28%,transparent)}
@@ -284,6 +296,12 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .cd .x.sc{font:700 11px var(--round)}
 .calleg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink2);margin:10px 4px 0}
 .calleg i{display:inline-block;width:14px;height:12px;border-radius:4px;margin-right:4px;vertical-align:-2px}
+/* ---- Ajustes y avisos ---- */
+.sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.sbox{width:100%;max-width:560px;background:var(--bg);border-radius:22px 22px 0 0;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
+.shd{display:flex;justify-content:space-between;align-items:center;font-size:20px}
+.sbox .k{font-size:13px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.03em;margin-top:6px}
+#stale{margin:4px 0 12px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red);font-size:14px;font-weight:600}
 /* ---- Plantilla ---- */
 .squad{background:#121212;color:#fff;border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:2px}
 .sq{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 44px;align-items:center;gap:8px;padding:9px 2px;border-top:.5px solid #2c2c2e}
@@ -304,7 +322,9 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
   <header>
     <div class="sub">Primera Femenino Senior F-7 · Grupo 1</div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h1 id="title">C.D. Barajas</h1>
-    <button id="reload" aria-label="Actualizar" style="width:38px;height:38px;border-radius:50%;background:var(--card);display:grid;place-items:center;color:var(--blue);flex:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button></div>
+    <div style="display:flex;gap:8px"><button id="ajustes" aria-label="Ajustes" style="width:38px;height:38px;border-radius:50%;background:var(--card);display:grid;place-items:center;color:var(--blue);flex:none"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <button id="reload" aria-label="Actualizar" style="width:38px;height:38px;border-radius:50%;background:var(--card);display:grid;place-items:center;color:var(--blue);flex:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button></div></div>
+    <div id="stale" hidden></div>
   </header>
   <main>
     <section id="p-home">
@@ -318,6 +338,14 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
   </main>
   <p class="note" id="upd"></p>
 </div>
+
+<div class="sheet" id="sheet" hidden><div class="sbox" role="dialog" aria-label="Ajustes">
+  <div class="shd"><b>Ajustes</b><button id="cerrar" class="round" aria-label="Cerrar">✕</button></div>
+  <div class="k">Apariencia</div>
+  <div class="seg2" data-set="tema"><button data-v="dark">Oscuro</button><button data-v="light">Claro</button><button data-v="auto">Automático</button></div>
+  <div class="k">Tamaño de letra</div>
+  <div class="seg2" data-set="letra"><button data-v="n">Normal</button><button data-v="g">Grande</button></div>
+</div></div>
 
 <nav class="tabs" role="tablist"><div class="in">
   <button role="tab" aria-selected="true" data-p="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H5.5A1.5 1.5 0 0 1 4 19.5z"/></svg>Inicio</button>
@@ -381,7 +409,7 @@ const dOf=iso=>{const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d
 const today=(()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())})();
 const fmt=(iso,o={weekday:"short",day:"numeric",month:"short"})=>dOf(iso).toLocaleDateString("es-ES",o);
 const capW=s=>s.toLowerCase().replace(/(^|[\s\-.(/])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()).replace(/ (De|Del|La|Las|El|Los|Y)(?= )/g,m=>m.toLowerCase());
-const cleanCampo=c=>capW(c.replace(/\((h\.?a\.?|hn|t)\)/i,"").trim()).replace(/\bF7\b/i,"F7").replace(/\bNtra\. Sra\./,"Ntra. Sra.");
+const cleanCampo=c=>(x=>x.replace(/(\S)-(\S)/g,"$1\u2011$2"))(capW(c.replace(/\((h\.?a\.?|hn|t)\)/i,"").trim()).replace(/\bF7\b/i,"F7").replace(/\bNtra\. Sra\./,"Ntra. Sra."));
 let _sid=0;
 function shirt(t,size){
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
@@ -413,6 +441,17 @@ fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(start
   document.getElementById("hero").innerHTML='<div class="lbl">No se han podido cargar los datos. Prueba a recargar la página.</div>';
 });
 
+/* Ajustes: tema y tamaño de letra (se guardan en este móvil) */
+(function(){const sh=document.getElementById("sheet");
+  const pinta=()=>document.querySelectorAll("#sheet .seg2").forEach(g=>{const k=g.dataset.set,v=k==="tema"?document.documentElement.dataset.theme:document.documentElement.dataset.size;g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v))});
+  document.getElementById("ajustes").onclick=()=>{pinta();sh.hidden=false};
+  document.getElementById("cerrar").onclick=()=>sh.hidden=true;
+  sh.onclick=e=>{if(e.target===sh)sh.hidden=true};
+  document.querySelectorAll("#sheet .seg2 button").forEach(b=>b.onclick=()=>{const k=b.parentNode.dataset.set;
+    if(k==="tema")document.documentElement.dataset.theme=b.dataset.v;else document.documentElement.dataset.size=b.dataset.v;
+    try{localStorage.setItem(k,b.dataset.v)}catch(e){}pinta()});
+})();
+
 /* Al volver a la app (desde la pantalla de inicio el iPhone no recarga solo):
    si hay datos nuevos o ha pasado un rato, se recarga la página entera. */
 let _loadedAt=Date.now(),_loadedVer=null;
@@ -427,8 +466,9 @@ window.addEventListener("pageshow",e=>{if(e.persisted)location.reload()});
 function start(DATA){
   _loadedVer=DATA.actualizado;
   const J=DATA.jornadas, DET=DATA.detalles||{};
-  const nomC=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return capW((no?no.split(" ")[0]+" ":"")+ap.split(" ")[0])};
-  const nomL=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return capW((no?no.split(" ")[0]+" ":"")+ap.split(" ")[0])};
+  /* Nombre y la inicial del primer apellido (la página es pública) */
+  const nomC=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return capW(no?no.split(" ")[0]:"")+(ap?" "+ap[0].toUpperCase()+".":"")};
+  const nomL=nomC;
   const ini=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return ((no||"?")[0]+(ap||"?")[0]).toUpperCase()};
 
   /* Nuestros partidos */
@@ -458,19 +498,31 @@ function start(DATA){
   J.forEach(([,,ms])=>ms.forEach(([h,a,g])=>{add(h);add(a);if(!g)return;const H=S[h],A=S[a];
     H.pj++;A.pj++;H.gf+=g[0];H.gc+=g[1];A.gf+=g[1];A.gc+=g[0];
     if(g[0]>g[1]){H.g++;A.p++;H.pts+=3}else if(g[0]<g[1]){A.g++;H.p++;A.pts+=3}else{H.e++;A.e++;H.pts++;A.pts++}}));
-  const TABLA=Object.values(S).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf||sn(x.t).localeCompare(sn(y.t)));
+  let TABLA=Object.values(S).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf||sn(x.t).localeCompare(sn(y.t)));
+  /* Si la RFFM ha dado su clasificación oficial (con sanciones, etc.), manda esa */
+  let OFICIAL=false;
+  if(Array.isArray(DATA.clasif)&&DATA.clasif.length===TABLA.length&&DATA.clasif.every(r=>S[r.t])){
+    TABLA=DATA.clasif.map(r=>({...r}));TABLA.forEach(r=>{S[r.t]=r});OFICIAL=true;
+  }
   const posOf=t=>TABLA.findIndex(r=>r.t===t)+1;
 
   /* Horarios: cuándo suele jugar cada equipo en casa */
   const base=t=>t.replace(/\s+'[A-Z]'$/,"");
+  /* Mismo equipo entre temporadas: mismo nombre, y si los dos llevan letra ('A', 'B'), la misma letra.
+     Si hay más de un candidato posible, solo vale el nombre exacto. */
+  const letra=t=>(t.match(/'([A-Z])'$/)||[])[1]||null;
+  const mismo=(a,b)=>a===b||(base(a)===base(b)&&(!letra(a)||!letra(b)||letra(a)===letra(b)));
+  const resolver=(t,lista)=>{if(lista.includes(t))return t;const c=[...new Set(lista)].filter(x=>mismo(x,t));return c.length===1?c[0]:null};
   const HOR={};
-  Object.entries(DATA.horarios||{}).forEach(([url,[loc,f,h]])=>{if(!f||!h)return;const k=base(loc);
+  Object.entries(DATA.horarios||{}).forEach(([url,[loc,f,h]])=>{if(!f||!h)return;const k=loc;
     (HOR[k]??=[]).push({f,h,temp:/temporada=21/.test(url)?"25-26":"26-27",prev:dOf(f)>=today})});
   const franja=h=>{const x=+h.split(":")[0];return x<14?"por la mañana":x<19?"por la tarde":"por la noche"};
   const diaTxt=d=>d===6?"sábado":d===0?"domingo":"entre semana";
   /* Patrón de cada equipo en casa: día y franja más repetidos, con cuántos partidos se ha calculado */
   function patron(local){
-    const T=(HOR[base(local)]||[]).slice().sort((a,b)=>a.f<b.f?1:-1);
+    const keys=Object.keys(HOR);
+    const ant=resolver(local,keys.filter(k=>k!==local&&mismo(k,local)));
+    const T=[...(HOR[local]||[]),...(ant?HOR[ant]:[])].slice().sort((a,b)=>a.f<b.f?1:-1);
     /* Solo cuentan los partidos ya jugados; los futuros se enseñan aparte como previstos */
     const L=T.filter(x=>!x.prev);if(!L.length)return T.length?{n:0,nl:0,lab:"",hora:"",fiable:false,empate:false,todos:T,resto:[]}:null;
     const cnt={};L.forEach(x=>{const k=diaTxt(dOf(x.f).getDay())+" "+franja(x.h);cnt[k]=(cnt[k]||0)+1});
@@ -509,7 +561,7 @@ function start(DATA){
     const games=[];let tabla=null;const opp0=base(oppHoy);
     for(const g of ANT){
       const S2={};
-      const nm=g.jornadas.flatMap(x=>x[2].flatMap(m=>[m[0],m[1]])).find(t=>base(t)===opp0);const opp=nm||"__";
+      const nm=resolver(oppHoy,g.jornadas.flatMap(x=>x[2].flatMap(m=>[m[0],m[1]])));const opp=nm||"__";
       g.jornadas.forEach(([j,f,ms])=>ms.forEach(([h,a,r,acta])=>{
         if((h===US&&a===opp)||(h===opp&&a===US))games.push({f,h:h===opp?oppHoy:h,a:a===opp?oppHoy:a,r,ac:acta&&DATA.anterior.actas?DATA.anterior.actas[acta]:null});
         [h,a].forEach(t=>S2[t]??={t,pj:0,pts:0,gf:0,gc:0});
@@ -525,16 +577,16 @@ function start(DATA){
     const box=document.getElementById("extra");if(!box)return;
     let html="";
     if(o.raw&&o.goles){
-      html+=`<div class="h2h"><div class="hd">Goles</div>`+(o.goles.length?o.goles.map(g=>`<div class="r"><span>${g.propia?esc(nomC(g.nombre))+' <small style="color:var(--hero-ink2)">en propia puerta</small>':g.nuestro?"<b>"+esc(nomC(g.nombre))+"</b>":esc(nomC(g.nombre))+` <small style="color:var(--hero-ink2)">(${esc(sn(o.opp))})</small>`}</span><b class="${g.nuestro?"W":"L"}">${g.min!=null?g.min+"'":""}</b></div>`).join(""):`<div class="r"><span>Sin goles</span></div>`)+`</div>`;
+      html+=`<details class="h2h fold"><summary class="hd">Goles (${o.goles.length})</summary>`+(o.goles.length?o.goles.map(g=>`<div class="r"><span>${g.propia?esc(nomC(g.nombre))+' <small style="color:var(--hero-ink2)">en propia puerta</small>':g.nuestro?"<b>"+esc(nomC(g.nombre))+"</b>":esc(nomC(g.nombre))+` <small style="color:var(--hero-ink2)">(${esc(sn(o.opp))})</small>`}</span><b class="${g.nuestro?"W":"L"}">${g.min!=null?g.min+"'":""}</b></div>`).join(""):`<div class="r"><span>Sin goles</span></div>`)+`</details>`;
     }
     if(o.raw&&o.conv&&o.conv.length){
       const scorers=new Set((o.goles||[]).filter(g=>g.nuestro&&!g.propia).map(g=>g.nombre));
-      html+=`<div class="h2h"><div class="hd">Convocadas (${o.conv.length})</div><div class="chips">`+o.conv.map(n=>`<span class="chip${scorers.has(n)?" gol":""}">${esc(nomC(n))}</span>`).join("")+`</div></div>`;
+      html+=`<details class="h2h fold"><summary class="hd">Convocadas (${o.conv.length})</summary><div class="chips">`+o.conv.map(n=>`<span class="chip${scorers.has(n)?" gol":""}">${esc(nomC(n))}</span>`).join("")+`</div></details>`;
     }
     if(DATA.anterior){
       const {games,tabla}=h2h(o.opp);
       if(games.length||tabla){
-        html+=`<div class="h2h"><div class="hd">Temporada ${esc(DATA.anterior.temporada)}</div>`+
+        html+=`<details class="h2h fold"><summary class="hd">Temporada ${esc(DATA.anterior.temporada)}${games.length?` · ${games.length} partido${games.length>1?"s":""}`:""}</summary>`+
           games.map(g=>{if(!g.r)return `<div class="r"><span>${esc(sn(g.h))} - ${esc(sn(g.a))}</span><b>–</b></div>`;
             const ourG=g.h===US?g.r[0]:g.r[1],theirG=g.h===US?g.r[1]:g.r[0],k=ourG>theirG?"W":ourG<theirG?"L":"D";
             let det="";
@@ -545,8 +597,8 @@ function start(DATA){
             }
             return `<div class="r"><span>${esc(sn(g.h))} - ${esc(sn(g.a))}</span><b class="${k}">${g.r[0]} - ${g.r[1]}</b></div>${det}`}).join("")+
           (tabla?`<div class="r"><span>${esc(sn(o.opp))} acabó ${tabla.pos}ª de ${tabla.n}</span><b>${tabla.pts} pts</b></div><div class="r"><span>Goles a favor / en contra</span><b>${tabla.gf} / ${tabla.gc}</b></div>`:"")+
-          `</div>`;
-      } else html+=`<div class="h2h"><div class="hd">Temporada ${esc(DATA.anterior.temporada)}</div><div class="r"><span>No jugó en esta liga la temporada pasada</span></div></div>`;
+          `</details>`;
+      }
     }
     box.innerHTML=html;
     /* Tiempo: solo si faltan 3 días o menos */
@@ -732,7 +784,7 @@ function start(DATA){
     document.getElementById("p-tab").innerHTML=`<h2>Clasificación</h2>`+bars+duel+
       `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
       TABLA.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
-      `</tbody></table></div><p class="note">Calculada con los resultados.</p>`+mx+hor;
+      `</tbody></table></div><p class="note">${OFICIAL?"Clasificación oficial de la RFFM.":"Calculada con los resultados."}</p>`+mx+hor;
     drawMx();
   }
   let mxT=US;
@@ -803,6 +855,8 @@ function start(DATA){
   function syncHero(j){const i=ours.findIndex(o=>o.j===j);if(i>=0){sel=i;drawHero();drawCal()}}
 
   drawHero();drawWidgets();drawCal();drawTab();drawPla();drawJor();
+  if(DATA.actualizado){const horas=(Date.now()-new Date(DATA.actualizado))/36e5;const st=document.getElementById("stale");
+    if(horas>5){st.hidden=false;st.textContent=`Los datos no se actualizan desde hace ${Math.round(horas)} horas. Prueba a darle a actualizar; si sigue así, puede que la web de la RFFM haya cambiado.`}}
   if(DATA.actualizado){const d=new Date(DATA.actualizado);document.getElementById("upd").textContent="Datos de la RFFM · actualizado el "+d.toLocaleString("es-ES",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});}
 
   const TABS=["home","cal","tab","pla","jor"];

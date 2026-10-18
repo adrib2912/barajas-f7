@@ -350,6 +350,39 @@ if (ok) {
   console.log(`Horarios guardados: ${Object.keys(horarios).length}`);
 }
 
+// ---------- CLASIFICACIÓN OFICIAL ----------
+let clasif = null;
+try { clasif = JSON.parse(fs.readFileSync("data.json", "utf8")).clasif || null; } catch {}
+if (ok) {
+  try {
+    await abrir("clasificaciones", null);
+    await page.waitForFunction(() => /C\.D\. BARAJAS/.test(document.body.innerText) && /\d+\s+\d+\s+\d+/.test(document.body.innerText), null, { timeout: 40000 });
+    await page.waitForTimeout(1500);
+    const texto = await page.evaluate(() => document.body.innerText);
+    fs.writeFileSync(`${DEBUG}/clasificacion.txt`, texto);
+    const equipos = [...new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])))]
+      .sort((a, b) => b.length - a.length);
+    // Tras el nombre de cada equipo vienen sus números: puntos, jugados, ganados, empatados, perdidos, GF, GC...
+    const filas = [];
+    for (const t of equipos) {
+      const esc = t.replace(/[.*+?^${}()|[\]\\']/g, (c) => "\\" + c);
+      const m = texto.match(new RegExp(esc + "[\\s\\S]{0,40}?((?:\\d+\\s+){6}\\d+)"));
+      if (!m) continue;
+      const n = m[1].trim().split(/\s+/).map(Number);
+      filas.push({ t, idx: m.index, pts: n[0], pj: n[1], g: n[2], e: n[3], p: n[4], gf: n[5], gc: n[6] });
+    }
+    filas.sort((a, b) => a.idx - b.idx);
+    // Comprobaciones: estén todos, jugados = G+E+P y puntos coherentes (puede haber sanciones, se toleran)
+    const coherente = filas.length === equipos.length && filas.every((f) => f.pj === f.g + f.e + f.p && f.pts <= 3 * f.g + f.e);
+    if (coherente) {
+      clasif = filas.map(({ idx, ...f }) => f);
+      console.log(`Clasificación oficial: ${clasif.length} equipos, líder ${clasif[0].t} con ${clasif[0].pts}`);
+    } else console.error(`Clasificación oficial no válida (${filas.length}/${equipos.length} equipos); se mantiene la anterior`);
+  } catch (e) {
+    console.error("No se pudo leer la clasificación oficial:", e.message.split("\n")[0]);
+  }
+}
+
 // ---------- GOLEADORAS ----------
 try {
   await abrir("goleadores");
@@ -385,6 +418,7 @@ if (ok) {
     detalles,
     anterior,
     horarios,
+    clasif,
   };
   fs.writeFileSync("data.json", JSON.stringify(data));
   console.log("data.json actualizado");
