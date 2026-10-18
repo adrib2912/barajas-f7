@@ -145,94 +145,97 @@ try {
   console.error("Fallo leyendo el calendario:", e.message);
 }
 
-// ---------- DETALLES DE NUESTROS PARTIDOS (día, hora y campo del acta) ----------
+// ---------- LECTURA DE UN ACTA ----------
+// Devuelve día, hora, campo y, si el partido se ha jugado, convocadas del Barajas y goles.
+let volcado = false;
+async function leerActa(p) {
+  let ultimoError;
+  for (let intento = 1; intento <= 2; intento++) try {
+    await page.goto(p.acta, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: 45000 });
+    await page.waitForTimeout(800);
+    const t = await page.evaluate(() => document.body.innerText);
+    const L = t.split("\n").map((x) => x.trim()).filter(Boolean);
+    const fh = t.match(/(\d\d)-(\d\d)-(\d{4})\s*\/\s*(\d{1,2}:\d\d)/);
+    const iT = L.indexOf("TERRENO DE JUEGO");
+    const campo = iT >= 0 && L[iT + 1] && !/^Patrocinador/i.test(L[iT + 1]) ? L[iT + 1] : null;
+    const CAB = ["SUSTITUCIONES", "JUGADORES", "CUERPO TÉCNICO", "GOLES", "TARJETAS", "ÁRBITROS", "TERRENO DE JUEGO"];
+    const secciones = {};
+    let actual = null;
+    const iRes = L.findIndex((x) => x === "RESULTADO");
+    for (const x of L.slice(iRes >= 0 ? iRes : 0)) {
+      if (CAB.includes(x)) { actual = x; secciones[x] = []; continue; }
+      if (/^Patrocinador/i.test(x)) break;
+      if (actual) secciones[actual].push(x);
+    }
+    if (p.g && !volcado) {
+      volcado = true;
+      fs.writeFileSync(`${DEBUG}/acta-jugado.txt`, p.acta + "\n\n" + L.slice(iRes >= 0 ? iRes - 4 : 0).join("\n"));
+    }
+    let convocadas = null, goles = null;
+    if (p.g) {
+      const lds = await page.evaluate(() => [...document.querySelectorAll('script[type="application/ld+json"]')].map((x) => x.textContent));
+      for (const t of lds) {
+        try {
+          const ev = JSON.parse(t);
+          if (ev["@type"] !== "SportsEvent") continue;
+          const nuestra = (ev.homeTeam?.name || "").trim() === "C.D. BARAJAS" ? ev.homeTeam : ev.awayTeam;
+          convocadas = (nuestra?.members || []).map((m) => m.name);
+        } catch {}
+      }
+      const somosLocal = p.local.trim() === "C.D. BARAJAS";
+      goles = [];
+      const G = secciones["GOLES"] || [];
+      let prev = [0, 0];
+      for (let i = 0; i < G.length; i++) {
+        const m = G[i].match(/^(\d+)\s*-\s*(\d+)$/);
+        if (!m) continue;
+        const sc = [+m[1], +m[2]];
+        const min = (G[i + 1] || "").match(/^\((\d+)'\)$/);
+        const nombre = min ? G[i + 2] : G[i + 1];
+        const nuestro = (sc[0] > prev[0]) === somosLocal;
+        const propia = nuestro ? !(convocadas || []).includes(nombre) : (convocadas || []).includes(nombre);
+        goles.push({ min: min ? +min[1] : null, nombre, nuestro, propia, marcador: sc });
+        prev = sc;
+      }
+    }
+    return {
+      ...(convocadas ? { convocadas } : {}),
+      ...(goles ? { goles } : {}),
+      fecha: fh ? `${fh[3]}-${fh[2]}-${fh[1]}` : null,
+      hora: fh && fh[4] !== "00:00" ? fh[4] : null,
+      campo,
+    };
+  } catch (e) {
+    ultimoError = e;
+    console.error(`Acta ${p.acta} (intento ${intento}): ${e.message.split("\n")[0]}`);
+  }
+  throw ultimoError;
+}
+
+// ---------- DETALLES DE NUESTROS PARTIDOS ----------
 let previo = {};
-try { previo = JSON.parse(fs.readFileSync("data.json", "utf8")).detalles || {}; } catch {}
+let anterior = null;
+try { const d = JSON.parse(fs.readFileSync("data.json", "utf8")); previo = d.detalles || {}; anterior = d.anterior || null; } catch {}
 const detalles = { ...previo };
 if (ok) {
-  // Para ir rápido solo abrimos: los próximos 3 partidos sin resultado (pueden cambiar de hora o campo)
-  // y, como mucho, 4 partidos que todavía no tengamos guardados.
+  // Para ir rápido solo abrimos: los próximos 3 partidos sin resultado, hasta 4 sin datos
+  // y hasta 6 jugados cuyo acta (goles y convocadas) aún no tengamos.
   const nuestros = jornadas
     .map((j) => ({ j, p: j.partidos.find((x) => (x.local + x.visit).includes("C.D. BARAJAS") && x.acta) }))
     .filter((x) => x.p);
   const proximos = nuestros.filter((x) => !x.p.g).slice(0, 3);
   const sinDatos = nuestros.filter((x) => !previo[x.j.j] && !proximos.includes(x)).slice(0, 4);
-  // Partidos ya jugados cuyo acta (goles y jugadoras) aún no tenemos
   const jugados = nuestros.filter((x) => x.p.g && !(previo[x.j.j] && previo[x.j.j].convocadas) && !sinDatos.includes(x)).slice(0, 6);
-  let volcado = false;
   for (const { j, p } of [...proximos, ...sinDatos, ...jugados]) {
-    for (let intento = 1; intento <= 2; intento++) try {
-      await page.goto(p.acta, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: 45000 });
-      await page.waitForTimeout(800);
-      const t = await page.evaluate(() => document.body.innerText);
-      const L = t.split("\n").map((x) => x.trim()).filter(Boolean);
-      const fh = t.match(/(\d\d)-(\d\d)-(\d{4})\s*\/\s*(\d{1,2}:\d\d)/);
-      const iT = L.indexOf("TERRENO DE JUEGO");
-      const campo = iT >= 0 && L[iT + 1] && !/^Patrocinador/i.test(L[iT + 1]) ? L[iT + 1] : null;
-      // Secciones del acta (jugadoras, goles, etc.) tal cual aparecen
-      const CAB = ["SUSTITUCIONES", "JUGADORES", "CUERPO TÉCNICO", "GOLES", "TARJETAS", "ÁRBITROS", "TERRENO DE JUEGO"];
-      const secciones = {};
-      let actual = null;
-      const iRes = L.findIndex((x) => x === "RESULTADO");
-      for (const x of L.slice(iRes >= 0 ? iRes : 0)) {
-        if (CAB.includes(x)) { actual = x; secciones[x] = []; continue; }
-        if (/^Patrocinador/i.test(x)) break;
-        if (actual) secciones[actual].push(x);
-      }
-      if (p.g && !volcado) {
-        volcado = true;
-        fs.writeFileSync(`${DEBUG}/acta-jugado.txt`, p.acta + "\n\n" + L.slice(iRes >= 0 ? iRes - 4 : 0).join("\n"));
-        fs.writeFileSync(`${DEBUG}/acta-jugado.html`, await page.content());
-      }
-      // Convocadas (del bloque de datos estructurados del acta) y goles
-      let convocadas = null, goles = null;
-      if (p.g) {
-        const lds = await page.evaluate(() => [...document.querySelectorAll('script[type="application/ld+json"]')].map((x) => x.textContent));
-        for (const t of lds) {
-          try {
-            const ev = JSON.parse(t);
-            if (ev["@type"] !== "SportsEvent") continue;
-            const nuestra = (ev.homeTeam?.name || "").trim() === "C.D. BARAJAS" ? ev.homeTeam : ev.awayTeam;
-            convocadas = (nuestra?.members || []).map((m) => m.name);
-          } catch {}
-        }
-        const somosLocal = p.local.trim() === "C.D. BARAJAS";
-        goles = [];
-        const G = secciones["GOLES"] || [];
-        let prev = [0, 0];
-        for (let i = 0; i < G.length; i++) {
-          const m = G[i].match(/^(\d+)\s*-\s*(\d+)$/);
-          if (!m) continue;
-          const sc = [+m[1], +m[2]];
-          const min = (G[i + 1] || "").match(/^\((\d+)'\)$/);
-          const nombre = min ? G[i + 2] : G[i + 1];
-          const marcoLocal = sc[0] > prev[0];
-          const nuestro = marcoLocal === somosLocal;
-          const propia = nuestro ? !(convocadas || []).includes(nombre) : (convocadas || []).includes(nombre);
-          goles.push({ min: min ? +min[1] : null, nombre, nuestro, propia, marcador: sc });
-          prev = sc;
-        }
-      }
-      detalles[j.j] = {
-        ...(convocadas ? { convocadas } : {}),
-        ...(goles ? { goles } : {}),
-        fecha: fh ? `${fh[3]}-${fh[2]}-${fh[1]}` : null,
-        hora: fh && fh[4] !== "00:00" ? fh[4] : null,
-        campo,
-      };
-      break;
-    } catch (e) {
-      console.error(`Acta jornada ${j.j} (intento ${intento}): ${e.message}`);
-    }
+    try { detalles[j.j] = await leerActa(p); } catch {}
   }
   console.log(`Detalles de ${Object.keys(detalles).length} partidos del Barajas`);
 }
 
-// ---------- TEMPORADA ANTERIOR (solo se lee una vez y se guarda) ----------
-let anterior = null;
-try { anterior = JSON.parse(fs.readFileSync("data.json", "utf8")).anterior || null; } catch {}
-if (ok && !anterior) {
+// ---------- TEMPORADA ANTERIOR (se lee una vez y se guarda) ----------
+const base = (t) => t.trim().replace(/\s+'[A-Z]'$/, "");
+if (ok && !(anterior && anterior.v === 2)) {
   try {
     const equiposHoy = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])));
     await abrir("calendario", "VER ACTA");
@@ -244,6 +247,7 @@ if (ok && !anterior) {
     const comps = await api("/api/competitions?temporada=21&tipojuego=2");
     const femSenior = comps.filter((c) => /FEMENINO/i.test(c.nombre) && /SENIOR|AFICIONAD/i.test(c.nombre));
     console.log("Competiciones 2025-26:", femSenior.map((c) => c.nombre).join(" | "));
+    const baseHoy = new Set([...equiposHoy].map(base));
     const grupos = [];
     for (const c of femSenior) {
       const gs = await api("/api/groups?competicion=" + c.codigo);
@@ -251,20 +255,40 @@ if (ok && !anterior) {
         await abrir("calendario", "VER ACTA", `temporada=21&tipojuego=2&competicion=${c.codigo}&grupo=${g.codigo}`);
         const js = await leerCalendario();
         const equipos = new Set(js.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])));
-        const comunes = [...equipos].filter((e) => equiposHoy.has(e));
+        const comunes = [...equipos].filter((e) => baseHoy.has(base(e)));
         console.log(`  ${c.nombre} ${g.nombre}: ${js.length} jornadas, ${comunes.length} equipos de este año`);
         if (comunes.length)
           grupos.push({
             competicion: c.nombre,
             grupo: g.nombre,
-            jornadas: js.map((j) => [j.j, j.fecha, j.partidos.map((p) => [p.local, p.visit, p.g]), j.descansa]),
+            jornadas: js.map((j) => [
+              j.j, j.fecha,
+              j.partidos.map((p) => ((p.local + p.visit).includes("C.D. BARAJAS") ? [p.local, p.visit, p.g, p.acta] : [p.local, p.visit, p.g])),
+              j.descansa,
+            ]),
           });
       }
     }
-    anterior = { temporada: "2025-2026", grupos };
+    anterior = { v: 2, temporada: "2025-2026", grupos, actas: (anterior && anterior.actas) || {} };
   } catch (e) {
     console.error("No se pudo leer la temporada anterior:", e.stack || e.message);
   }
+}
+// Actas de la temporada pasada: nuestros partidos contra rivales de este año (8 por pasada)
+if (ok && anterior && anterior.v === 2) {
+  const baseHoy = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [base(p.local), base(p.visit)])));
+  anterior.actas = anterior.actas || {};
+  const pendientes = anterior.grupos
+    .flatMap((g) => g.jornadas.flatMap((j) => j[2]))
+    .filter((m) => m[3] && m[2] && !anterior.actas[m[3]] && baseHoy.has(base(m[0] === "C.D. BARAJAS" ? m[1] : m[0])))
+    .slice(0, 8);
+  for (const m of pendientes) {
+    try {
+      const r = await leerActa({ acta: m[3], local: m[0], visit: m[1], g: m[2] });
+      anterior.actas[m[3]] = { goles: r.goles, convocadas: r.convocadas, fecha: r.fecha };
+    } catch {}
+  }
+  console.log(`Actas de la temporada pasada guardadas: ${Object.keys(anterior.actas).length}`);
 }
 
 // ---------- GOLEADORAS ----------
