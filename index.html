@@ -246,6 +246,12 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:var(--c)}
 .hr{background:var(--card);border-radius:14px;overflow:hidden}
 .hr .cell .meta{white-space:normal}
+.hd3 summary{list-style:none;cursor:pointer}
+.hd3 summary::-webkit-details-marker{display:none}
+.hd3+.hd3 summary::before{content:"";position:absolute;top:0;left:54px;right:0;height:.5px;background:var(--sep)}
+.hd3 .lst{padding:0 14px 10px 54px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.hd3 .lst div{display:grid;grid-template-columns:1fr auto 48px;gap:8px;font-variant-numeric:tabular-nums}
+.hd3 .lst small{color:var(--ink2);text-align:right}
 /* ---- Calendario mensual ---- */
 .mhead{display:flex;align-items:center;gap:10px;margin:0 0 10px}
 .mhead .t{flex:1;text-align:center;font-weight:700;font-size:18px}
@@ -442,16 +448,23 @@ function start(DATA){
   /* Horarios: cuándo suele jugar cada equipo en casa */
   const base=t=>t.replace(/\s+'[A-Z]'$/,"");
   const HOR={};
-  Object.values(DATA.horarios||{}).forEach(([loc,f,h])=>{if(!f)return;const k=base(loc);(HOR[k]??=[]).push({f,h})});
+  Object.entries(DATA.horarios||{}).forEach(([url,[loc,f,h]])=>{if(!f||!h)return;const k=base(loc);
+    (HOR[k]??=[]).push({f,h,temp:/temporada=21/.test(url)?"25-26":"26-27"})});
+  const franja=h=>{const x=+h.split(":")[0];return x<14?"por la mañana":x<19?"por la tarde":"por la noche"};
+  const diaTxt=d=>d===6?"sábado":d===0?"domingo":"entre semana";
+  /* Patrón de cada equipo en casa: día y franja más repetidos, con cuántos partidos se ha calculado */
   function patron(local){
-    const L=HOR[base(local)]||[];if(!L.length)return null;
-    const dc={},hc={};
-    L.forEach(x=>{const d=dOf(x.f).getDay();dc[d]=(dc[d]||0)+1;if(x.h)hc[x.h]=(hc[x.h]||0)+1});
-    const top=o=>Object.entries(o).sort((a,b)=>b[1]-a[1])[0];
-    const td=top(dc),th=top(hc);
-    return {n:L.length,dia:DIAS[+td[0]],nd:td[1],hora:th?th[0]:null,nh:th?th[1]:0,horas:Object.entries(hc).sort((a,b)=>b[1]-a[1]).slice(0,3)};
+    const L=(HOR[base(local)]||[]).slice().sort((a,b)=>a.f<b.f?1:-1);if(!L.length)return null;
+    const cnt={};L.forEach(x=>{const k=diaTxt(dOf(x.f).getDay())+" "+franja(x.h);cnt[k]=(cnt[k]||0)+1});
+    const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+    const [lab,n]=top[0];
+    const empate=top[1]&&top[1][1]===n;
+    const horasTop=L.filter(x=>diaTxt(dOf(x.f).getDay())+" "+franja(x.h)===lab).map(x=>x.h);
+    const hc={};horasTop.forEach(h=>hc[h]=(hc[h]||0)+1);
+    const hora=Object.entries(hc).sort((a,b)=>b[1]-a[1])[0][0];
+    const fiable=L.length>=3&&!empate&&n/L.length>=.5;
+    return {n:L.length,lab,nl:n,hora,fiable,empate,todos:L,resto:top.slice(1)};
   }
-
   const placeOf=o=>{
     const t=o.home?US:o.opp, c=CAMPOS[t];
     const name=o.campo?cleanCampo(o.campo):(c?c[0]:"Campo por confirmar");
@@ -553,7 +566,8 @@ function start(DATA){
       mid=`${cb?`<div class="old">${cb.hora} · ${fmt(cb.fecha)}</div>`:""}<div class="big">${o.hora||fmt(o.f,{day:"numeric",month:"short"})}</div><div class="small">${o.hora?fmt(o.f):"Hora por confirmar"}</div><span class="pill ${cb?"chg":isNext?"next":""}">${cb?"Cambio de horario":when}</span>`;
       if(isNext&&days>=0) count=`<div class="count"><div class="n">${days===0?"HOY":days}</div><div class="w">${days===0?"¡día de partido!":days===1?"día para<br>el partido":"días para<br>el partido"}</div></div>`;
       if(!o.hora){const pt=patron(L);if(pt){
-        pred=`<div class="pred">${esc(sn(L))} suele jugar en casa el <b>${pt.dia}</b>${pt.hora?` a las <b>${pt.hora}</b>`:""} <span>(${pt.hora?pt.nh:pt.nd} de ${pt.n} partidos)</span></div>`}}
+        pred=pt.fiable?`<div class="pred">${esc(sn(L))} suele jugar en casa el <b>${pt.lab}</b> (normalmente ${pt.hora}) · ${pt.nl} de ${pt.n} partidos</div>`
+          :`<div class="pred">Pocos datos de ${esc(sn(L))} en casa (${pt.n} partido${pt.n>1?"s":""}): ${pt.todos.map(x=>fmt(x.f,{weekday:"short"})+" "+x.h).join(", ")}</div>`}}
       if(days>=0) btns=`<div class="btns"><a class="btn" id="ics" href="#" download="partido-j${o.j}.ics">${ico.cal}Añadir al calendario</a><button class="btn ghost" id="shr" aria-label="Compartir">${ico.share}</button></div>`;
     }
     const p=placeOf(o);
@@ -691,7 +705,9 @@ function start(DATA){
     const mx=`<h2>Cuadro de resultados</h2><div class="pick" id="mxpick"></div><div id="mxbox"></div>`;
     /* Cuándo juega cada equipo en casa */
     const pats=teams.map(t=>({t,pt:patron(t)})).filter(x=>x.pt);
-    const hor=pats.length?`<h2>¿Cuándo juega cada equipo en casa?</h2><div class="hr">`+pats.map(({t,pt})=>`<div class="cell">${shirt(t,26)}<div class="txt"><div class="ttl">${esc(sn(t))}</div><div class="meta">Normalmente el ${pt.dia}${pt.hora?" a las "+pt.hora:""}${pt.horas.length>1?" · también "+pt.horas.slice(1).map(x=>x[0]).join(", "):""}</div></div><div class="end when">${pt.n} partido${pt.n>1?"s":""}</div></div>`).join("")+`</div><p class="note">Sale de las actas de esta temporada y la anterior. Los lunes a partir de las 9:00 la RFFM publica los horarios de la jornada, y la app se actualiza a las 9:03.</p>`:"";
+    const hor=pats.length?`<h2>¿Cuándo juega cada equipo en casa?</h2><div class="hr">`+pats.map(({t,pt})=>`<details class="hd3"><summary class="cell">${shirt(t,26)}<div class="txt"><div class="ttl">${esc(sn(t))}</div><div class="meta">${pt.fiable?`Suele ser el <b>${pt.lab}</b>, sobre las ${pt.hora}`:pt.empate?"Sin patrón claro todavía":`Pocos datos todavía`}</div></div><div class="end when">${pt.nl} de ${pt.n}<br><small>partidos</small></div></summary>
+      <div class="lst">${pt.todos.map(x=>`<div><span>${fmt(x.f,{weekday:"short",day:"numeric",month:"short"})}</span><span>${x.h}</span><small>${x.temp}</small></div>`).join("")}</div></details>`).join("")+`</div>
+      <p class="note">Cuenta todos los partidos en casa de cada equipo de los que ya hay acta, de esta temporada y de la anterior. Se agrupan por día (sábado, domingo o entre semana) y franja (mañana hasta las 14:00, tarde hasta las 19:00, noche desde las 19:00). Toca un equipo para ver todos sus partidos. Solo se da como fiable con al menos 3 partidos y si el mismo día y franja se repite en la mitad o más.</p>`:"";
     document.getElementById("p-tab").innerHTML=`<h2>Clasificación</h2>`+bars+duel+
       `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
       TABLA.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+

@@ -319,10 +319,13 @@ if (ok) {
     .filter(({ p, fecha }) => p.acta && fecha <= limite && (!horarios[p.acta] || (!horarios[p.acta][2] && fecha >= hoyIso) || (horarios[p.acta][1] >= hoyIso)))
     .map(({ p }) => p);
   // Temporada pasada: todos los partidos de los grupos con equipos de este año
+  // Temporada pasada: solo los partidos EN CASA de equipos que este año son rivales nuestros
+  const baseHoyH = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [base(p.local), base(p.visit)])));
   const deAnterior = (anterior && anterior.grupos ? anterior.grupos : []).flatMap((g) => g.jornadas.flatMap((j) => j[2]))
-    .filter((m) => m[3] && !horarios[m[3]]).map((m) => ({ acta: m[3], local: m[0], visit: m[1], g: null }));
-  for (const p of [...deEsta.slice(0, 16), ...deAnterior.slice(0, 8)]) {
-    if (minutos() > 9) { console.log("Tiempo agotado para horarios; seguimos en la próxima pasada"); break; }
+    .filter((m) => m[3] && m[2] && !horarios[m[3]] && baseHoyH.has(base(m[0]))).map((m) => ({ acta: m[3], local: m[0], visit: m[1], g: null }));
+  console.log(`Horarios pendientes: ${deEsta.length} de esta temporada, ${deAnterior.length} de la pasada`);
+  for (const p of [...deEsta.slice(0, 16), ...deAnterior.slice(0, 30)]) {
+    if (minutos() > 13) { console.log("Tiempo agotado para horarios; seguimos en la próxima pasada"); break; }
     try {
       const r = await leerActa({ ...p, g: null }, 1, 20000);
       const v = horarios[p.acta];
