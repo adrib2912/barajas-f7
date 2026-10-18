@@ -503,7 +503,7 @@ function start(DATA){
   /* Si la RFFM ha dado su clasificación oficial (con sanciones, etc.), manda esa */
   let OFICIAL=false;
   if(Array.isArray(DATA.clasif)&&DATA.clasif.length===TABLA.length&&DATA.clasif.every(r=>S[r.t])){
-    TABLA=DATA.clasif.map(r=>({...r}));TABLA.forEach(r=>{S[r.t]=r});OFICIAL=true;
+    TABLA=DATA.clasif.map(r=>({...r})).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf||sn(x.t).localeCompare(sn(y.t)));TABLA.forEach(r=>{S[r.t]=r});OFICIAL=true;
   }
   const posOf=t=>TABLA.findIndex(r=>r.t===t)+1;
 
@@ -787,7 +787,7 @@ function start(DATA){
     document.getElementById("p-tab").innerHTML=`<h2>Clasificación</h2>`+bars+duel+
       `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
       TABLA.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
-      `</tbody></table></div><p class="note">${OFICIAL?"Clasificación oficial de la RFFM.":"Calculada con los resultados."}</p>`+mx+hor;
+      `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}</p>`+mx+hor;
     drawMx();
   }
   let mxT=US;
