@@ -1,14 +1,23 @@
 Calendario: 26 jornadas, 156 partidos
+Acta https://www.rffm.es/acta-partido/5697438?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5697438?temporada=22&competicion=26738230&grupo=26738231 (intento 2): page.waitForFunction: Timeout 45000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5697445?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5697445?temporada=22&competicion=26738230&grupo=26738231 (intento 2): page.waitForFunction: Timeout 45000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5697451?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5697451?temporada=22&competicion=26738230&grupo=26738231 (intento 2): page.waitForFunction: Timeout 45000ms exceeded.
 Detalles de 24 partidos del Barajas
 Actas de la temporada pasada guardadas: 15
 Horarios pendientes: 11 de esta temporada, 95 de la pasada
-Acta https://www.rffm.es/acta-partido/5731125?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520082?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
 Acta https://www.rffm.es/acta-partido/5520086?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5520084?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5520095?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5520092?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5520098?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5520099?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
-Horarios guardados: 42
+Acta https://www.rffm.es/acta-partido/5520113?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520121?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520123?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520133?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5520149?temporada=21&competicion=24038103&grupo=24038104 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5513630?temporada=21&competicion=24038103&grupo=24038105 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5513686?temporada=21&competicion=24038103&grupo=24038105 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Acta https://www.rffm.es/acta-partido/5513696?temporada=21&competicion=24038103&grupo=24038105 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
+Horarios guardados: 104
 Goleadoras: 46 filas
 data.json actualizado
