@@ -17,6 +17,6 @@ jobs:
       - run: |
           git config user.name "actualizador"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add debug/geo.json && git commit -m "Coordenadas de campos" || true
+          git add debug/geo2.json && git commit -m "Coordenadas de campos" || true
           git pull --rebase -X theirs origin main || true
           git push
