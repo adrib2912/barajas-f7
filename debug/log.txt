@@ -5,6 +5,5 @@ Horarios pendientes: 6 de esta temporada, 0 de la pasada
 Horarios guardados: 120
 Clasificación oficial: 13 equipos, líder C.D. BARAJAS con 6
 Goleadoras: 46 filas
-Escudo del Barajas guardado
 data.json actualizado
 calendario.ics: 24 partidos
