@@ -166,6 +166,19 @@ function yaOficial(fechaJornada) {
   return Date.now() >= lunes.getTime();
 }
 
+// Escudos de los clubes tal como los publica la RFFM (solo guardamos la dirección de la imagen)
+const ESCUDOS = (() => { try { return JSON.parse(fs.readFileSync("data.json", "utf8")).escudos || {}; } catch { return {}; } })();
+async function leerEscudos() {
+  try {
+    const html = await page.content();
+    const re = /equipo_(local|visitante)\\?":\\?"([^"\\]+)\\?",\\?"escudo_\1\\?":\\?"([^"\\]+)/g;
+    for (const m of html.matchAll(re)) {
+      const eq = m[2].trim(), url = m[3].trim();
+      if (eq && /^\/pnfg\/pimg\//.test(url)) ESCUDOS[eq] = "https://appweb.rffm.es" + encodeURI(url);
+    }
+  } catch {}
+}
+
 // ---------- LECTURA DE UN ACTA ----------
 // Devuelve día, hora, campo y, si el partido se ha jugado, convocadas del Barajas y goles.
 let volcado = false;
@@ -176,6 +189,7 @@ async function leerActa(p, intentos = 2, espera = 45000) {
     await page.waitForFunction(() => document.body.innerText.includes("TERRENO DE JUEGO"), null, { timeout: espera });
     await page.waitForTimeout(800);
     const t = await page.evaluate(() => document.body.innerText);
+    await leerEscudos();
     const L = t.split("\n").map((x) => x.trim()).filter(Boolean);
     const fh = t.match(/(\d\d)-(\d\d)-(\d{4})\s*\/\s*(\d{1,2}:\d\d)/);
     const iT = L.indexOf("TERRENO DE JUEGO");
@@ -458,6 +472,7 @@ if (ok) {
     anterior,
     horarios,
     clasif,
+    escudos: ESCUDOS,
   };
   fs.writeFileSync("data.json", JSON.stringify(data));
   console.log("data.json actualizado");

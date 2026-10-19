@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Barajas F7">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("tema")||"dark";document.documentElement.dataset.size=localStorage.getItem("letra")||"n"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("tema")||"dark";document.documentElement.dataset.size=localStorage.getItem("letra")||"n";document.documentElement.dataset.eq=localStorage.getItem("equipos")||"esc"}catch(e){document.documentElement.dataset.theme="dark";document.documentElement.dataset.size="n";document.documentElement.dataset.eq="esc"}</script>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <style>
@@ -165,6 +165,12 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .gm.us{background:var(--us)} .gm b{font-weight:700}
 .gm .where{grid-column:1/-1;text-align:center;font-size:12px}
 .shirt{flex:none;display:block}
+.cr{display:inline-grid;flex:none}
+.cr>*{grid-area:1/1;width:100%!important;height:100%!important}
+.cr img{object-fit:contain}
+.cr svg{visibility:hidden}
+.cr.x svg{visibility:visible}
+.cr.x img{display:none}
 
 /* Barra de pestañas */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
@@ -367,6 +373,8 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
   <div class="seg2" data-set="tema"><button data-v="dark">Oscuro</button><button data-v="light">Claro</button><button data-v="auto">Automático</button></div>
   <div class="k">Tamaño de letra</div>
   <div class="seg2" data-set="letra"><button data-v="n">Normal</button><button data-v="g">Grande</button></div>
+  <div class="k">Equipos</div>
+  <div class="seg2" data-set="equipos"><button data-v="esc">Escudos</button><button data-v="cam">Camisetas</button></div>
   <div class="k">Actualizar datos</div>
   <div class="clv" id="clvBox"></div>
 </div></div>
@@ -442,7 +450,14 @@ const fmt=(iso,o={weekday:"short",day:"numeric",month:"short"})=>dOf(iso).toLoca
 const capW=s=>s.toLowerCase().replace(/(^|[\s\-.(/])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()).replace(/ (De|Del|La|Las|El|Los|Y)(?= )/g,m=>m.toLowerCase());
 const cleanCampo=c=>(x=>x.replace(/(\S)-(\S)/g,"$1\u2011$2"))(capW(c.replace(/\((h\.?a\.?|hn|t)\)/i,"").trim()).replace(/\bF7\b/i,"F7").replace(/\bNtra\. Sra\./,"Ntra. Sra."));
 let _sid=0;
+/* Escudo oficial (imagen de la web de la RFFM); si no carga o se eligen camisetas, se ve la camiseta */
+let ESC={};
 function shirt(t,size){
+  const cam=camiseta(t,size);
+  if(document.documentElement.dataset.eq==="cam"||!ESC[t])return cam;
+  return `<span class="shirt cr" style="width:${size}px;height:${size}px"><img src="${esc(ESC[t])}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('x')">${cam}</span>`;
+}
+function camiseta(t,size){
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
   const id="k"+(++_sid);let defs="",body=k.b,extra="";
   if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
@@ -474,13 +489,13 @@ fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(start
 
 /* Ajustes: tema y tamaño de letra (se guardan en este móvil) */
 (function(){const sh=document.getElementById("sheet");
-  const pinta=()=>document.querySelectorAll("#sheet .seg2").forEach(g=>{const k=g.dataset.set,v=k==="tema"?document.documentElement.dataset.theme:document.documentElement.dataset.size;g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v))});
+  const pinta=()=>document.querySelectorAll("#sheet .seg2").forEach(g=>{const k=g.dataset.set,v=document.documentElement.dataset[{tema:"theme",letra:"size",equipos:"eq"}[k]];g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v))});
   document.getElementById("ajustes").onclick=()=>{pinta();sh.hidden=false};
   document.getElementById("cerrar").onclick=()=>sh.hidden=true;
   sh.onclick=e=>{if(e.target===sh)sh.hidden=true};
   document.querySelectorAll("#sheet .seg2 button").forEach(b=>b.onclick=()=>{const k=b.parentNode.dataset.set;
-    if(k==="tema")document.documentElement.dataset.theme=b.dataset.v;else document.documentElement.dataset.size=b.dataset.v;
-    try{localStorage.setItem(k,b.dataset.v)}catch(e){}pinta()});
+    document.documentElement.dataset[{tema:"theme",letra:"size",equipos:"eq"}[k]]=b.dataset.v;
+    try{localStorage.setItem(k,b.dataset.v)}catch(e){}pinta();if(k==="equipos")location.reload()});
 })();
 
 /* ---- Actualizar datos desde la app ----
@@ -586,6 +601,7 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("pageshow",e=>{if(e.persisted)location.reload()});
 
 function start(DATA){
+  ESC=DATA.escudos||{};
   _loadedVer=DATA.actualizado;
   try{const a=JSON.parse(localStorage.getItem("upAct")||"null");if(a&&clave()&&Date.now()-a.t0<15*60e3)setTimeout(actualizar,300);else localStorage.removeItem("upAct")}catch(e){}
   const J=DATA.jornadas, DET=DATA.detalles||{};
