@@ -488,6 +488,9 @@ fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(start
    ahora mismo (modo rápido) y va enseñando en qué paso está. Sin clave, solo recarga la página. */
 const REPO="https://api.github.com/repos/adrib2912/barajas-f7";
 const clave=()=>{try{return localStorage.getItem("ghclave")||""}catch(e){return ""}};
+/* Enlace para compartir la clave: …/barajas-f7/#clave=github_pat_… la guarda en el móvil y la quita de la dirección */
+(function(){const m=location.hash.match(/^#clave=(\S+)$/);if(!m)return;
+  try{localStorage.setItem("ghclave",decodeURIComponent(m[1]))}catch(e){}history.replaceState(null,"",location.pathname+location.search)})();
 (function(){const box=document.getElementById("clvBox");
   const pinta=()=>{box.innerHTML=clave()
     ?`<p class="clvt" style="flex:1;align-self:center">Clave guardada en este móvil</p><button class="sec" id="clvDel">Quitar</button>`
