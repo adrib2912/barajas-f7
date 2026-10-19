@@ -433,7 +433,7 @@ const CAMPOS={
 "ESCUELA MUNICIPAL DE COBEÑA":["Campo municipal de Cobeña","Cobeña"]};
 /* Camisetas (colores tomados de Matchapp). b: cuerpo, s: mangas, tr: cuello y puños, st: rayas, v: diseño */
 const KITS={
-"C.D. BARAJAS":{b:"#f5d000",s:"#f5d000",tr:"#111111",st:"#111111"},
+"C.D. BARAJAS":{b:"#151515",s:"#151515",tr:"#f5d000",v:"bar"},
 "C.D. FUTBOL TRES CANTOS":{b:"#ffffff",s:"#ffffff",tr:"#6b2fa0"},
 "C.D. ALGETE":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
 "C.F. SAN AGUSTIN DE GUADALIX":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
@@ -471,7 +471,33 @@ function shirt(t,size){
   if(document.documentElement.dataset.eq==="cam"||!ESC[t])return cam;
   return `<span class="shirt cr" style="width:${size}px;height:${size}px"><img src="${esc(ESC[t])}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('x')">${cam}</span>`;
 }
+/* Camiseta del Barajas, más detallada: negra, tres franjas amarillas que se apagan hacia abajo,
+   banda negra del patrocinador, cuello de pico y puños amarillos, y el escudo en el pecho */
+const BAR_TORSO="M11.2 3.5 L16 7.6 L20.8 3.5 L25.6 5.4 Q26.5 5.8 26.6 6.8 L24.5 12.4 L24.5 28.2 Q24.5 29 23.7 29 L8.3 29 Q7.5 29 7.5 28.2 L7.5 12.4 L5.4 6.8 Q5.5 5.8 6.4 5.4 Z";
+const BAR_MANGA="M6.4 5.4 Q4.4 6.2 3.6 7.6 L1.4 13.4 Q1.3 14 1.9 14.2 L6.1 15.4 Q6.6 15.5 6.8 15 L7.5 12.4 L5.4 6.8 Z";
+const ESCUDO_BAR=[20.4,10.5,3.5]; /* centro x, centro y, tamaño (en la cuadrícula de 32) */
+function camisetaBarajas(size,conEscudo=true){
+  const id="kb"+(++_sid),Y="#f5d000",N="#141414",line="var(--kit-line)";
+  const espejo=`transform="translate(32 0) scale(-1 1)"`;
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>
+<clipPath id="${id}c"><path d="${BAR_TORSO}"/></clipPath>
+<linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset=".66" stop-color="${Y}"/><stop offset=".97" stop-color="${Y}" stop-opacity="0"/></linearGradient>
+<linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient></defs>
+<g><path d="${BAR_MANGA}" fill="${N}" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/><path d="M1.7 13.3 L6.7 14.7" stroke="${Y}" stroke-width="1.5" stroke-linecap="round"/></g>
+<g ${espejo}><path d="${BAR_MANGA}" fill="${N}" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/><path d="M1.7 13.3 L6.7 14.7" stroke="${Y}" stroke-width="1.5" stroke-linecap="round"/></g>
+<path d="${BAR_TORSO}" fill="${N}"/>
+<g clip-path="url(#${id}c)">${[[8.9,3.4],[14.2,3.6],[19.7,3.4]].map(([x,w])=>`<rect x="${x}" y="3" width="${w}" height="26.5" fill="url(#${id}g)"/>`).join("")}
+<rect x="7" y="14.5" width="18" height="2" fill="${N}"/>
+<path d="M11.2 3.5 L16 7.6 L20.8 3.5" fill="none" stroke="${N}" stroke-width="2.6"/>
+<rect x="0" y="0" width="32" height="32" fill="url(#${id}s)"/></g>
+<path d="M11.2 3.5 Q16 5.3 20.8 3.5 L16 7.6 Z" fill="#2c2c2e"/>
+<path d="${BAR_TORSO}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M11.2 3.5 L16 7.6 L20.8 3.5" fill="none" stroke="${Y}" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M11.4 3.6 Q16 5.2 20.6 3.6" fill="none" stroke="${Y}" stroke-width=".5"/>
+${conEscudo?`<image href="escudo-barajas.png" x="${ESCUDO_BAR[0]-ESCUDO_BAR[2]/2}" y="${ESCUDO_BAR[1]-ESCUDO_BAR[2]/2}" width="${ESCUDO_BAR[2]}" height="${ESCUDO_BAR[2]}"/>`:""}</svg>`;
+}
 function camiseta(t,size){
+  if(KITS[t]&&KITS[t].v==="bar")return camisetaBarajas(size);
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
   const id="k"+(++_sid);let defs="",body=k.b,extra="";
   if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
@@ -785,7 +811,7 @@ function start(DATA){
 
   /* ---------- Imagen del resultado para compartir (1080×1350, formato Instagram) ---------- */
   function svgImg(svg){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);
-    i.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg.replace("<svg ",'<svg xmlns="http://www.w3.org/2000/svg" ').replace(/var\(--kit-line\)/g,"#1b1b1b").replace(/var\(--kit\)/g,"#d8d8d8"))})}
+    i.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg.replace("<svg ",'<svg xmlns="http://www.w3.org/2000/svg" ').replace(/var\(--kit-line\)/g,"#6e6e73").replace(/var\(--kit\)/g,"#d8d8d8"))})}
   async function imagenResultado(o){
     const W=1080,H=1350,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
     const F='-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',R='"SF Pro Rounded",ui-rounded,'+F;
@@ -798,9 +824,12 @@ function start(DATA){
     x.textAlign="center";x.fillStyle="#f5c400";x.font=`700 34px ${F}`;x.fillText(`JORNADA ${o.j}`,W/2,104);
     x.fillStyle="#8e8e93";x.font=`500 28px ${F}`;x.fillText("Primera Femenino F-7 · Grupo 1",W/2,146);
     /* Camisetas y nombres */
-    const [iL,iV]=await Promise.all([svgImg(camiseta(L,300)),svgImg(camiseta(V,300))]);
+    const cam=t=>t===US?camisetaBarajas(300,false):camiseta(t,300);
+    const [iL,iV]=await Promise.all([svgImg(cam(L)),svgImg(cam(V))]);
     const cx=[250,830];
     [iL,iV].forEach((im,i)=>{if(im)x.drawImage(im,cx[i]-140,200,280,280)});
+    const esc0=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="escudo-barajas.png"});
+    if(esc0)[L,V].forEach((t,i)=>{if(t!==US)return;const s=280/32,[ex,ey,es]=ESCUDO_BAR;x.drawImage(esc0,cx[i]-140+(ex-es/2)*s,200+(ey-es/2)*s,es*s,es*s)});
     const nombre=(t,cxx,y)=>{x.fillStyle=t===US?"#ffffff":"#d1d1d6";x.font=`${t===US?800:600} 44px ${F}`;
       const ws=sn(t).split(" "),ls=[];let cur="";ws.forEach(w=>{const tt=cur?cur+" "+w:w;if(x.measureText(tt).width>400&&cur){ls.push(cur);cur=w}else cur=tt});ls.push(cur);
       ls.slice(0,2).forEach((l,i)=>x.fillText(l,cxx,y+i*52))};
