@@ -460,6 +460,15 @@ try {
   console.error("No se pudieron leer las goleadoras:", e.message);
 }
 
+// Copia del escudo del Barajas (nuestro club) para dibujarlo en el pecho de nuestra camiseta
+if (ESCUDOS["C.D. BARAJAS"] && !fs.existsSync("escudo-barajas.jpg")) {
+  try {
+    const r = await page.request.get(ESCUDOS["C.D. BARAJAS"], { timeout: 30000 });
+    if (r.ok()) { fs.writeFileSync("escudo-barajas.jpg", await r.body()); console.log("Escudo del Barajas guardado"); }
+    else console.error("Escudo del Barajas:", r.status());
+  } catch (e) { console.error("No se pudo bajar el escudo del Barajas:", e.message.split("\n")[0]); }
+}
+
 fs.writeFileSync(`${DEBUG}/api.json`, JSON.stringify(api.slice(0, 40), null, 1).slice(0, 2_000_000));
 await browser.close();
 
