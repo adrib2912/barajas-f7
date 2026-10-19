@@ -460,6 +460,23 @@ try {
   console.error("No se pudieron leer las goleadoras:", e.message);
 }
 
+// ---------- PLANTILLA (ficha del equipo en la RFFM: todas las jugadoras con licencia) ----------
+const EQUIPO_BARAJAS = "24025221"; // código del equipo en la RFFM (sale en las actas: codigo_equipo_...)
+let plantilla = null;
+try { plantilla = JSON.parse(fs.readFileSync("data.json", "utf8")).plantilla || null; } catch {}
+try {
+  await page.goto(`https://www.rffm.es/fichaequipo/${EQUIPO_BARAJAS}?temporada=22`, { waitUntil: "domcontentloaded", timeout: 60000 });
+  await page.waitForFunction(() => /JUGADORES \(\d+\)/.test(document.body.innerText), null, { timeout: 40000 });
+  await page.waitForTimeout(800);
+  const L = (await page.evaluate(() => document.body.innerText)).split("\n").map((x) => x.trim()).filter(Boolean);
+  const i = L.findIndex((x) => /^JUGADORES \(\d+\)$/.test(x));
+  const n = +L[i].match(/\d+/)[0];
+  const lista = [];
+  for (const x of L.slice(i + 1)) { if (!/^[^,]+,\s*\S/.test(x) || x !== x.toUpperCase()) break; lista.push(x); }
+  if (lista.length === n && n > 0) { plantilla = lista; console.log(`Plantilla: ${n} jugadoras`); }
+  else console.error(`Plantilla rara (${lista.length} de ${n}); se mantiene la anterior`);
+} catch (e) { console.error("No se pudo leer la plantilla:", e.message.split("\n")[0]); }
+
 // Copia del escudo del Barajas (nuestro club) para dibujarlo en el pecho de nuestra camiseta
 if (ESCUDOS["C.D. BARAJAS"] && !fs.existsSync("escudo-barajas.jpg")) {
   try {
@@ -483,6 +500,7 @@ if (ok) {
     horarios,
     clasif,
     escudos: ESCUDOS,
+    plantilla,
   };
   fs.writeFileSync("data.json", JSON.stringify(data));
   console.log("data.json actualizado");

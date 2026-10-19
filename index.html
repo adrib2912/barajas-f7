@@ -915,6 +915,10 @@ function start(DATA){
   /* Goles y partidos de cada jugadora (de las actas de esta temporada) */
   const PL={};
   ours.forEach(o=>{if(!o.conv)return;o.conv.forEach(n=>{const p=(PL[n]??={n,pj:0,g:0,ds:{}});p.pj++;const d=o.dors[n];if(d!=null)p.ds[d]=(p.ds[d]||0)+1});(o.goles||[]).forEach(g=>{if(g.nuestro&&!g.propia)(PL[g.nombre]??={n:g.nombre,pj:0,g:0}).g++})});
+  /* Jugadoras de la ficha del equipo que aún no han ido convocadas: salen con 0 partidos */
+  const sinTilde=t=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/\s+/g," ").trim();
+  const yaEn=new Set(Object.keys(PL).map(sinTilde));
+  (DATA.plantilla||[]).forEach(n=>{if(!yaEn.has(sinTilde(n))){PL[n]={n,pj:0,g:0,ds:{}};yaEn.add(sinTilde(n))}});
   const players=Object.values(PL);
   players.forEach(p=>{const t=Object.entries(p.ds||{}).sort((a,b)=>b[1]-a[1])[0];p.dorsal=t?+t[0]:null});
   const DORSAL={};players.forEach(p=>{if(p.dorsal!=null)DORSAL[p.n]=p.dorsal});
