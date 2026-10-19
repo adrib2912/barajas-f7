@@ -1,15 +1,24 @@
 name: Actualizar datos RFFM
+# El nombre lleva el código que manda el botón de la app, para que la app sepa qué ejecución seguir
+run-name: ${{ inputs.id && format('Actualizar {0}', inputs.id) || 'Actualizar datos RFFM' }}
 
 on:
   schedule:
-    # GitHub se salta muchas ejecuciones programadas cuando va cargado (sobre todo en horas "redondas"),
-    # así que se pide a menudo y en minutos raros: aunque se pierda alguna, la siguiente llega pronto.
-    - cron: "7,37 * * * *"            # cada media hora
-    - cron: "4,14,24,44,54 7,8 * * 1" # lunes entre las 9 y las 11 (hora de Madrid), cada 10 minutos
-  workflow_dispatch:          # botón para lanzarlo a mano
+    # Los horarios de GitHub no son fiables (se salta muchos); el aviso de verdad viene de fuera
+    # (cron-job.org) o del botón de la app. Estos quedan solo de reserva.
+    - cron: "37 * * * *"              # cada hora, rápida
+    - cron: "4,24,44 7,8 * * 1"       # lunes entre las 9 y las 11 (hora de Madrid), rápida
+    - cron: "23 1 * * *"              # cada noche, completa
+  workflow_dispatch:
     inputs:
+      modo:
+        description: "rapida (jornada actual y siguiente) o completa (todo)"
+        default: "rapida"
+      id:
+        description: "Código de la app para seguir el progreso (opcional)"
+        default: ""
       minutos:
-        description: "Minutos máximos leyendo horarios (13 normal; 40 para rellenar de golpe)"
+        description: "Minutos máximos leyendo horarios en modo completo (13 normal; 40 para rellenar de golpe)"
         default: "13"
 
 concurrency:
@@ -24,16 +33,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Descargar la app
+        uses: actions/checkout@v4
+      - name: Preparar Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npx playwright install --with-deps chromium
+      - name: Instalar programas
+        run: npm install --no-audit --no-fund
+      - name: Preparar navegador
+        run: |
+          if command -v google-chrome >/dev/null; then echo "Chrome ya instalado: $(google-chrome --version)"
+          else npx playwright install --with-deps chromium; fi
       - name: Leer la web de la RFFM
         run: node scrape.mjs
         env:
-          MINUTOS: ${{ github.event.inputs.minutos || '13' }}
+          MODO: ${{ inputs.modo || (github.event.schedule == '23 1 * * *' && 'completa') || 'rapida' }}
+          MINUTOS: ${{ inputs.minutos || '13' }}
+          CANAL: chrome
       - name: Guardar cambios
         if: always()
         run: |

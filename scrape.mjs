@@ -9,6 +9,12 @@ const BASE = "https://www.rffm.es/competicion/";
 const DEBUG = "debug";
 const INICIO = Date.now();
 const minutos = () => (Date.now() - INICIO) / 60000;
+// MODO=rapida: solo lo que cambia durante la semana (calendario, resultados, clasificación, goleadoras
+// y las actas de la jornada actual y la siguiente). MODO=completa: además todo lo demás (temporada
+// pasada, dorsales de partidos viejos, horarios de otros equipos...).
+const RAPIDA = (process.env.MODO || "completa") === "rapida";
+const HOY = new Date().toISOString().slice(0, 10);
+const masDias = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
 fs.mkdirSync(DEBUG, { recursive: true });
 // Copia de lo que se escribe en pantalla, para poder revisarlo luego
 const LOG = [];
@@ -17,7 +23,11 @@ for (const k of ["log", "error"]) {
   console[k] = (...a) => { LOG.push(a.join(" ")); orig(...a); fs.writeFileSync(`${DEBUG}/log.txt`, LOG.join("\n")); };
 }
 
-const browser = await chromium.launch();
+// En GitHub ya viene Google Chrome instalado: usarlo ahorra casi un minuto de descarga
+let browser;
+try { browser = await chromium.launch(process.env.CANAL ? { channel: process.env.CANAL } : {}); }
+catch (e) { console.error("No se pudo abrir", process.env.CANAL, "- uso Chromium:", e.message.split("\n")[0]); browser = await chromium.launch(); }
+console.log(`Modo ${RAPIDA ? "rápido" : "completo"}`);
 const page = await browser.newPage({
   locale: "es-ES",
   userAgent:
@@ -152,7 +162,7 @@ try {
 function yaOficial(fechaJornada) {
   if (!fechaJornada) return false;
   const [y, m, d] = fechaJornada.split("-").map(Number);
-  const lunes = new Date(Date.UTC(y, m - 1, d - 5, 7, 0)); // 9:00 en Madrid en invierno (8:00 en verano: margen)
+  const lunes = new Date(Date.UTC(y, m - 1, d - 5, 8, 0)); // 9:00 en Madrid en invierno, 10:00 en verano (margen)
   return Date.now() >= lunes.getTime();
 }
 
@@ -261,10 +271,14 @@ if (ok) {
   const nuestros = jornadas
     .map((j) => ({ j, p: j.partidos.find((x) => (x.local + x.visit).includes("C.D. BARAJAS") && x.acta) }))
     .filter((x) => x.p);
-  const proximos = nuestros.filter((x) => !x.p.g).slice(0, 3);
+  const proximos = nuestros.filter((x) => !x.p.g).slice(0, RAPIDA ? 2 : 3);
   const sinDatos = nuestros.filter((x) => !previo[x.j.j] && !proximos.includes(x)).slice(0, 4);
   const jugados = nuestros.filter((x) => x.p.g && !(previo[x.j.j] && previo[x.j.j].dorsales) && !sinDatos.includes(x)).slice(0, 6);
-  for (const { j, p } of [...proximos, ...sinDatos, ...jugados]) {
+  // En modo rápido: los dos próximos y el último jugado si aún no tenemos sus goles y convocadas
+  const lista = RAPIDA
+    ? [...proximos, ...nuestros.filter((x) => x.p.g && x.j.fecha >= masDias(-10) && !(previo[x.j.j] && previo[x.j.j].dorsales))]
+    : [...proximos, ...sinDatos, ...jugados];
+  for (const { j, p } of lista) {
     try {
       const nuevo = await leerActa(p);
       const viejo = previo[j.j] || {};
@@ -284,7 +298,7 @@ if (ok) {
 
 // ---------- TEMPORADA ANTERIOR (se lee una vez y se guarda) ----------
 const base = (t) => t.trim().replace(/\s+'[A-Z]'$/, "");
-if (ok && !(anterior && anterior.v === 3)) {
+if (ok && !RAPIDA && !(anterior && anterior.v === 3)) {
   try {
     const equiposHoy = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])));
     await abrir("calendario", "VER ACTA");
@@ -324,7 +338,7 @@ if (ok && !(anterior && anterior.v === 3)) {
   }
 }
 // Actas de la temporada pasada: nuestros partidos contra rivales de este año (8 por pasada)
-if (ok && anterior && anterior.v >= 2) {
+if (ok && !RAPIDA && anterior && anterior.v >= 2) {
   const baseHoy = new Set(jornadas.flatMap((j) => j.partidos.flatMap((p) => [base(p.local), base(p.visit)])));
   anterior.actas = anterior.actas || {};
   const pendientes = anterior.grupos
@@ -351,6 +365,7 @@ if (ok) {
   const deEsta = jornadas.flatMap((j) => j.partidos.map((p) => ({ p, fecha: j.fecha })))
     .sort((x, y) => (x.fecha >= hoyIso) === (y.fecha >= hoyIso) ? 0 : x.fecha >= hoyIso ? -1 : 1)
     .filter(({ p, fecha }) => p.acta && fecha <= limite && (!horarios[p.acta] || (!horarios[p.acta][2] && fecha >= hoyIso) || (horarios[p.acta][1] >= hoyIso)))
+    .filter(({ fecha }) => !RAPIDA || (fecha >= masDias(-3) && fecha <= masDias(9)))
     .map(({ p, fecha }) => ({ ...p, fechaJ: fecha }));
   // Temporada pasada: todos los partidos de los grupos con equipos de este año
   // Temporada pasada: solo los partidos EN CASA de equipos que este año son rivales nuestros
@@ -359,7 +374,7 @@ if (ok) {
     .filter((m) => m[3] && m[2] && !horarios[m[3]] && baseHoyH.has(base(m[0]))).map((m) => ({ acta: m[3], local: m[0], visit: m[1], g: null }));
   console.log(`Horarios pendientes: ${deEsta.length} de esta temporada, ${deAnterior.length} de la pasada`);
   const limiteMin = +(process.env.MINUTOS || 13);
-  for (const p of [...deEsta.slice(0, 16), ...deAnterior.slice(0, limiteMin > 13 ? 400 : 30)]) {
+  for (const p of RAPIDA ? deEsta.slice(0, 7) : [...deEsta.slice(0, 16), ...deAnterior.slice(0, limiteMin > 13 ? 400 : 30)]) {
     if (minutos() > limiteMin) { console.log("Tiempo agotado para horarios; seguimos en la próxima pasada"); break; }
     try {
       const r = await leerActa({ ...p, g: null }, 1, 20000);
