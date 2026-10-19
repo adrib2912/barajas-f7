@@ -1,0 +1,345 @@
+RUTAS: []
+
+=== /fichaequipo/24025221 [200] 3673 chars
+Federación
+Competición
+Fútbol
+Entrenadores
+Arbitraje
+Multimedia
+Programas
+Servicios médicos
+EQUIPOS
+CompeticionesCompeticiones oficialesEquipos
+Avisos de interés
+Nota informativa - Cuotas Mutualidad - Temporadas 2026-2027 y 2027-2028
+//
+Prebenjamines - Nuevo modelo de competición - Temporada 2026-2027
+//
+Circular 3 Temporada 2026-2027 (Servicios de Guardia RFFM)
+//
+Nota Informativa RFFM - Implantación progresiva de la firma digitalizada en las licencias federativas - Temporada 2026-2027
+//
+Nota Informativa RFFM - Implantación de la firma online obligatoria para tramitación licencias federativas - Temporada 2026-2027
+//
+Nota Informativa RFFM - Apertura de agendas RRMM | Reconocimientos médicos para jugadores menores de 35 años | Temporada 2026-2027
+//
+Nota Informativa RFFM - Protocolo de comunicación previa ante la Comunidad de Madrid para el ejercicio de profesiones del deporte (Entrenadores y preparadores físicos)
+//
+Manual de gestión de alineaciones - Actas RFFM - Temporada 2026-2027
+//
+Manual para clubes para la presentación de alegaciones y recursos a través de la Intranet RFFM - Temporada 2026-2027
+//
+Nota informativa - Cuotas Mutualidad - Temporadas 2026-2027 y 2027-2028
+//
+Prebenjamines - Nuevo modelo de competición - Temporada 2026-2027
+//
+Circular 3 Temporada 2026-2027 (Servicios de Guardia RFFM)
+//
+Nota Informativa RFFM - Implantación progresiva de la firma digitalizada en las licencias federativas - Temporada 2026-2027
+//
+Nota Informativa RFFM - Implantación de la firma online obligatoria para tramitación licencias federativas - Temporada 2026-2027
+//
+Nota Informativa RFFM - Apertura de agendas RRMM | Reconocimientos médicos para jugadores menores de 35 años | Temporada 2026-2027
+//
+Nota Informativa RFFM - Protocolo de comunicación previa ante la Comunidad de Madrid para el ejercicio de profesiones del deporte (Entrenadores y preparadores físicos)
+//
+Manual de gestión de alineaciones - Actas RFFM - Temporada 2026-2027
+//
+Manual para clubes para la presentación de alegaciones y recursos a través de la Intranet RFFM - Temporada 2026-2027
+//
+C.D. BARAJAS
+EQUIPO
+C.D. BARAJAS
+CATEGORÍA
+PRIMERA FEMENINO SENIOR F-7
+CLUB
+C.D. BARAJAS
+TELÉFONOS
+699707552606217604699707552
+FAX
+913292218
+JUGADORES (17)
+BARRETO CRESPO, ADRIANA
+BLANCO CABELLO, LAURA
+CARRIÓN SERRANO, ELENA
+CORNEJO HERNANDEZ, DIANA STEFANY
+GUTIÉRREZ MARTINEZ, LAURA
+KHALIFI KADDUR MAIMON, YASMIN
+LOPEZ CERVERA, CHANTAL
+LÓPEZ RANZ, CAROLINA
+LORENZO PAVON, MARIA
+MARIN NUÑEZ, GEMA
+MORENO PERALES, M
+
+=== /equipo/24025221 [200] 784 chars
+Federación
+Competición
+Fútbol
+Entrenadores
+Arbitraje
+Multimedia
+Programas
+Servicios médicos
+NO ENCONTRAMOS LA PÁGINA QUE HA INDICADO
+Patrocinador Técnico Oficial
+Patrocinador Oficial
+Patrocinador
+Tecnológico
+Patrocinador digital
+de Talento
+Agencia de
+Publicidad
+Proveedores Oficiales
+CONTACTO
+HORARIO OFICINAS RFFM
+
+Lunes a viernes de 8:00 a 15:00 horas
+
+HORARIO DE INICIO DE TEMPORADA (SEPTIEMBRE Y OCTUBRE)
+
+De lunes a viernes de 8:00 a 15:30 horas
+
+CONTACTO
+Teléfono: 91 779 16 10
+NAVEGACIÓN
+Home
+Resultados
+Selecciones
+Portal federado
+Federación
+Formación
+Entrenadores
+Competición
+Televisión
+Árbitros
+Fútbol
+Multimedia
+Femenino
+
+Real Federación de Fútbol de Madrid | C/San Severo, 16 (PQ. Empresarial Barajas Park- Edificio C) 28042 - Madrid.
+
+Aviso legal | Política de privacidad
+
+=== /competicion/equipo?codigo_equipo=24025221&temporada=22 [200] 784 chars
+Federación
+Competición
+Fútbol
+Entrenadores
+Arbitraje
+Multimedia
+Programas
+Servicios médicos
+NO ENCONTRAMOS LA PÁGINA QUE HA INDICADO
+Patrocinador Técnico Oficial
+Patrocinador Oficial
+Patrocinador
+Tecnológico
+Patrocinador digital
+de Talento
+Agencia de
+Publicidad
+Proveedores Oficiales
+CONTACTO
+HORARIO OFICINAS RFFM
+
+Lunes a viernes de 8:00 a 15:00 horas
+
+HORARIO DE INICIO DE TEMPORADA (SEPTIEMBRE Y OCTUBRE)
+
+De lunes a viernes de 8:00 a 15:30 horas
+
+CONTACTO
+Teléfono: 91 779 16 10
+NAVEGACIÓN
+Home
+Resultados
+Selecciones
+Portal federado
+Federación
+Formación
+Entrenadores
+Competición
+Televisión
+Árbitros
+Fútbol
+Multimedia
+Femenino
+
+Real Federación de Fútbol de Madrid | C/San Severo, 16 (PQ. Empresarial Barajas Park- Edificio C) 28042 - Madrid.
+
+Aviso legal | Política de privacidad
+
+=== /ficha-equipo/24025221 [200] 784 chars
+Federación
+Competición
+Fútbol
+Entrenadores
+Arbitraje
+Multimedia
+Programas
+Servicios médicos
+NO ENCONTRAMOS LA PÁGINA QUE HA INDICADO
+Patrocinador Técnico Oficial
+Patrocinador Oficial
+Patrocinador
+Tecnológico
+Patrocinador digital
+de Talento
+Agencia de
+Publicidad
+Proveedores Oficiales
+CONTACTO
+HORARIO OFICINAS RFFM
+
+Lunes a viernes de 8:00 a 15:00 horas
+
+HORARIO DE INICIO DE TEMPORADA (SEPTIEMBRE Y OCTUBRE)
+
+De lunes a viernes de 8:00 a 15:30 horas
+
+CONTACTO
+Teléfono: 91 779 16 10
+NAVEGACIÓN
+Home
+Resultados
+Selecciones
+Portal federado
+Federación
+Formación
+Entrenadores
+Competición
+Televisión
+Árbitros
+Fútbol
+Multimedia
+Femenino
+
+Real Federación de Fútbol de Madrid | C/San Severo, 16 (PQ. Empresarial Barajas Park- Edificio C) 28042 - Madrid.
+
+Aviso legal | Política de privacidad
+
+=== /club/24025221 [200] 784 chars
+Federación
+Competición
+Fútbol
+Entrenadores
+Arbitraje
+Multimedia
+Programas
+Servicios médicos
+NO ENCONTRAMOS LA PÁGINA QUE HA INDICADO
+Patrocinador Técnico Oficial
+Patrocinador Oficial
+Patrocinador
+Tecnológico
+Patrocinador digital
+de Talento
+Agencia de
+Publicidad
+Proveedores Oficiales
+CONTACTO
+HORARIO OFICINAS RFFM
+
+Lunes a viernes de 8:00 a 15:00 horas
+
+HORARIO DE INICIO DE TEMPORADA (SEPTIEMBRE Y OCTUBRE)
+
+De lunes a viernes de 8:00 a 15:30 horas
+
+CONTACTO
+Teléfono: 91 779 16 10
+NAVEGACIÓN
+Home
+Resultados
+Selecciones
+Portal federado
+Federación
+Formación
+Entrenadores
+Competición
+Televisión
+Árbitros
+Fútbol
+Multimedia
+Femenino
+
+Real Federación de Fútbol de Madrid | C/San Severo, 16 (PQ. Empresarial Barajas Park- Edificio C) 28042 - Madrid.
+
+Aviso legal | Política de privacidad
+
+=== /fichaclub/42740 [200] 2749 chars
+Federación
+Competición
+Fútbol
+Entrenadores
+Arbitraje
+Multimedia
+Programas
+Servicios médicos
+DIRECTORIO DE CLUBS
+CompeticionesDirectorio Directorio de clubs
+Avisos de interés
+Nota informativa - Cuotas Mutualidad - Temporadas 2026-2027 y 2027-2028
+//
+Prebenjamines - Nuevo modelo de competición - Temporada 2026-2027
+//
+Circular 3 Temporada 2026-2027 (Servicios de Guardia RFFM)
+//
+Nota Informativa RFFM - Implantación progresiva de la firma digitalizada en las licencias federativas - Temporada 2026-2027
+//
+Nota Informativa RFFM - Implantación de la firma online obligatoria para tramitación licencias federativas - Temporada 2026-2027
+//
+Nota Informativa RFFM - Apertura de agendas RRMM | Reconocimientos médicos para jugadores menores de 35 años | Temporada 2026-2027
+//
+Nota Informativa RFFM - Protocolo de comunicación previa ante la Comunidad de Madrid para el ejercicio de profesiones del deporte (Entrenadores y preparadores físicos)
+//
+Manual de gestión de alineaciones - Actas RFFM - Temporada 2026-2027
+//
+Manual para clubes para la presentación de alegaciones y recursos a través de la Intranet RFFM - Temporada 2026-2027
+//
+Nota informativa - Cuotas Mutualidad - Temporadas 2026-2027 y 2027-2028
+//
+Prebenjamines - Nuevo modelo de competición - Temporada 2026-2027
+//
+Circular 3 Temporada 2026-2027 (Servicios de Guardia RFFM)
+//
+Nota Informativa RFFM - Implantación progresiva de la firma digitalizada en las licencias federativas - Temporada 2026-2027
+//
+Nota Informativa RFFM - Implantación de la firma online obligatoria para tramitación licencias federativas - Temporada 2026-2027
+//
+Nota Informativa RFFM - Apertura de agendas RRMM | Reconocimientos médicos para jugadores menores de 35 años | Temporada 2026-2027
+//
+Nota Informativa RFFM - Protocolo de comunicación previa ante la Comunidad de Madrid para el ejercicio de profesiones del deporte (Entrenadores y preparadores físicos)
+//
+Manual de gestión de alineaciones - Actas RFFM - Temporada 2026-2027
+//
+Manual para clubes para la presentación de alegaciones y recursos a través de la Intranet RFFM - Temporada 2026-2027
+//
+Patrocinador Técnico Oficial
+Patrocinador Oficial
+Patrocinador
+Tecnológico
+Patrocinador digital
+de Talento
+Agencia de
+Publicidad
+Proveedores Oficiales
+CONTACTO
+HORARIO OFICINAS RFFM
+
+Lunes a viernes de 8:00 a 15:00 horas
+
+HORARIO DE INICIO DE TEMPORADA (SEPTIEMBRE Y OCTUBRE)
+
+De lunes a viernes de 8:00 a 15:30 horas
+
+CONTACTO
+Teléfono: 91 779 16 10
+NAVEGACIÓN
+Home
+Resultados
+Selecciones
+Portal feder
+
+APIS: 
