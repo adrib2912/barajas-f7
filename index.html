@@ -140,6 +140,27 @@ h2{font:700 22px/1.2 var(--font);margin:26px 4px 8px;letter-spacing:-.01em}
 
 /* Tabla */
 .tbl{background:var(--card);border-radius:14px;overflow-x:auto}
+.tbl tr.tap{cursor:pointer}
+.mapa{height:340px;border-radius:14px;overflow:hidden;background:var(--fill);position:relative;z-index:0}
+.mapa .leaflet-control-attribution{font-size:9px}
+.pin{width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center;overflow:hidden;border:2px solid #fff}
+.pin img{width:28px!important;height:28px!important;object-fit:contain}
+.pin.nx{border-color:#f5c400;box-shadow:0 0 0 4px rgba(245,196,0,.45),0 2px 6px rgba(0,0,0,.35)}
+.pin.us{background:#141414;border-color:#f5c400}
+.pop b{display:block;font-size:14px}.pop span{display:block;color:#666;font-size:12px;margin:2px 0 6px}.pop a{font-weight:600}
+.tbl tr.tap td.t .who::after{content:"›";margin-left:auto;padding-left:6px;color:var(--ink3);font-weight:600;transition:transform .2s}
+.tbl tr.tap.open td.t .who::after{transform:rotate(90deg)}
+.tbl tr.det td{padding:0 10px 10px;text-align:left;white-space:normal}
+.tdet{background:var(--fill);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.tdet .r{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center}
+.tdet .r .j{color:var(--ink2);font-variant-numeric:tabular-nums}
+.tdet .r .vs{display:flex;align-items:center;gap:6px;min-width:0}
+.tdet .r .vs span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdet .r .vs small{color:var(--ink2)}
+.tdet .r b{font:700 13px var(--round);padding:2px 7px;border-radius:7px;background:var(--card)}
+.tdet .r b.W{background:color-mix(in srgb,var(--green) 30%,transparent)}.tdet .r b.D{background:color-mix(in srgb,var(--orange) 30%,transparent)}.tdet .r b.L{background:color-mix(in srgb,var(--red) 28%,transparent)}
+.tdet .r.fut{opacity:.6}
+.tdet .hd4{font-size:12px;color:var(--ink2);font-weight:600}
 table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
 th,td{padding:10px 6px;text-align:center;white-space:nowrap}
 th{font-size:12px;font-weight:600;color:var(--ink2)}
@@ -1058,9 +1079,21 @@ function start(DATA){
       <p class="note">Según sus partidos jugados en casa esta temporada y la anterior.</p>`:"";
     document.getElementById("p-tab").innerHTML=`<h2>Clasificación</h2>`+bars+duel+
       `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
-      TABLA.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span><span style="display:block;padding-left:30px">${racha(r.t)}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
-      `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}</p>`+mx+hor;
-    drawMx();
+      TABLA.map((r,i)=>`<tr class="tap${r.t===US?" us":""}" data-t="${esc(r.t)}"><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span><span style="display:block;padding-left:30px">${racha(r.t)}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
+      `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}</p>`+
+      `<h2>Campos</h2><div class="mapa" id="mapa"></div>`+mx+hor;
+    drawMx();mapaPend=true;if(!document.getElementById("p-tab").hidden)pintaMapa();
+    /* Al tocar un equipo se despliegan sus partidos de esta temporada */
+    document.querySelectorAll("#p-tab tr.tap").forEach(tr=>tr.onclick=()=>{
+      const sig=tr.nextElementSibling;if(sig&&sig.classList.contains("det")){sig.remove();tr.classList.remove("open");return}
+      const t=tr.dataset.t,H=DATA.horarios||{},jug=[],fut=[];
+      J.forEach(([j,f,ms])=>ms.forEach(([h,a,g,acta])=>{if(h!==t&&a!==t)return;const casa=h===t,rv=casa?a:h,hr=acta&&H[acta];
+        const o={j,f:hr&&hr[1]?hr[1]:f,casa,rv,g:g?(casa?g:[g[1],g[0]]):null};(g?jug:fut).push(o)}));
+      const fila=o=>{const k=o.g?(o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D"):"";
+        return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs">${shirt(o.rv,18)}<span>${esc(sn(o.rv))} <small>${o.casa?"casa":"fuera"} · ${fmt(o.f,{day:"numeric",month:"short"})}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>`:"<small>—</small>"}</div>`};
+      const d=document.createElement("tr");d.className="det";
+      d.innerHTML=`<td colspan="8"><div class="tdet">${jug.length?jug.map(fila).join(""):`<div class="hd4">Aún no ha jugado</div>`}${fut.length?`<div class="hd4">Próximo</div>${fila(fut[0])}`:""}</div></td>`;
+      tr.after(d);tr.classList.add("open")});
   }
   let mxT=US;
   function drawMx(){
@@ -1089,6 +1122,39 @@ function start(DATA){
       <div class="sums">${line("W","Ha ganado a",grp.W)}${line("D","Ha empatado con",grp.D)}${line("L","Ha perdido con",grp.L)}${line("P","Le falta jugar con",grp.P)}</div>
       <p class="note">${teams.map(t=>`${ABR[t]} = ${esc(sn(t))}`).join(" · ")}</p>`;
     document.querySelectorAll("#mxpick .pk").forEach(b=>b.onclick=()=>{mxT=b.dataset.t;drawMx()});
+  }
+
+  /* ---------- MAPA DE CAMPOS (OpenStreetMap; cada campo con el escudo de su club) ---------- */
+  /* Coordenadas del campo de casa de cada equipo (buscadas en OpenStreetMap; la de Barajas es aproximada) */
+  const CAMPO_GEO={"C.D. BARAJAS":[40.4712,-3.5775],"A.D. MADRID SUR":[40.3800,-3.6647],"S.A.D. COLEGIO SAN GABRIEL":[40.5066,-3.3874],"C.D. ALGETE":[40.6001,-3.5127],
+    "C.D. NUEVO PUERTA BONITA DE CARABANCHEL":[40.3970,-3.7357],"A.D. EL REAL DE MANZANARES":[40.7284,-3.8594],"C.F. SAN AGUSTIN DE GUADALIX":[40.6799,-3.6190],
+    "ESC.FUT. EL OLIVO DE COSLADA":[40.4160,-3.5765],"CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":[40.5098,-3.8935],"C.D. SANFER19":[40.4300,-3.5211],
+    "A.D. VILLAVICIOSA DE ODON 'B'":[40.3531,-3.9062],"C.D. FUTBOL TRES CANTOS":[40.6114,-3.7045],"ESCUELA MUNICIPAL DE COBEÑA":[40.5807,-3.5049]};
+  /* Nombre del campo de casa según las actas */
+  const campoCasa=t=>{for(const [j,,ms] of J){const m=ms.find(x=>x[0]===t&&(x[0]===US||x[1]===US));const d=m&&DET[j];if(d&&d.campo)return cleanCampo(d.campo)}return CAMPOS[t]?CAMPOS[t][0]:""};
+  let mapaPend=false,MAPA=null;
+  function cargaLeaflet(){return window.L?Promise.resolve():new Promise((ok,ko)=>{const c=document.createElement("link");c.rel="stylesheet";c.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";document.head.appendChild(c);
+    const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
+  function pintaMapa(){
+    if(!mapaPend)return;mapaPend=false;const el=document.getElementById("mapa");if(!el)return;
+    cargaLeaflet().then(()=>{
+      if(MAPA){MAPA.remove();MAPA=null}
+      const oscuro=document.documentElement.dataset.theme==="dark"||(document.documentElement.dataset.theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
+      MAPA=L.map(el,{scrollWheelZoom:false,attributionControl:true,zoomControl:true});
+      L.tileLayer(`https://{s}.basemaps.cartocdn.com/${oscuro?"dark_all":"rastertiles/voyager"}/{z}/{x}/{y}{r}.png`,{maxZoom:18,subdomains:"abcd",
+        attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © <a href="https://carto.com/attributions">CARTO</a>'}).addTo(MAPA);
+      const nx=ours[nextIdx],sitioNx=nx&&!nx.rest?(nx.home?US:nx.opp):null;
+      const pts=[];
+      Object.entries(CAMPO_GEO).forEach(([t,ll])=>{if(!S[t])return;pts.push(ll);
+        const img=t===US?"escudo-barajas.png":ESC[t];
+        const html=`<div class="pin${t===US?" us":""}${t===sitioNx?" nx":""}">${img?`<img src="${esc(img)}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none">${camiseta(t,26)}</span>`:camiseta(t,26)}</div>`;
+        const icon=L.divIcon({className:"",html,iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-16]});
+        const campo=campoCasa(t),q=encodeURIComponent("campo de fútbol "+campo+", "+(CAMPOS[t]?CAMPOS[t][1].split(",").pop().trim():"Madrid"));
+        const mk=L.marker(ll,{icon,zIndexOffset:t===sitioNx?1000:t===US?500:0}).addTo(MAPA)
+          .bindPopup(`<div class="pop"><b>${esc(sn(t))}</b><span>${esc(campo)}${t===sitioNx?" · próximo partido":""}</span><a href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Abrir en Google Maps</a></div>`);
+      });
+      MAPA.fitBounds(pts,{padding:[24,24]});
+    }).catch(()=>{el.innerHTML='<p class="note" style="padding:12px">No se ha podido cargar el mapa.</p>'});
   }
 
   /* ---------- PLANTILLA ---------- */
@@ -1138,6 +1204,7 @@ function start(DATA){
   function go(p){
     document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x.dataset.p===p));
     TABS.forEach(t=>document.getElementById("p-"+t).hidden=t!==p);
+    if(p==="tab")setTimeout(()=>{pintaMapa();if(MAPA)MAPA.invalidateSize()},50);
     try{localStorage.setItem("tab2",p)}catch(e){}
   }
   document.querySelectorAll(".tabs button").forEach(btn=>btn.onclick=()=>{go(btn.dataset.p);window.scrollTo({top:0})});
