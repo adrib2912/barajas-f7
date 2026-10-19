@@ -303,6 +303,26 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .sbox{width:100%;max-width:560px;background:var(--bg);border-radius:22px 22px 0 0;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
 .shd{display:flex;justify-content:space-between;align-items:center;font-size:20px}
 .sbox .k{font-size:13px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.03em;margin-top:6px}
+.clv{display:flex;gap:8px}
+.clv input{flex:1;min-width:0;height:40px;border-radius:12px;border:0;background:var(--card);color:var(--ink);padding:0 12px;font:inherit;font-size:16px}
+.clv button{height:40px;padding:0 14px;border-radius:12px;background:var(--yellow);color:#111;font-weight:600}
+.clv button.sec{background:var(--card);color:var(--red)}
+.clvt{font-size:13px;color:var(--ink2);margin:0}
+.pbar{height:10px;border-radius:5px;background:var(--fill);overflow:hidden}
+.pbar i{display:block;height:100%;width:0;border-radius:5px;background:var(--yellow);transition:width .6s linear}
+.pbar.err i{background:var(--red)}
+.upst{display:flex;justify-content:space-between;font-size:15px;font-weight:600}
+.upst span:last-child{color:var(--ink2);font-variant-numeric:tabular-nums;font-weight:500}
+.upl{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:15px;color:var(--ink3)}
+.upl li{display:flex;align-items:center;gap:10px}
+.upl li::before{content:"";width:18px;height:18px;border-radius:50%;border:2px solid var(--ink3);box-sizing:border-box;flex:none}
+.upl li.on{color:var(--ink);font-weight:600}
+.upl li.on::before{border-color:var(--yellow);border-top-color:transparent;animation:gira .8s linear infinite}
+.upl li.ok{color:var(--ink2)}
+.upl li.ok::before{background:var(--green);border-color:var(--green);content:"✓";color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
+.upl li.ko{color:var(--red)}
+.upl li.ko::before{background:var(--red);border-color:var(--red);content:"!";color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
+@keyframes gira{to{transform:rotate(360deg)}}
 #stale{margin:4px 0 12px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red);font-size:14px;font-weight:600}
 /* ---- Plantilla ---- */
 .squad{background:var(--card);color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:2px}
@@ -347,6 +367,15 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
   <div class="seg2" data-set="tema"><button data-v="dark">Oscuro</button><button data-v="light">Claro</button><button data-v="auto">Automático</button></div>
   <div class="k">Tamaño de letra</div>
   <div class="seg2" data-set="letra"><button data-v="n">Normal</button><button data-v="g">Grande</button></div>
+  <div class="k">Actualizar datos</div>
+  <div class="clv" id="clvBox"></div>
+</div></div>
+
+<div class="sheet" id="up" hidden><div class="sbox" role="dialog" aria-label="Actualizando datos">
+  <div class="shd"><b id="upH">Actualizando datos</b><button id="upX" class="round" aria-label="Cerrar">✕</button></div>
+  <div class="pbar" id="upBar"><i></i></div>
+  <div class="upst"><span id="upTxt"></span><span id="upT">0:00</span></div>
+  <ol class="upl" id="upL"></ol>
 </div></div>
 
 <nav class="tabs" role="tablist"><div class="in">
@@ -454,10 +483,98 @@ fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(start
     try{localStorage.setItem(k,b.dataset.v)}catch(e){}pinta()});
 })();
 
+/* ---- Actualizar datos desde la app ----
+   Con la clave de GitHub guardada en este móvil, el botón de recargar le pide a GitHub que lea la RFFM
+   ahora mismo (modo rápido) y va enseñando en qué paso está. Sin clave, solo recarga la página. */
+const REPO="https://api.github.com/repos/adrib2912/barajas-f7";
+const clave=()=>{try{return localStorage.getItem("ghclave")||""}catch(e){return ""}};
+(function(){const box=document.getElementById("clvBox");
+  const pinta=()=>{box.innerHTML=clave()
+    ?`<p class="clvt" style="flex:1;align-self:center">Clave guardada en este móvil</p><button class="sec" id="clvDel">Quitar</button>`
+    :`<input id="clvIn" type="password" placeholder="Clave de GitHub" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="clvOk">Guardar</button>`;
+    const ok=document.getElementById("clvOk"),del=document.getElementById("clvDel");
+    if(ok)ok.onclick=()=>{const v=document.getElementById("clvIn").value.trim();if(!v)return;try{localStorage.setItem("ghclave",v)}catch(e){}pinta()};
+    if(del)del.onclick=()=>{try{localStorage.removeItem("ghclave")}catch(e){}pinta()};};
+  pinta();})();
+
+const ETAPAS=[["pedir","Avisar a GitHub",6],["cola","Esperando turno",8],["prep","Preparando",8],["rffm","Leyendo la web de la RFFM",55],["guardar","Guardando",8],["publicar","Publicando en la app",50]];
+let UP=null;
+function actualizar(){
+  const sh=document.getElementById("up");sh.hidden=false;
+  if(UP&&!UP.fin)return;
+  let est={};try{est=JSON.parse(localStorage.getItem("upEst")||"{}")}catch(e){}
+  let prev=null;try{prev=JSON.parse(localStorage.getItem("upAct")||"null")}catch(e){}
+  UP=prev&&Date.now()-prev.t0<15*60e3?{...prev,est}:{id:Math.random().toString(36).slice(2,8),t0:Date.now(),ver:_loadedVer,run:null,est};
+  UP.etapa=UP.etapa||0;UP.desde=UP.desde||{};UP.fin=false;
+  bucle();
+}
+document.getElementById("upX").onclick=()=>{document.getElementById("up").hidden=true};
+const gh=(ruta,o={})=>fetch(REPO+ruta,{...o,cache:"no-store",headers:{Accept:"application/vnd.github+json",Authorization:"Bearer "+clave(),...(o.body?{"Content-Type":"application/json"}:{})}});
+function pintaUp(txt,err){
+  const u=UP,now=Date.now();
+  document.getElementById("upL").innerHTML=ETAPAS.map(([k,l],i)=>`<li class="${i<u.etapa||u.ok?"ok":i===u.etapa?(err?"ko":u.fin?"":"on"):""}">${l}</li>`).join("");
+  /* Progreso: etapas hechas + parte de la actual según lo que suele tardar (aprendido de veces anteriores) */
+  const dur=k=>u.est[k]||ETAPAS.find(e=>e[0]===k)[2];
+  const total=ETAPAS.reduce((a,[k])=>a+dur(k),0);
+  let hecho=ETAPAS.slice(0,u.etapa).reduce((a,[k])=>a+dur(k),0);
+  if(u.etapa<ETAPAS.length&&!u.ok){const k=ETAPAS[u.etapa][0];hecho+=dur(k)*Math.min(.92,(now-(u.desde[k]||now))/1000/dur(k))}
+  const pc=u.ok?100:Math.min(99,hecho/total*100);
+  const bar=document.getElementById("upBar");bar.classList.toggle("err",!!err);bar.firstElementChild.style.width=pc+"%";
+  document.getElementById("upTxt").textContent=txt||(u.ok?"¡Listo!":Math.round(pc)+" %");
+  const s=Math.round((now-u.t0)/1000);document.getElementById("upT").textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+}
+function pasa(k){const u=UP,i=ETAPAS.findIndex(e=>e[0]===k);if(i<=u.etapa&&u.desde[k])return;
+  for(let j=u.etapa;j<i;j++){const kk=ETAPAS[j][0];if(u.desde[kk]){u.est[kk]=Math.round(((u.est[kk]||ETAPAS[j][2])+(Date.now()-u.desde[kk])/1000)/2)}}
+  if(i>u.etapa)u.etapa=i;u.desde[k]=u.desde[k]||Date.now();
+  try{localStorage.setItem("upEst",JSON.stringify(u.est))}catch(e){}}
+function falla(txt){UP.fin=true;pintaUp(txt,true);try{localStorage.removeItem("upAct")}catch(e){}}
+async function bucle(){
+  const u=UP;const tic=setInterval(()=>{if(!u.fin)pintaUp()},500);
+  try{
+    pasa("pedir");pintaUp();
+    if(!u.run){
+      if(!u.pedido){const r=await gh("/actions/workflows/actualizar.yml/dispatches",{method:"POST",body:JSON.stringify({ref:"main",inputs:{modo:"rapida",id:u.id}})});
+        if(r.status===401)return falla("La clave no vale o ha caducado. Cámbiala en Ajustes.");
+        if(r.status===403||r.status===404)return falla("La clave no tiene permiso para actualizar.");
+        if(!r.ok)return falla("GitHub no ha respondido ("+r.status+"). Prueba en un rato.");
+        u.pedido=true;try{localStorage.setItem("upAct",JSON.stringify({id:u.id,t0:u.t0,ver:u.ver,run:null,pedido:true}))}catch(e){}}
+      for(let n=0;!u.run&&n<40;n++){await new Promise(r=>setTimeout(r,2500));
+        const r=await gh("/actions/workflows/actualizar.yml/runs?event=workflow_dispatch&per_page=10");if(!r.ok)continue;
+        const x=(await r.json()).workflow_runs.find(w=>w.display_title==="Actualizar "+u.id);if(x)u.run=x.id}
+      if(!u.run)return falla("GitHub no ha empezado la actualización. Prueba otra vez.");
+      try{localStorage.setItem("upAct",JSON.stringify({id:u.id,t0:u.t0,ver:u.ver,run:u.run}))}catch(e){}
+    }
+    pasa("cola");
+    /* Seguir los pasos de la ejecución en GitHub */
+    for(;;){await new Promise(r=>setTimeout(r,3000));
+      const r=await gh("/actions/runs/"+u.run);if(!r.ok)continue;const run=await r.json();
+      if(run.status==="completed"&&run.conclusion==="cancelled"){
+        /* Otra actualización ha ocupado su sitio: seguimos esa */
+        const q=await gh("/actions/workflows/actualizar.yml/runs?per_page=5");const o=q.ok?(await q.json()).workflow_runs.find(w=>w.status!=="completed"):null;
+        if(o){u.run=o.id;continue}return falla("La actualización se ha cancelado.")}
+      const j=await gh("/actions/runs/"+u.run+"/jobs");const steps=j.ok?((await j.json()).jobs[0]||{}).steps||[]:[];
+      const st=n=>steps.find(s=>s.name===n)||{};
+      if(st("Guardar cambios").status&&st("Guardar cambios").status!=="queued")pasa("guardar");
+      else if(st("Leer la web de la RFFM").status==="in_progress"||st("Leer la web de la RFFM").status==="completed")pasa("rffm");
+      else if(steps.some(s=>s.status!=="queued"))pasa("prep");
+      if(st("Leer la web de la RFFM").conclusion==="failure")return falla("La web de la RFFM no ha respondido bien. Siguen los datos de antes.");
+      if(run.status==="completed"){if(run.conclusion!=="success")return falla("No se ha podido terminar. Siguen los datos de antes.");break}
+    }
+    /* GitHub Pages tarda un poco en publicar el data.json nuevo */
+    pasa("publicar");
+    for(let n=0;n<100;n++){await new Promise(r=>setTimeout(r,4000));
+      const d=await fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).catch(()=>null);
+      if(d&&d.actualizado!==u.ver){pasa("fin");u.ok=true;u.fin=true;pintaUp();try{localStorage.removeItem("upAct")}catch(e){}
+        setTimeout(()=>location.reload(),1200);return}}
+    falla("Se ha leído todo, pero la app tarda en publicarse. Vuelve a abrirla en unos minutos.");
+  }catch(e){falla("Sin conexión. Prueba otra vez.")}
+  finally{clearInterval(tic)}
+}
+
 /* Al volver a la app (desde la pantalla de inicio el iPhone no recarga solo):
    si hay datos nuevos o ha pasado un rato, se recarga la página entera. */
 let _loadedAt=Date.now(),_loadedVer=null;
-document.getElementById("reload").onclick=()=>location.reload();
+document.getElementById("reload").onclick=()=>{if(clave())actualizar();else location.reload()};
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible")return;
   if(Date.now()-_loadedAt>30*60e3)return location.reload();
@@ -467,6 +584,7 @@ window.addEventListener("pageshow",e=>{if(e.persisted)location.reload()});
 
 function start(DATA){
   _loadedVer=DATA.actualizado;
+  try{const a=JSON.parse(localStorage.getItem("upAct")||"null");if(a&&clave()&&Date.now()-a.t0<15*60e3)setTimeout(actualizar,300);else localStorage.removeItem("upAct")}catch(e){}
   const J=DATA.jornadas, DET=DATA.detalles||{};
   /* Nombre y la inicial del primer apellido (la página es pública) */
   const nomC=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return capW(no?no.split(" ")[0]:"")+(ap?" "+ap[0].toUpperCase()+".":"")};
