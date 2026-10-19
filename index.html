@@ -338,8 +338,9 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 #stale{margin:4px 0 12px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red);font-size:14px;font-weight:600}
 /* ---- Plantilla ---- */
 .squad{background:var(--card);color:var(--ink);border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:2px}
-.sq{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 44px;align-items:center;gap:8px;padding:9px 2px;border-top:.5px solid var(--sep)}
+.sq{display:grid;grid-template-columns:42px minmax(0,1fr) 44px 44px;align-items:center;gap:8px;padding:9px 2px;border-top:.5px solid var(--sep)}
 .sq.h{border-top:0;font-size:11px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.sq .dsh{display:block;width:42px;height:42px;margin:-6px 0}
 .sq .av{width:30px;height:30px;border-radius:50%;background:var(--fill);display:grid;place-items:center;font:700 12px var(--round)}
 .sq .av.g{background:var(--yellow);color:#111}
 .sq .nm{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -495,6 +496,26 @@ function camisetaBarajas(size,conEscudo=true){
 <path d="M11.2 3.5 L16 7.6 L20.8 3.5" fill="none" stroke="${Y}" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
 <path d="M11.4 3.6 Q16 5.2 20.6 3.6" fill="none" stroke="${Y}" stroke-width=".5"/>
 ${conEscudo?`<image href="escudo-barajas.png" x="${ESCUDO_BAR[0]-ESCUDO_BAR[2]/2}" y="${ESCUDO_BAR[1]-ESCUDO_BAR[2]/2}" width="${ESCUDO_BAR[2]}" height="${ESCUDO_BAR[2]}"/>`:""}</svg>`;
+}
+/* Espalda de la camiseta del Barajas con el dorsal (para la Plantilla) */
+const BAR_ESPALDA="M11.2 3.5 Q16 5.1 20.8 3.5 L25.6 5.4 Q26.5 5.8 26.6 6.8 L24.5 12.4 L24.5 28.2 Q24.5 29 23.7 29 L8.3 29 Q7.5 29 7.5 28.2 L7.5 12.4 L5.4 6.8 Q5.5 5.8 6.4 5.4 Z";
+function espaldaBarajas(size,num,texto=size>=60){
+  const id="kd"+(++_sid),Y="#f5d000",N="#141414",line="var(--kit-line)",n=String(num??"");
+  const espejo=`transform="translate(32 0) scale(-1 1)"`;
+  const manga=`<path d="${BAR_MANGA}" fill="${N}" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/><path d="M1.7 13.3 L6.7 14.7" stroke="${Y}" stroke-width="1.5" stroke-linecap="round"/>`;
+  const fs=texto?(n.length>1?10.5:11.5):(n.length>1?11.5:12.5), ny=texto?15.6:16.6;
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>
+<clipPath id="${id}c"><path d="${BAR_ESPALDA}"/></clipPath>
+<linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset=".25" stop-color="${Y}"/><stop offset=".95" stop-color="${Y}" stop-opacity="0"/></linearGradient>
+<linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient></defs>
+<g>${manga}</g><g ${espejo}>${manga}</g>
+<path d="${BAR_ESPALDA}" fill="${N}"/>
+<g clip-path="url(#${id}c)">${[[8.9,3.4],[14.2,3.6],[19.7,3.4]].map(([x,w])=>`<rect x="${x}" y="19.6" width="${w}" height="9.6" fill="url(#${id}g)"/>`).join("")}
+<rect x="0" y="0" width="32" height="32" fill="url(#${id}s)"/></g>
+<path d="${BAR_ESPALDA}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M11.4 3.6 Q16 5.2 20.6 3.6" fill="none" stroke="${Y}" stroke-width=".9" stroke-linecap="round"/>
+<text x="16" y="${ny}" text-anchor="middle" font-family="'Arial Narrow','Roboto Condensed','SF Compact Display',-apple-system,sans-serif" font-weight="800" font-size="${fs}" letter-spacing="-.4" fill="${Y}">${esc(n)}</text>
+${texto?`<text x="16" y="18.4" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" font-weight="800" font-size="1.75" letter-spacing=".05" fill="${Y}">C.D. BARAJAS</text>`:""}</svg>`;
 }
 function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="bar")return camisetaBarajas(size);
@@ -1080,7 +1101,7 @@ function start(DATA){
     document.getElementById("p-pla").innerHTML=`<h2>La plantilla</h2><div class="squad">
       <div class="seg2" role="group" aria-label="Ordenar">${[["goles","Goles"],["pj","Partidos"],["az","A–Z"]].map(([k,t])=>`<button data-o="${k}" aria-pressed="${orden===k}">${t}</button>`).join("")}</div>
       <div class="sq h"><span></span><span>Jugadora</span><span style="text-align:center">PJ</span><span style="text-align:center">Goles</span></div>`+
-      (P.length?P.map(p=>`<div class="sq"><span class="av${p.g?" g":""}">${p.dorsal!=null?p.dorsal:esc(ini(p.n))}</span><span class="nm">${esc(nomL(p.n))}</span><span class="pj">${p.pj}</span><span class="n${p.g?"":" z"}">${p.g}</span></div>`).join(""):`<div class="sq"><span></span><span class="nm">Aún no hay actas con convocatoria</span></div>`)+
+      (P.length?P.map(p=>`<div class="sq">${p.dorsal!=null?`<span class="dsh">${espaldaBarajas(42,p.dorsal)}</span>`:`<span class="av">${esc(ini(p.n))}</span>`}<span class="nm">${esc(nomL(p.n))}</span><span class="pj">${p.pj}</span><span class="n${p.g?"":" z"}">${p.g}</span></div>`).join(""):`<div class="sq"><span></span><span class="nm">Aún no hay actas con convocatoria</span></div>`)+
       `</div><p class="note">PJ = partidos convocada.</p>`+
       (G.length?`<h2>Goleadoras de la liga</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Jugadora</th><th>Goles</th></tr></thead><tbody>`+
       G.map((r,i)=>{if(r.g!==prev){pos=i+1;prev=r.g}const eq=norm(r.eq);return `<tr${eq===US?' class="us"':""}><td class="pos">${pos}</td><td class="t"><span class="who">${shirt(eq,22)}<span>${esc(nomL(r.n))}<br><small style="color:var(--ink2)">${esc(sn(eq))}</small></span></span></td><td class="p">${r.g}</td></tr>`}).join("")+
