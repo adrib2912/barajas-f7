@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Barajas F7">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("tema")||"dark";document.documentElement.dataset.size=localStorage.getItem("letra")||"n";document.documentElement.dataset.eq=localStorage.getItem("equipos")||"esc"}catch(e){document.documentElement.dataset.theme="dark";document.documentElement.dataset.size="n";document.documentElement.dataset.eq="esc"}</script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("tema")||"dark";document.documentElement.dataset.size=localStorage.getItem("letra")||"n";document.documentElement.dataset.eq=localStorage.getItem("equipos")||"cam"}catch(e){document.documentElement.dataset.theme="dark";document.documentElement.dataset.size="n";document.documentElement.dataset.eq="cam"}</script>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <style>
@@ -167,7 +167,7 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .shirt{flex:none;display:block}
 .cr{display:inline-grid;flex:none}
 .cr>*{grid-area:1/1;width:100%!important;height:100%!important}
-.cr img{object-fit:contain}
+.cr img{object-fit:contain;background:#fff;border-radius:24%;padding:9%;box-sizing:border-box}
 .cr svg{visibility:hidden}
 .cr.x svg{visibility:visible}
 .cr.x img{display:none}
@@ -374,7 +374,7 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
   <div class="k">Tamaño de letra</div>
   <div class="seg2" data-set="letra"><button data-v="n">Normal</button><button data-v="g">Grande</button></div>
   <div class="k">Equipos</div>
-  <div class="seg2" data-set="equipos"><button data-v="esc">Escudos</button><button data-v="cam">Camisetas</button></div>
+  <div class="seg2" data-set="equipos"><button data-v="cam">Camisetas</button><button data-v="esc">Escudos</button></div>
   <div class="k">Actualizar datos</div>
   <div class="clv" id="clvBox"></div>
 </div></div>
