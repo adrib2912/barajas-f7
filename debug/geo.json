@@ -1,0 +1,292 @@
+{
+ "C.D. BARAJAS": [
+  {
+   "q": "Campo de Fútbol Nuestra Señora de la Soledad, Barajas, Madrid",
+   "res": []
+  },
+  {
+   "q": "Calle Ayerbe, Barajas, Madrid",
+   "res": [
+    [
+     "40.4689549",
+     "-3.5798000",
+     "highway/residential",
+     "Calle de Ayerbe, Aeropuerto, Barajas, Madrid, Comunidad de Madrid, 28042, España"
+    ],
+    [
+     "40.4712072",
+     "-3.5775359",
+     "highway/residential",
+     "Calle de Ayerbe, Casco Histórico de Barajas, Barajas, Madrid, Comunidad de Madrid, 28042, España"
+    ]
+   ]
+  }
+ ],
+ "A.D. MADRID SUR": [
+  {
+   "q": "Campo de fútbol José Durán, Madrid",
+   "res": []
+  },
+  {
+   "q": "José Durán, Puente de Vallecas, Madrid",
+   "res": [
+    [
+     "40.3800045",
+     "-3.6646920",
+     "leisure/sports_centre",
+     "Instalación Deportiva Municipal Básica José Durán, Calle del Puerto de Balbarán, Palomeras Bajas, Puente de Vallecas, Madrid, Comunidad de Madrid, 28018, España"
+    ]
+   ]
+  }
+ ],
+ "S.A.D. COLEGIO SAN GABRIEL": [
+  {
+   "q": "Colegio San Gabriel, Alcalá de Henares",
+   "res": [
+    [
+     "40.5078429",
+     "-3.3876302",
+     "amenity/school",
+     "Centro Privado de Educación Infantil, Primaria y Secundaria San Gabriel, 10, Avenida de las Pasionistas, El Olivar, El Chorrillo, Distrito III, Alcalá de Henares, Comunidad de Madrid, 28806, España"
+    ]
+   ]
+  },
+  {
+   "q": "Avenida de los Pasionistas, Alcalá de Henares",
+   "res": []
+  }
+ ],
+ "C.D. ALGETE": [
+  {
+   "q": "Polideportivo Duque de Algete, Algete",
+   "res": [
+    [
+     "40.6000589",
+     "-3.5127277",
+     "leisure/sports_centre",
+     "Polideportivo Duque de Algete, Camino del Espinar, Algete, Comunidad de Madrid, 28110, España"
+    ]
+   ]
+  },
+  {
+   "q": "Duque de Algete, Algete",
+   "res": [
+    [
+     "40.5993297",
+     "-3.5550392",
+     "place/locality",
+     "Dehesa del Duque de Alburquerque, Algete, Comunidad de Madrid, 28708, España"
+    ],
+    [
+     "40.6114101",
+     "-3.5408867",
+     "highway/residential",
+     "Avenida Duque, Prado Norte, Algete, Comunidad de Madrid, 28110, España"
+    ],
+    [
+     "40.6126201",
+     "-3.5427432",
+     "highway/residential",
+     "Avenida Duque, Algete, Comunidad de Madrid, 28110, España"
+    ],
+    [
+     "40.6000589",
+     "-3.5127277",
+     "leisure/sports_centre",
+     "Polideportivo Duque de Algete, M-103, Algete, Comunidad de Madrid, 28110, España"
+    ]
+   ]
+  }
+ ],
+ "C.D. NUEVO PUERTA BONITA DE CARABANCHEL": [
+  {
+   "q": "Canódromo, Carabanchel, Madrid",
+   "res": [
+    [
+     "40.3970332",
+     "-3.7356668",
+     "leisure/sports_centre",
+     "Centro Deportivo Municipal Antiguo Canódromo, 57, Calle de la Vía Carpetana, San Isidro, Carabanchel, Madrid, Comunidad de Madrid, 28047, España"
+    ]
+   ]
+  },
+  {
+   "q": "Parque del Antiguo Canódromo, Madrid",
+   "res": []
+  }
+ ],
+ "A.D. EL REAL DE MANZANARES": [
+  {
+   "q": "campo de fútbol, Manzanares el Real",
+   "res": [
+    [
+     "40.7284374",
+     "-3.8593702",
+     "leisure/sports_centre",
+     "Campo de Fútbol Municipal Las Hermitas, Avenida de Madrid, Urbanización Peña El Gato, Manzanares el Real, Comunidad de Madrid, 28410, España"
+    ]
+   ]
+  },
+  {
+   "q": "Polideportivo, Manzanares el Real",
+   "res": [
+    [
+     "40.7271832",
+     "-3.8684890",
+     "leisure/sports_centre",
+     "Polideportivo municipal, Avenida de la Pedriza, Manzanares el Real, Comunidad de Madrid, 28410, España"
+    ]
+   ]
+  }
+ ],
+ "C.F. SAN AGUSTIN DE GUADALIX": [
+  {
+   "q": "Polideportivo Municipal, San Agustín del Guadalix",
+   "res": [
+    [
+     "40.6798535",
+     "-3.6189578",
+     "leisure/sports_centre",
+     "Polideportivo Municipal, Calle Cuesta de la Iglesia, San Agustín del Guadalix, Comunidad de Madrid, 28750, España"
+    ]
+   ]
+  },
+  {
+   "q": "campo de fútbol, San Agustín del Guadalix",
+   "res": []
+  }
+ ],
+ "ESC.FUT. EL OLIVO DE COSLADA": [
+  {
+   "q": "Campo de fútbol Barrio del Puerto, Coslada",
+   "res": []
+  },
+  {
+   "q": "Barrio del Puerto, Coslada",
+   "res": [
+    [
+     "40.4224714",
+     "-3.5691052",
+     "railway/station",
+     "Barrio del Puerto, Avenida de España, Barrio del Puerto, Coslada, Comunidad de Madrid, 28821, España"
+    ],
+    [
+     "40.4195456",
+     "-3.5701334",
+     "place/neighbourhood",
+     "Barrio del Puerto, Coslada, Comunidad de Madrid, España"
+    ]
+   ]
+  }
+ ],
+ "CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS": [
+  {
+   "q": "Recinto Ferial, Las Rozas de Madrid",
+   "res": [
+    [
+     "40.5096123",
+     "-3.8912639",
+     "highway/bus_stop",
+     "Av. Nuestra Sra. Retamar - Recinto Ferial, Avenida Nuestra Señora del Retamar, La Puentecilla y Los Majuelos, Las Rozas de Madrid, Comunidad de Madrid, 28230, España"
+    ],
+    [
+     "40.5095107",
+     "-3.8914767",
+     "highway/bus_stop",
+     "Trva. Navalcarbón - Recinto Ferial, Avenida Nuestra Señora del Retamar, La Puentecilla y Los Majuelos, Las Rozas de Madrid, Comunidad de Madrid, 28230, España"
+    ]
+   ]
+  },
+  {
+   "q": "campo de fútbol Recinto Ferial Las Rozas",
+   "res": []
+  }
+ ],
+ "C.D. SANFER19": [
+  {
+   "q": "Santiago del Pino, San Fernando de Henares",
+   "res": [
+    [
+     "40.4299912",
+     "-3.5210555",
+     "leisure/stadium",
+     "Estadio municipal Santiago del Pino, Paseo de los Pinos, San Fernando de Henares, Comunidad de Madrid, 28830, España"
+    ]
+   ]
+  },
+  {
+   "q": "Polideportivo Santiago del Pino, San Fernando de Henares",
+   "res": []
+  }
+ ],
+ "A.D. VILLAVICIOSA DE ODON 'B'": [
+  {
+   "q": "Campo de fútbol, Villaviciosa de Odón",
+   "res": []
+  },
+  {
+   "q": "Polideportivo, Villaviciosa de Odón",
+   "res": [
+    [
+     "40.3548695",
+     "-3.8981278",
+     "leisure/sports_centre",
+     "Polideportivo Gutiérrez Mellado, Avenida de Manuel Gutiérrez Mellado, Villaviciosa de Odón, Comunidad de Madrid, 28670, España"
+    ],
+    [
+     "40.3738900",
+     "-3.9209080",
+     "leisure/sports_centre",
+     "Polideportivo Cubierto UEM, Calle Tajo, El Bosque, Villaviciosa de Odón, Comunidad de Madrid, 28670, España"
+    ]
+   ]
+  }
+ ],
+ "C.D. FUTBOL TRES CANTOS": [
+  {
+   "q": "La Foresta, Tres Cantos",
+   "res": [
+    [
+     "40.6126010",
+     "-3.7067366",
+     "amenity/kindergarten",
+     "E.E.I. La Foresta, Sector Foresta, Soto de Viñuelas, Tres Cantos, Comunidad de Madrid, 28760, España"
+    ],
+    [
+     "40.6124175",
+     "-3.7066268",
+     "amenity/school",
+     "Escuela Infantil La Foresta, 15, Sector Foresta, Soto de Viñuelas, Tres Cantos, Comunidad de Madrid, 28760, España"
+    ]
+   ]
+  },
+  {
+   "q": "Polideportivo La Foresta, Tres Cantos",
+   "res": []
+  }
+ ],
+ "ESCUELA MUNICIPAL DE COBEÑA": [
+  {
+   "q": "Polideportivo La Dehesa, Cobeña",
+   "res": [
+    [
+     "40.5806982",
+     "-3.5048555",
+     "leisure/sports_centre",
+     "Polideportivo Municipal La Dehesa, M-103, Cobeña, Comunidad de Madrid, 28863, España"
+    ]
+   ]
+  },
+  {
+   "q": "La Dehesa, Cobeña",
+   "res": [
+    [
+     "40.5813126",
+     "-3.5015652",
+     "place/locality",
+     "La Dehesa, Cobeña, Comunidad de Madrid, 28863, España"
+    ]
+   ]
+  }
+ ]
+}
