@@ -1,0 +1,22 @@
+name: Buscar coordenadas
+on: workflow_dispatch
+concurrency:
+  group: actualizar
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  geo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node geo.mjs
+      - run: |
+          git config user.name "actualizador"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add debug/geo.json && git commit -m "Coordenadas de campos" || true
+          git pull --rebase -X theirs origin main || true
+          git push
