@@ -514,7 +514,12 @@ function start(DATA){
      Si hay más de un candidato posible, solo vale el nombre exacto. */
   const letra=t=>(t.match(/'([A-Z])'$/)||[])[1]||null;
   const mismo=(a,b)=>a===b||(base(a)===base(b)&&(!letra(a)||!letra(b)||letra(a)===letra(b)));
-  const resolver=(t,lista)=>{if(lista.includes(t))return t;const c=[...new Set(lista)].filter(x=>mismo(x,t));return c.length===1?c[0]:null};
+  /* Equipos que jugaron en nuestro grupo la temporada pasada: si un club tenía varios equipos (A, B…) y este año
+     no lleva letra, se usa el que estuvo en nuestra liga */
+  const NUESTRO=new Set(((DATA.anterior&&DATA.anterior.grupos)||[]).filter(g=>g.jornadas.some(x=>x[2].some(m=>m[0]===US||m[1]===US)))
+    .flatMap(g=>g.jornadas.flatMap(x=>x[2].flatMap(m=>[m[0],m[1]]))));
+  const resolver=(t,lista)=>{if(lista.includes(t))return t;const c=[...new Set(lista)].filter(x=>mismo(x,t));if(c.length===1)return c[0];
+    const n=c.filter(x=>NUESTRO.has(x));return n.length===1?n[0]:null};
   const HOR={};
   Object.entries(DATA.horarios||{}).forEach(([url,[loc,f,h]])=>{if(!f||!h)return;const k=loc;
     (HOR[k]??=[]).push({f,h,temp:/temporada=21/.test(url)?"25-26":"26-27",prev:dOf(f)>=today})});
