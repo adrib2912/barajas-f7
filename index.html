@@ -187,6 +187,12 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 .count .n{font:800 58px/1 var(--round);color:var(--acc);font-variant-numeric:tabular-nums}
 .count .cw{font-size:17px;font-weight:600;color:var(--hero-ink2);line-height:1.2}
 .btns{display:flex;gap:8px;margin-top:10px}
+.rk{display:flex;gap:3px;margin-top:4px}
+.rk i{width:8px;height:8px;border-radius:50%;background:var(--fill)}
+.rk i.W{background:var(--green)}.rk i.D{background:var(--orange)}.rk i.L{background:var(--red)}
+.duel .rkr{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ink2)}
+.duel .rkr .rk{margin:0}
+.shimg{width:100%;border-radius:14px;display:block}
 .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:14px;background:var(--yellow);color:#111;font-weight:600;font-size:15px}
 .btn.ghost{background:var(--hf2);color:var(--hero-ink);flex:none;width:46px}
 .btn svg{width:18px;height:18px}
@@ -375,8 +381,16 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
   <div class="seg2" data-set="letra"><button data-v="n">Normal</button><button data-v="g">Grande</button></div>
   <div class="k">Equipos</div>
   <div class="seg2" data-set="equipos"><button data-v="cam">Camisetas</button><button data-v="esc">Escudos</button></div>
+  <div class="k">Calendario del móvil</div>
+  <div class="clv"><a class="btn" style="height:40px;border-radius:12px" href="webcal://adrib2912.github.io/barajas-f7/calendario.ics">Suscribirse</a><button class="sec" id="calCp" style="background:var(--card);color:var(--blue)">Copiar enlace</button></div>
   <div class="k">Actualizar datos</div>
   <div class="clv" id="clvBox"></div>
+</div></div>
+
+<div class="sheet" id="shs" hidden><div class="sbox" role="dialog" aria-label="Compartir resultado">
+  <div class="shd"><b>Compartir resultado</b><button id="shsX" class="round" aria-label="Cerrar">✕</button></div>
+  <img class="shimg" id="shImg" alt="Imagen del resultado">
+  <div class="btns"><button class="btn" id="shGo">Compartir</button><a class="btn ghost" id="shDl" download="resultado.png" style="width:auto;padding:0 14px;color:var(--ink);background:var(--card)">Guardar</a></div>
 </div></div>
 
 <div class="sheet" id="up" hidden><div class="sbox" role="dialog" aria-label="Actualizando datos">
@@ -497,6 +511,10 @@ fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(start
     document.documentElement.dataset[{tema:"theme",letra:"size",equipos:"eq"}[k]]=b.dataset.v;
     try{localStorage.setItem(k,b.dataset.v)}catch(e){}pinta();if(k==="equipos")location.reload()});
 })();
+
+document.getElementById("calCp").onclick=e=>{const b=e.currentTarget;
+  navigator.clipboard?.writeText("https://adrib2912.github.io/barajas-f7/calendario.ics").then(()=>{b.textContent="¡Copiado!";setTimeout(()=>b.textContent="Copiar enlace",1500)}).catch(()=>{})};
+document.getElementById("shsX").onclick=()=>{document.getElementById("shs").hidden=true};
 
 /* ---- Actualizar datos desde la app ----
    Con la clave de GitHub guardada en este móvil, el botón de recargar le pide a GitHub que lea la RFFM
@@ -644,6 +662,10 @@ function start(DATA){
     TABLA=DATA.clasif.map(r=>({...r})).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf||sn(x.t).localeCompare(sn(y.t)));TABLA.forEach(r=>{S[r.t]=r});OFICIAL=true;
   }
   const posOf=t=>TABLA.findIndex(r=>r.t===t)+1;
+  /* Racha: resultados de los últimos 5 partidos jugados (de más antiguo a más reciente) */
+  const forma=t=>{const r=[];J.forEach(([,,ms])=>ms.forEach(([h,a,g])=>{if(!g||(h!==t&&a!==t))return;const x=h===t?g[0]-g[1]:g[1]-g[0];r.push(x>0?"W":x<0?"L":"D")}));return r.slice(-5)};
+  const rkTxt={W:"ganado",D:"empatado",L:"perdido"};
+  const racha=t=>{const f=forma(t);return f.length?`<span class="rk" aria-label="Últimos partidos: ${f.map(k=>rkTxt[k]).join(", ")}">${f.map(k=>`<i class="${k}"></i>`).join("")}</span>`:""};
 
   /* Horarios: cuándo suele jugar cada equipo en casa */
   const base=t=>t.replace(/\s+'[A-Z]'$/,"");
@@ -761,6 +783,54 @@ function start(DATA){
         show(wCache[key])}).catch(()=>{});
   }
 
+  /* ---------- Imagen del resultado para compartir (1080×1350, formato Instagram) ---------- */
+  function svgImg(svg){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);
+    i.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg.replace("<svg ",'<svg xmlns="http://www.w3.org/2000/svg" ').replace(/var\(--kit-line\)/g,"#1b1b1b").replace(/var\(--kit\)/g,"#d8d8d8"))})}
+  async function imagenResultado(o){
+    const W=1080,H=1350,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+    const F='-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',R='"SF Pro Rounded",ui-rounded,'+F;
+    const L=o.home?US:o.opp,V=o.home?o.opp:US,k=kind(o);
+    /* Fondo oscuro con rayas amarillas y negras arriba y abajo, como la camiseta */
+    x.fillStyle="#0e0e0f";x.fillRect(0,0,W,H);
+    const rayas=(y,h)=>{x.save();x.beginPath();x.rect(0,y,W,h);x.clip();x.fillStyle="#f5c400";x.fillRect(0,y,W,h);x.fillStyle="#111";
+      for(let i=-h;i<W+h;i+=56){x.beginPath();x.moveTo(i,y+h);x.lineTo(i+28,y+h);x.lineTo(i+28+h,y);x.lineTo(i+h,y);x.fill()}x.restore()};
+    rayas(0,22);rayas(H-22,22);
+    x.textAlign="center";x.fillStyle="#f5c400";x.font=`700 34px ${F}`;x.fillText(`JORNADA ${o.j}`,W/2,104);
+    x.fillStyle="#8e8e93";x.font=`500 28px ${F}`;x.fillText("Primera Femenino F-7 · Grupo 1",W/2,146);
+    /* Camisetas y nombres */
+    const [iL,iV]=await Promise.all([svgImg(camiseta(L,300)),svgImg(camiseta(V,300))]);
+    const cx=[250,830];
+    [iL,iV].forEach((im,i)=>{if(im)x.drawImage(im,cx[i]-140,200,280,280)});
+    const nombre=(t,cxx,y)=>{x.fillStyle=t===US?"#ffffff":"#d1d1d6";x.font=`${t===US?800:600} 44px ${F}`;
+      const ws=sn(t).split(" "),ls=[];let cur="";ws.forEach(w=>{const tt=cur?cur+" "+w:w;if(x.measureText(tt).width>400&&cur){ls.push(cur);cur=w}else cur=tt});ls.push(cur);
+      ls.slice(0,2).forEach((l,i)=>x.fillText(l,cxx,y+i*52))};
+    nombre(L,cx[0],540);nombre(V,cx[1],540);
+    /* Marcador */
+    x.fillStyle="#ffffff";x.font=`800 210px ${R}`;x.fillText(`${o.raw[0]}`,W/2-160,800);x.fillText(`${o.raw[1]}`,W/2+160,800);
+    x.fillStyle="#48484a";x.font=`700 120px ${R}`;x.fillText("-",W/2,770);
+    const col={W:"#30d158",L:"#ff453a",D:"#ff9f0a"}[k],pill=kindTxt[k].toUpperCase();
+    x.font=`800 32px ${F}`;const pw=x.measureText(pill).width+64;
+    x.fillStyle=col;x.beginPath();x.roundRect?x.roundRect(W/2-pw/2,840,pw,58,29):x.rect(W/2-pw/2,840,pw,58);x.fill();
+    x.fillStyle="#0e0e0f";x.fillText(pill,W/2,881);
+    /* Goles: cada uno debajo de su equipo */
+    const gs=o.goles||[],col2=[[],[]];
+    gs.forEach(g=>{const delLocal=g.nuestro===o.home;const n=g.propia?(g.nuestro?"Propia puerta":nomC(g.nombre)+" (p.p.)"):nomC(g.nombre);
+      col2[delLocal?0:1].push({t:n+(g.min!=null?`  ${g.min}'`:""),us:g.nuestro})});
+    x.font=`600 34px ${F}`;
+    col2.forEach((lst,i)=>lst.slice(0,6).forEach((g,n)=>{x.fillStyle=g.us?"#f5c400":"#aeaeb2";x.fillText("⚽ "+g.t,cx[i],990+n*48)}));
+    if(col2[0].length>6||col2[1].length>6){x.fillStyle="#8e8e93";x.font=`500 26px ${F}`;x.fillText("…",W/2,1330-70)}
+    /* Pie: fecha y campo */
+    const p=placeOf(o);x.fillStyle="#8e8e93";x.font=`500 28px ${F}`;
+    x.fillText(`${fmt(o.f,{weekday:"long",day:"numeric",month:"long"})}${o.hora?" · "+o.hora:""} · ${p.name}`.slice(0,70),W/2,H-66);
+    const blob=await new Promise(r=>c.toBlob(r,"image/png"));if(!blob)return;
+    const url=URL.createObjectURL(blob),file=new File([blob],`barajas-j${o.j}.png`,{type:"image/png"});
+    document.getElementById("shImg").src=url;const dl=document.getElementById("shDl");dl.href=url;dl.download=file.name;
+    const go=document.getElementById("shGo");
+    const puede=navigator.canShare&&navigator.canShare({files:[file]});go.hidden=!puede;
+    go.onclick=()=>navigator.share({files:[file],title:`${sn(L)} ${o.raw[0]}-${o.raw[1]} ${sn(V)}`}).catch(()=>{});
+    document.getElementById("shs").hidden=false;
+  }
+
   /* ---------- INICIO: tarjeta del partido (navegable) ---------- */
   function drawHero(){
     const o=ours[sel], h=document.getElementById("hero");
@@ -773,7 +843,8 @@ function start(DATA){
     const L=o.home?US:o.opp, V=o.home?o.opp:US;
     const days=Math.round(((oficial(o)?dOf(o.f):finde(o)[0])-today)/864e5);
     let mid,count="",pred="",btns="";
-    if(o.raw){const k=kind(o);mid=`<div class="big">${o.raw[0]} - ${o.raw[1]}</div><div class="small">${fmt(o.f)}</div><span class="pill ${k}">${kindTxt[k]}</span>`}
+    if(o.raw){const k=kind(o);mid=`<div class="big">${o.raw[0]} - ${o.raw[1]}</div><div class="small">${fmt(o.f)}</div><span class="pill ${k}">${kindTxt[k]}</span>`;
+      btns=`<div class="btns"><button class="btn" id="resImg">${ico.share}Compartir resultado</button></div>`}
     else{
       const when=days<0?"Sin resultado":days===0?"Hoy":days===1?"Mañana":`En ${days} días`;
       const cb=o.camb&&o.camb.antes.hora?o.camb.antes:null;
@@ -795,6 +866,7 @@ function start(DATA){
       <a class="place" href="${p.url}" target="_blank" rel="noopener">${ico.pin}<div class="t">${o.camb&&o.camb.antes.campo?`<s style="opacity:.6">${esc(cleanCampo(o.camb.antes.campo))}</s><br>`:""}${esc(p.name)}<span>${esc(p.sub)}</span></div><span class="go">Cómo llegar</span></a>${btns}<div class="extra" id="extra"></div>`+dots;
     bindHero();fillExtra(o);
     const ic=document.getElementById("ics");if(ic)ic.href=icsUrl(o);
+    const ri=document.getElementById("resImg");if(ri)ri.onclick=()=>imagenResultado(o);
     const sh=document.getElementById("shr");if(sh)sh.onclick=()=>{
       const txt=`${sn(L)} - ${sn(V)} · J${o.j} · ${fmt(o.f,{weekday:"long",day:"numeric",month:"long"})}${o.hora?" a las "+o.hora:""} · ${p.name}`;
       if(navigator.share)navigator.share({title:"Partido del Barajas",text:txt,url:location.href}).catch(()=>{});
@@ -917,7 +989,8 @@ function start(DATA){
       const a=S[US],b=S[nx.opp];
       const line=(lab,x,y,lowBetter)=>{const m=Math.max(1,x,y);return `<div class="dl"><div class="t l"><i style="width:${x/m*100}%"></i></div><div class="c"><b>${x}</b> ${lab} <b>${y}</b></div><div class="t r"><i style="width:${y/m*100}%"></i></div></div>`};
       duel=`<h2>El duelo · J${nx.j}</h2><div class="duel"><div class="hd2"><span>Barajas · ${posOf(US)}ª</span><span>${esc(sn(nx.opp))} · ${posOf(nx.opp)}ª</span></div>
-        ${line("puntos",a.pts,b.pts)}${line("goles",a.gf,b.gf)}${line("encajados",a.gc,b.gc)}${line("jugados",a.pj,b.pj)}</div>`;
+        ${line("puntos",a.pts,b.pts)}${line("goles",a.gf,b.gf)}${line("encajados",a.gc,b.gc)}${line("jugados",a.pj,b.pj)}
+        ${forma(US).length||forma(nx.opp).length?`<div class="rkr">${racha(US)||"<span></span>"}<span>racha</span>${racha(nx.opp)||"<span></span>"}</div>`:""}</div>`;
     }
     /* Cuadro de resultados: se elige un equipo y se resalta su fila y su columna */
     const teams=TABLA.map(r=>r.t);
@@ -929,7 +1002,7 @@ function start(DATA){
       <p class="note">Según sus partidos jugados en casa esta temporada y la anterior.</p>`:"";
     document.getElementById("p-tab").innerHTML=`<h2>Clasificación</h2>`+bars+duel+
       `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
-      TABLA.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
+      TABLA.map((r,i)=>`<tr${r.t===US?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span><span style="display:block;padding-left:30px">${racha(r.t)}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
       `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}</p>`+mx+hor;
     drawMx();
   }

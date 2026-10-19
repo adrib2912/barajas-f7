@@ -3,6 +3,7 @@
 // y deja pistas en la carpeta debug/ para poder arreglarlo.
 import { chromium } from "playwright";
 import fs from "node:fs";
+import { escribirCalendario } from "./ics.mjs";
 
 const Q = "temporada=22&tipojuego=2&competicion=26738230&grupo=26738231";
 const BASE = "https://www.rffm.es/competicion/";
@@ -476,6 +477,7 @@ if (ok) {
   };
   fs.writeFileSync("data.json", JSON.stringify(data));
   console.log("data.json actualizado");
+  try { console.log(`calendario.ics: ${escribirCalendario(data)} partidos`); } catch (e) { console.error("No se pudo escribir el calendario:", e.message); }
 } else {
   process.exitCode = 1;
 }
