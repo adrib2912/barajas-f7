@@ -2,9 +2,10 @@ name: Actualizar datos RFFM
 
 on:
   schedule:
-    - cron: "17 */2 * * *"   # cada 2 horas
-    - cron: "3 7 * * 1"      # lunes 9:03 en invierno (la RFFM publica los horarios a las 9:00)
-    - cron: "3 8 * * 1"      # lunes 9:03 en verano / 10:03 en invierno, por si acaso
+    # GitHub se salta muchas ejecuciones programadas cuando va cargado (sobre todo en horas "redondas"),
+    # así que se pide a menudo y en minutos raros: aunque se pierda alguna, la siguiente llega pronto.
+    - cron: "7,37 * * * *"            # cada media hora
+    - cron: "4,14,24,44,54 7,8 * * 1" # lunes entre las 9 y las 11 (hora de Madrid), cada 10 minutos
   workflow_dispatch:          # botón para lanzarlo a mano
     inputs:
       minutos:
