@@ -920,7 +920,9 @@ function start(DATA){
   const yaEn=new Set(Object.keys(PL).map(sinTilde));
   (DATA.plantilla||[]).forEach(n=>{if(!yaEn.has(sinTilde(n))){PL[n]={n,pj:0,g:0,ds:{}};yaEn.add(sinTilde(n))}});
   const players=Object.values(PL);
-  players.forEach(p=>{const t=Object.entries(p.ds||{}).sort((a,b)=>b[1]-a[1])[0];p.dorsal=t?+t[0]:null});
+  /* Dorsales que nos ha dicho el equipo, para quien aún no sale en ninguna acta (las actas mandan si los hay) */
+  const DORSAL_FIJO={"LOPEZ CERVERA, CHANTAL":21,"LOPEZ RANZ, CAROLINA":15,"NUNEZ MARTIN, PAULA":3,"SEVILLANO VILLAGARCIA, ANGELA":17};
+  players.forEach(p=>{const t=Object.entries(p.ds||{}).sort((a,b)=>b[1]-a[1])[0];p.dorsal=t?+t[0]:(DORSAL_FIJO[sinTilde(p.n)]??null)});
   const DORSAL={};players.forEach(p=>{if(p.dorsal!=null)DORSAL[p.n]=p.dorsal});
 
   /* ---------- INICIO: widgets ---------- */
