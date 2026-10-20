@@ -454,7 +454,7 @@ function leerTabla(texto, equipos) {
 }
 let tablas = [];
 try { tablas = JSON.parse(fs.readFileSync("data.json", "utf8")).tablas || []; } catch {}
-const faltaAnterior = !tablas.some((x) => x.temporada === "2025-2026");
+const faltaAnterior = !tablas.some((x) => x.temporada === "2025-2026" && x.escudos);
 if (ok && (!RAPIDA || faltaAnterior || !tablas.length)) {
   try {
     await abrir("calendario", "VER ACTA");
@@ -477,6 +477,20 @@ if (ok && (!RAPIDA || faltaAnterior || !tablas.length)) {
         await page.waitForFunction(() => /\d+\s+\d+\s+\d+/.test(document.body.innerText), null, { timeout: 40000 });
         await page.waitForTimeout(1500);
         let filas = leerTabla(await page.evaluate(() => document.body.innerText), equipos);
+        // Escudos: cada imagen de club de la página va junto al nombre de su equipo
+        const html = (await page.content()).replace(/\\"/g, '"').replace(/&amp;/g, "&").replace(/&#x27;|&#39;|\\u0027/g, "'");
+        const escudos = {};
+        for (const m of html.matchAll(/\/pnfg\/pimg\/Clubes\/[^"'\s\\)]+/g)) {
+          const antes = html.slice(Math.max(0, m.index - 700), m.index), despues = html.slice(m.index, m.index + 700);
+          let mejor = null, dist = 1e9;
+          for (const t of equipos) {
+            const a = antes.lastIndexOf(t), d = despues.indexOf(t);
+            if (a >= 0 && antes.length - a < dist) { dist = antes.length - a; mejor = t; }
+            if (d >= 0 && d < dist) { dist = d; mejor = t; }
+          }
+          if (mejor && !escudos[mejor]) escudos[mejor] = "https://appweb.rffm.es" + encodeURI(decodeURI(m[0]));
+        }
+        if (x === pedir[0]) fs.writeFileSync(`${DEBUG}/clasif-otra.html`, html.slice(0, 600000));
         let fuente = "oficial";
         if (!filas) { // Si no se puede leer la oficial, se calcula con los resultados
           const S = {}; const add = (t) => (S[t] ??= { t, pts: 0, pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0 });
@@ -486,8 +500,8 @@ if (ok && (!RAPIDA || faltaAnterior || !tablas.length)) {
           filas = Object.values(S); fuente = "calculada";
         }
         filas.sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc) || b.gf - a.gf);
-        nuevas.push({ temporada: x.temporada, grupo: x.grupo, fuente, filas });
-        console.log(`Tabla ${x.temporada} ${x.grupo}: ${filas.length} equipos (${fuente})`);
+        nuevas.push({ temporada: x.temporada, grupo: x.grupo, fuente, filas, escudos });
+        console.log(`Tabla ${x.temporada} ${x.grupo}: ${filas.length} equipos (${fuente}), ${Object.keys(escudos).length} escudos`);
       } catch (e) { console.error(`Tabla ${x.temporada} ${x.grupo}:`, e.message.split("\n")[0]); }
     }
     tablas = [...tablas.filter((t) => !nuevas.some((n) => n.temporada === t.temporada && n.grupo === t.grupo)), ...nuevas];
