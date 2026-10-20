@@ -1,57 +1,5 @@
 [
  {
-  "url": "https://www.rffm.es/api/game-types?",
-  "body": [
-   {
-    "codigo_tipo_juego": "1",
-    "nombre": "Futbol-11"
-   },
-   {
-    "codigo_tipo_juego": "2",
-    "nombre": "Futbol-7"
-   },
-   {
-    "codigo_tipo_juego": "3",
-    "nombre": "Fútbol Sala"
-   },
-   {
-    "codigo_tipo_juego": "4",
-    "nombre": "Fútbol-5"
-   },
-   {
-    "codigo_tipo_juego": "5",
-    "nombre": "Fútbol-Playa"
-   }
-  ]
- },
- {
-  "url": "https://www.rffm.es/api/groups?competicion=26738230",
-  "body": [
-   {
-    "codigo": "26738231",
-    "nombre": "Grupo 1",
-    "total_jornadas": "26",
-    "total_equipos": "13",
-    "clasificacion_porteros": "0",
-    "ver_clasificacion": "1",
-    "clasificacion_goleadores": "1",
-    "orden": "10",
-    "nombre_delegacion": "CENTRAL R.F.F.M."
-   },
-   {
-    "codigo": "26738232",
-    "nombre": "Grupo 2",
-    "total_jornadas": "26",
-    "total_equipos": "14",
-    "clasificacion_porteros": "0",
-    "ver_clasificacion": "1",
-    "clasificacion_goleadores": "1",
-    "orden": "20",
-    "nombre_delegacion": "CENTRAL R.F.F.M."
-   }
-  ]
- },
- {
   "url": "https://www.rffm.es/api/seasons?",
   "body": [
    {
@@ -173,6 +121,58 @@
     "nombre": "2007-2008",
     "fecha_inicio": "2007-06-30",
     "fecha_fin": "2008-06-27"
+   }
+  ]
+ },
+ {
+  "url": "https://www.rffm.es/api/groups?competicion=26738230",
+  "body": [
+   {
+    "codigo": "26738231",
+    "nombre": "Grupo 1",
+    "total_jornadas": "26",
+    "total_equipos": "13",
+    "clasificacion_porteros": "0",
+    "ver_clasificacion": "1",
+    "clasificacion_goleadores": "1",
+    "orden": "10",
+    "nombre_delegacion": "CENTRAL R.F.F.M."
+   },
+   {
+    "codigo": "26738232",
+    "nombre": "Grupo 2",
+    "total_jornadas": "26",
+    "total_equipos": "14",
+    "clasificacion_porteros": "0",
+    "ver_clasificacion": "1",
+    "clasificacion_goleadores": "1",
+    "orden": "20",
+    "nombre_delegacion": "CENTRAL R.F.F.M."
+   }
+  ]
+ },
+ {
+  "url": "https://www.rffm.es/api/game-types?",
+  "body": [
+   {
+    "codigo_tipo_juego": "1",
+    "nombre": "Futbol-11"
+   },
+   {
+    "codigo_tipo_juego": "2",
+    "nombre": "Futbol-7"
+   },
+   {
+    "codigo_tipo_juego": "3",
+    "nombre": "Fútbol Sala"
+   },
+   {
+    "codigo_tipo_juego": "4",
+    "nombre": "Fútbol-5"
+   },
+   {
+    "codigo_tipo_juego": "5",
+    "nombre": "Fútbol-Playa"
    }
   ]
  },
@@ -351,7 +351,7 @@
     "NombreCategoria": "PREFERENTE BENJAMIN F7",
     "cod_grupo_categoria": "6",
     "nombre_grupo_categoria": "FÚTBOL 7",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-02-06",
     "ptos_ganado": "3",
@@ -466,7 +466,7 @@
     "NombreCategoria": "JUVENIL F-7 FEMENINO",
     "cod_grupo_categoria": "7",
     "nombre_grupo_categoria": "FÚTBOL FEMENINO",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-05-15",
     "ptos_ganado": "3",
@@ -489,7 +489,7 @@
     "NombreCategoria": "CADETE F-7 FEMENINO",
     "cod_grupo_categoria": "7",
     "nombre_grupo_categoria": "FÚTBOL FEMENINO",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-03-06",
     "ptos_ganado": "3",
@@ -535,7 +535,7 @@
     "NombreCategoria": "PRIMERA DIVISION AUTONOMICA FEMENINO INFANTIL F-7",
     "cod_grupo_categoria": "7",
     "nombre_grupo_categoria": "FÚTBOL FEMENINO",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-05-08",
     "ptos_ganado": "3",
@@ -558,7 +558,7 @@
     "NombreCategoria": "PREFERENTE FEMENINO INFANTIL F-7",
     "cod_grupo_categoria": "7",
     "nombre_grupo_categoria": "FÚTBOL FEMENINO",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-01-30",
     "ptos_ganado": "3",
@@ -604,7 +604,7 @@
     "NombreCategoria": "PREFERENTE FEMENINO ALEVIN F-7",
     "cod_grupo_categoria": "7",
     "nombre_grupo_categoria": "FÚTBOL FEMENINO",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-05-22",
     "ptos_ganado": "3",
@@ -627,7 +627,7 @@
     "NombreCategoria": "PRIMERA FEMENINO ALEVIN F-7",
     "cod_grupo_categoria": "7",
     "nombre_grupo_categoria": "FÚTBOL FEMENINO",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-02-07",
     "ptos_ganado": "3",
@@ -650,7 +650,7 @@
     "NombreCategoria": "PRIMERA BENJAMIN FEMENINO F-7",
     "cod_grupo_categoria": "7",
     "nombre_grupo_categoria": "FÚTBOL FEMENINO",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-02-06",
     "ptos_ganado": "3",
@@ -696,7 +696,7 @@
     "NombreCategoria": "FUTBOL INCLUSIVO",
     "cod_grupo_categoria": "0",
     "nombre_grupo_categoria": "OTRAS CATEGORÍAS COMPETICIONALES",
-    "Activa": "0",
+    "Activa": "1",
     "FechaInicio": "2026-10-24",
     "FechaFin": "2027-07-03",
     "ptos_ganado": "0",
