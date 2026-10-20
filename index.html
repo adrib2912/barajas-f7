@@ -1088,8 +1088,8 @@ function start(DATA){
       `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
       TABLA.map((r,i)=>`<tr class="tap${r.t===US?" us":""}" data-t="${esc(r.t)}"><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span><span style="display:block;padding-left:30px">${racha(r.t)}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
       `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}</p>`+
-      `<h2>Campos</h2><div class="mapa" id="mapa"></div>`+mx+hor;
-    drawMx();mapaPend=true;if(!document.getElementById("p-tab").hidden)pintaMapa();
+      `<h2>Campos</h2><div class="mapa" id="mapa"></div>`+otras()+mx+hor;
+    drawMx();bindOtras();mapaPend=true;if(!document.getElementById("p-tab").hidden)pintaMapa();
     /* Al tocar un equipo se despliegan sus partidos de esta temporada */
     document.querySelectorAll("#p-tab tr.tap").forEach(tr=>tr.onclick=()=>{
       const sig=tr.nextElementSibling;if(sig&&sig.classList.contains("det")){sig.remove();tr.classList.remove("open");return}
