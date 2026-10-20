@@ -454,7 +454,7 @@ function leerTabla(texto, equipos) {
 }
 let tablas = [];
 try { tablas = JSON.parse(fs.readFileSync("data.json", "utf8")).tablas || []; } catch {}
-const faltaAnterior = !tablas.some((x) => x.temporada === "2025-2026" && x.escudos);
+const faltaAnterior = !tablas.some((x) => x.temporada === "2025-2026" && x.escudos && x.v === 2);
 if (ok && (!RAPIDA || faltaAnterior || !tablas.length)) {
   try {
     await abrir("calendario", "VER ACTA");
@@ -480,7 +480,7 @@ if (ok && (!RAPIDA || faltaAnterior || !tablas.length)) {
         // Escudos: cada imagen de club de la página va junto al nombre de su equipo
         const html = (await page.content()).replace(/\\"/g, '"').replace(/&amp;/g, "&").replace(/&#x27;|&#39;|\\u0027/g, "'");
         const escudos = {};
-        for (const m of html.matchAll(/\/pnfg\/pimg\/Clubes\/[^"'\s\\)]+/g)) {
+        for (const m of html.matchAll(/\/pnfg\/pimg\/Clubes\/[^"'\\)<>]+?\.(?:png|jpe?g|gif|webp)(?:\?nova=1)?/gi)) {
           const antes = html.slice(Math.max(0, m.index - 700), m.index), despues = html.slice(m.index, m.index + 700);
           let mejor = null, dist = 1e9;
           for (const t of equipos) {
@@ -500,7 +500,7 @@ if (ok && (!RAPIDA || faltaAnterior || !tablas.length)) {
           filas = Object.values(S); fuente = "calculada";
         }
         filas.sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc) || b.gf - a.gf);
-        nuevas.push({ temporada: x.temporada, grupo: x.grupo, fuente, filas, escudos });
+        nuevas.push({ v: 2, temporada: x.temporada, grupo: x.grupo, fuente, filas, escudos });
         console.log(`Tabla ${x.temporada} ${x.grupo}: ${filas.length} equipos (${fuente}), ${Object.keys(escudos).length} escudos`);
       } catch (e) { console.error(`Tabla ${x.temporada} ${x.grupo}:`, e.message.split("\n")[0]); }
     }
