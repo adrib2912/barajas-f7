@@ -437,6 +437,63 @@ if (ok) {
   }
 }
 
+// ---------- OTRAS CLASIFICACIONES: el otro grupo de este año y los dos grupos del año pasado ----------
+// Solo la tabla final (o actual). La del año pasado se lee una vez y se guarda.
+function leerTabla(texto, equipos) {
+  const filas = [];
+  for (const t of [...equipos].sort((a, b) => b.length - a.length)) {
+    const esc = t.replace(/[.*+?^${}()|[\]\\']/g, (c) => "\\" + c);
+    const m = texto.match(new RegExp(esc + "[\\s\\S]{0,40}?((?:\\d+\\s+){6}\\d+)"));
+    if (!m) continue;
+    const n = m[1].trim().split(/\s+/).map(Number);
+    filas.push({ t, idx: m.index, pts: n[0], pj: n[1], g: n[2], e: n[3], p: n[4], gf: n[5], gc: n[6] });
+  }
+  filas.sort((a, b) => a.idx - b.idx);
+  const ok = filas.length === equipos.length && filas.every((f) => f.pj === f.g + f.e + f.p && f.pts <= 3 * f.g + f.e);
+  return ok ? filas.map(({ idx, ...f }) => f) : null;
+}
+let tablas = [];
+try { tablas = JSON.parse(fs.readFileSync("data.json", "utf8")).tablas || []; } catch {}
+const faltaAnterior = !tablas.some((x) => x.temporada === "2025-2026");
+if (ok && (!RAPIDA || faltaAnterior || !tablas.length)) {
+  try {
+    await abrir("calendario", "VER ACTA");
+    const api = async (ruta) => page.evaluate(async (r) => (await fetch(r, { headers: { accept: "application/json" } })).json(), ruta);
+    const pedir = [];
+    for (const g of await api("/api/groups?competicion=26738230"))
+      if (String(g.codigo) !== "26738231") pedir.push({ temporada: "2026-2027", grupo: g.nombre, q: `temporada=22&tipojuego=2&competicion=26738230&grupo=${g.codigo}` });
+    if (faltaAnterior) {
+      const comps = (await api("/api/competitions?temporada=21&tipojuego=2")).filter((c) => /PRIMERA FEMENINO SENIOR/i.test(c.nombre));
+      for (const c of comps) for (const g of await api("/api/groups?competicion=" + c.codigo))
+        pedir.push({ temporada: "2025-2026", grupo: g.nombre, q: `temporada=21&tipojuego=2&competicion=${c.codigo}&grupo=${g.codigo}` });
+    }
+    const nuevas = [];
+    for (const x of pedir) {
+      try {
+        await abrir("calendario", "JORNADA", x.q);
+        const js = await leerCalendario();
+        const equipos = [...new Set(js.flatMap((j) => j.partidos.flatMap((p) => [p.local, p.visit])))];
+        await abrir("clasificaciones", null, x.q);
+        await page.waitForFunction(() => /\d+\s+\d+\s+\d+/.test(document.body.innerText), null, { timeout: 40000 });
+        await page.waitForTimeout(1500);
+        let filas = leerTabla(await page.evaluate(() => document.body.innerText), equipos);
+        let fuente = "oficial";
+        if (!filas) { // Si no se puede leer la oficial, se calcula con los resultados
+          const S = {}; const add = (t) => (S[t] ??= { t, pts: 0, pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0 });
+          js.forEach((j) => j.partidos.forEach((p) => { add(p.local); add(p.visit); if (!p.g) return; const H = S[p.local], A = S[p.visit];
+            H.pj++; A.pj++; H.gf += p.g[0]; H.gc += p.g[1]; A.gf += p.g[1]; A.gc += p.g[0];
+            if (p.g[0] > p.g[1]) { H.g++; A.p++; H.pts += 3 } else if (p.g[0] < p.g[1]) { A.g++; H.p++; A.pts += 3 } else { H.e++; A.e++; H.pts++; A.pts++ } }));
+          filas = Object.values(S); fuente = "calculada";
+        }
+        filas.sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc) || b.gf - a.gf);
+        nuevas.push({ temporada: x.temporada, grupo: x.grupo, fuente, filas });
+        console.log(`Tabla ${x.temporada} ${x.grupo}: ${filas.length} equipos (${fuente})`);
+      } catch (e) { console.error(`Tabla ${x.temporada} ${x.grupo}:`, e.message.split("\n")[0]); }
+    }
+    tablas = [...tablas.filter((t) => !nuevas.some((n) => n.temporada === t.temporada && n.grupo === t.grupo)), ...nuevas];
+  } catch (e) { console.error("Otras clasificaciones:", e.message.split("\n")[0]); }
+}
+
 // ---------- GOLEADORAS ----------
 try {
   await abrir("goleadores");
@@ -501,6 +558,7 @@ if (ok) {
     clasif,
     escudos: ESCUDOS,
     plantilla,
+    tablas,
   };
   fs.writeFileSync("data.json", JSON.stringify(data));
   console.log("data.json actualizado");
