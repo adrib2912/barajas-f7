@@ -141,6 +141,15 @@ h2{font:700 22px/1.2 var(--font);margin:26px 4px 8px;letter-spacing:-.01em}
 /* Tabla */
 .tbl{background:var(--card);border-radius:14px;overflow-x:auto}
 .tbl tr.tap{cursor:pointer}
+.segtop{display:flex;background:var(--fill);border-radius:12px;padding:3px;margin:16px 0 4px}
+.segtop button{flex:1;padding:8px 4px;border-radius:9px;font-size:14px;font-weight:600;color:var(--ink2)}
+.segtop button[aria-pressed="true"]{background:var(--yellow);color:#111}
+.riv .meta .rk{display:inline-flex;margin:0 0 0 6px;vertical-align:middle}
+.ficha{padding:2px 14px 14px 54px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.ficha .k2{font-size:12px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+.ficha .campo{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ficha .campo a{font-weight:600;color:var(--acc);white-space:nowrap}
+.ficha .tdet{background:var(--fill)}
 .mapa{height:340px;border-radius:14px;overflow:hidden;background:var(--fill);position:relative;z-index:0}
 .mapa .leaflet-control-attribution{font-size:9px}
 .mapa.leaflet-container{background:var(--card)}
@@ -397,7 +406,7 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
     <section id="p-cal" hidden></section>
     <section id="p-tab" hidden></section>
     <section id="p-pla" hidden></section>
-    <section id="p-jor" hidden></section>
+    <section id="p-riv" hidden></section>
   </main>
   <p class="note" id="upd"></p>
 </div>
@@ -431,10 +440,10 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
 
 <nav class="tabs" role="tablist"><div class="in">
   <button role="tab" aria-selected="true" data-p="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6h-6v6H5.5A1.5 1.5 0 0 1 4 19.5z"/></svg>Inicio</button>
-  <button role="tab" aria-selected="false" data-p="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Temporada</button>
-  <button role="tab" aria-selected="false" data-p="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 21h8M12 17v4M6 4h12v5a6 6 0 0 1-12 0z"/><path d="M6 6H3.5v1.5A3.5 3.5 0 0 0 7 11M18 6h2.5v1.5A3.5 3.5 0 0 1 17 11"/></svg>Tabla</button>
+  <button role="tab" aria-selected="false" data-p="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Calendario</button>
+  <button role="tab" aria-selected="false" data-p="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 21h8M12 17v4M6 4h12v5a6 6 0 0 1-12 0z"/><path d="M6 6H3.5v1.5A3.5 3.5 0 0 0 7 11M18 6h2.5v1.5A3.5 3.5 0 0 1 17 11"/></svg>Clasificación</button>
+  <button role="tab" aria-selected="false" data-p="riv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/></svg>Rivales</button>
   <button role="tab" aria-selected="false" data-p="pla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5.6M18 19a5 5 0 0 0-2.6-4.4"/></svg>Plantilla</button>
-  <button role="tab" aria-selected="false" data-p="jor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Jornadas</button>
 </div></nav>
 
 <script>
@@ -982,7 +991,7 @@ function start(DATA){
     const won=played.filter(o=>kind(o)==="W").length;
     const tops=[...players].sort((a,b)=>b.g-a.g||a.n.localeCompare(b.n)).filter(p=>p.g).slice(0,3);
     const p=posOf(US);
-    document.getElementById("widgets").innerHTML=`<h2>El equipo</h2><div class="wg">
+    document.getElementById("widgets").innerHTML=duelo()+`<h2>El equipo</h2><div class="wg">
       <div class="w"><div class="k">Posición</div><div class="v">${p}ª</div><div class="s">${me.pts} pts · ${me.pj} jugados</div></div>
       <div class="w"><div class="k">Racha</div><div class="form" style="margin:0">${form||'<span style="background:var(--fill);color:var(--ink2)">–</span>'}</div><div class="s">${won} de ${played.length} ganados</div></div>
       <div class="w"><div class="k">Goles</div><div class="v">${me.gf}<span style="font-size:20px;color:var(--ink2)"> / ${me.gc}</span></div><div class="s">a favor / en contra</div></div>
@@ -993,10 +1002,18 @@ function start(DATA){
 
   /* ---------- TEMPORADA: línea de tiempo ---------- */
   let filtro="todo",vista="linea",mes=null;
+  let calSel="nuestros";try{if(localStorage.getItem("calSel")==="liga")calSel="liga"}catch(e){}
+  function marcoCal(){
+    const pc=document.getElementById("p-cal");
+    if(!document.getElementById("calN"))pc.innerHTML=`<div class="segtop" role="group" aria-label="Calendario"><button data-k="nuestros">Nuestros partidos</button><button data-k="liga">Toda la liga</button></div><div id="calN"></div><div id="calL"></div>`;
+    pc.querySelectorAll(".segtop button").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.k===calSel);b.onclick=()=>{calSel=b.dataset.k;try{localStorage.setItem("calSel",calSel)}catch(e){}marcoCal()}});
+    document.getElementById("calN").hidden=calSel!=="nuestros";document.getElementById("calL").hidden=calSel!=="liga";
+  }
   function drawCal(){
+    marcoCal();
     if(vista==="mes")return drawMonth();
     const list=ours.map((o,i)=>({o,i})).filter(({o})=>filtro==="todo"||(!o.rest&&(filtro==="casa"?o.home:!o.home)));
-    document.getElementById("p-cal").innerHTML=vistaSel()+`<h2>Nuestro camino</h2>
+    document.getElementById("calN").innerHTML=vistaSel()+`<h2>Nuestro camino</h2>
       <div class="seg2" role="group" aria-label="Filtrar partidos">${[["todo","Todo"],["casa","En casa"],["fuera","Fuera"]].map(([k,t])=>`<button data-f="${k}" aria-pressed="${filtro===k}">${t}</button>`).join("")}</div>
       <div class="tl">`+list.map(({o,i})=>{
         if(o.rest)return `<div class="tli"><span class="dot"></span><div class="tc future"><div class="m1"><span>J${o.j} · ${fmt(o.f)}</span></div><div class="m2"><span class="nm">Descanso</span></div></div></div>`;
@@ -1012,7 +1029,7 @@ function start(DATA){
     document.querySelectorAll("#p-cal .seg2 button[data-f]").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;drawCal()});
     bindVista();
   }
-  function vistaSel(){return `<div class="seg2" role="group" aria-label="Vista" style="margin-top:18px">${[["linea","Lista"],["mes","Calendario"]].map(([k,t])=>`<button data-v="${k}" aria-pressed="${vista===k}">${t}</button>`).join("")}</div>`}
+  function vistaSel(){return `<div class="seg2" role="group" aria-label="Vista" style="margin-top:12px">${[["linea","Lista"],["mes","Calendario"]].map(([k,t])=>`<button data-v="${k}" aria-pressed="${vista===k}">${t}</button>`).join("")}</div>`}
   function bindVista(){document.querySelectorAll("#p-cal .seg2 button[data-v]").forEach(b=>b.onclick=()=>{vista=b.dataset.v;try{localStorage.setItem("vista",vista)}catch(e){}drawCal()})}
   try{const v=localStorage.getItem("vista");if(v==="mes"||v==="linea")vista=v}catch(e){}
 
@@ -1049,7 +1066,7 @@ function start(DATA){
       const tag=m&&m.t!=="rest"?"button":"div";
       return `<${tag} class="${cls}"${tag==="button"?` data-i="${m.i}" aria-label="Jornada ${m.o.j} contra ${esc(sn(m.o.opp))}"`:""}><span class="n">${d.getDate()}</span>${inner}</${tag}>`;
     }).join("");
-    document.getElementById("p-cal").innerHTML=vistaSel()+`<h2>Calendario <span style="font-size:15px;font-weight:600;color:var(--ink2)">· Temporada 2026/2027</span></h2>
+    marcoCal();document.getElementById("calN").innerHTML=vistaSel()+`<h2>Calendario <span style="font-size:15px;font-weight:600;color:var(--ink2)">· Temporada 2026/2027</span></h2>
       <div class="mhead"><button class="round" id="mp" aria-label="Mes anterior" ${canPrev?"":"disabled"}>${ico.left}</button><div class="t">${(m=>m[0].toUpperCase()+m.slice(1))(first.toLocaleDateString("es-ES",{month:"long"}))}</div><button class="round" id="mn" aria-label="Mes siguiente" ${canNext?"":"disabled"}>${ico.right}</button></div>
       <div class="cal"><div class="dow">${["L","M","X","J","V","S","D"].map(x=>`<span>${x}</span>`).join("")}</div><div class="days">${body}</div></div>
       <div class="calleg"><span><i style="background:color-mix(in srgb,var(--yellow) 30%,transparent);border:1.5px dashed var(--yellow)"></i>Día por confirmar</span><span><i style="background:var(--yellow)"></i>Día y hora oficiales</span><span><b style="color:var(--ink)">prev.</b> = horario provisional</span><span><i style="background:repeating-linear-gradient(135deg,var(--fill) 0 3px,transparent 3px 6px)"></i>Descansamos</span></div>`;
@@ -1063,41 +1080,39 @@ function start(DATA){
         if(dx<-50&&canNext){mes=new Date(mes.getFullYear(),mes.getMonth()+1,1);drawMonth()}else if(dx>50&&canPrev){mes=new Date(mes.getFullYear(),mes.getMonth()-1,1);drawMonth()}},{passive:true});})();
   }
 
-  /* ---------- TABLA: barras, duelo, tabla completa, cuadro y horarios ---------- */
+  /* Partidos de un equipo esta temporada (jugados y por jugar) */
+  function partidosDe(t){const H=DATA.horarios||{},jug=[],fut=[];
+    J.forEach(([j,f,ms])=>ms.forEach(([h,a,g,acta])=>{if(h!==t&&a!==t)return;const casa=h===t,rv=casa?a:h,hr=acta&&H[acta];
+      const o={j,f:hr&&hr[1]?hr[1]:f,casa,rv,g:g?(casa?g:[g[1],g[0]]):null};(g?jug:fut).push(o)}));return {jug,fut}}
+  function filaP(o){const k=o.g?(o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D"):"";
+    return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs">${shirt(o.rv,18)}<span>${esc(sn(o.rv))} <small>${o.casa?"casa":"fuera"} · ${fmt(o.f,{day:"numeric",month:"short"})}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>`:"<small>—</small>"}</div>`}
+  /* El duelo con el próximo rival (va en Inicio) */
+  function duelo(){
+    const nx=ours[nextIdx];if(!(nx&&!nx.rest&&!nx.g))return "";
+    const a=S[US],b=S[nx.opp];
+    const line=(lab,x,y)=>{const m=Math.max(1,x,y);return `<div class="dl"><div class="t l"><i style="width:${x/m*100}%"></i></div><div class="c"><b>${x}</b> ${lab} <b>${y}</b></div><div class="t r"><i style="width:${y/m*100}%"></i></div></div>`};
+    return `<h2>El duelo · J${nx.j}</h2><div class="duel"><div class="hd2"><span>Barajas · ${posOf(US)}ª</span><span>${esc(sn(nx.opp))} · ${posOf(nx.opp)}ª</span></div>
+      ${line("puntos",a.pts,b.pts)}${line("goles",a.gf,b.gf)}${line("encajados",a.gc,b.gc)}${line("jugados",a.pj,b.pj)}
+      ${forma(US).length||forma(nx.opp).length?`<div class="rkr">${racha(US)||"<span></span>"}<span>racha</span>${racha(nx.opp)||"<span></span>"}</div>`:""}</div>`}
+
+  /* ---------- CLASIFICACIÓN: nuestro grupo, otros grupos y goleadoras ---------- */
+  let claSel="nuestro";try{const v=localStorage.getItem("claSel");if(["nuestro","otros","gol"].includes(v))claSel=v}catch(e){}
   function drawTab(){
-    const max=Math.max(1,...TABLA.map(r=>r.pts));
-    const bars=`<div class="bars">`+TABLA.map((r,i)=>`<div class="bar${r.t===US?" us":""}"><span class="p">${i+1}</span><span class="nm">${shirt(r.t,18)}${esc(sn(r.t))}</span><div class="track"><div class="fill" style="width:${Math.max(8,r.pts/max*100)}%">${r.pts}</div></div></div>`).join("")+`</div>`;
-    /* Duelo contra el próximo rival */
-    const nx=ours[nextIdx];let duel="";
-    if(nx&&!nx.rest&&!nx.g){
-      const a=S[US],b=S[nx.opp];
-      const line=(lab,x,y,lowBetter)=>{const m=Math.max(1,x,y);return `<div class="dl"><div class="t l"><i style="width:${x/m*100}%"></i></div><div class="c"><b>${x}</b> ${lab} <b>${y}</b></div><div class="t r"><i style="width:${y/m*100}%"></i></div></div>`};
-      duel=`<h2>El duelo · J${nx.j}</h2><div class="duel"><div class="hd2"><span>Barajas · ${posOf(US)}ª</span><span>${esc(sn(nx.opp))} · ${posOf(nx.opp)}ª</span></div>
-        ${line("puntos",a.pts,b.pts)}${line("goles",a.gf,b.gf)}${line("encajados",a.gc,b.gc)}${line("jugados",a.pj,b.pj)}
-        ${forma(US).length||forma(nx.opp).length?`<div class="rkr">${racha(US)||"<span></span>"}<span>racha</span>${racha(nx.opp)||"<span></span>"}</div>`:""}</div>`;
-    }
-    /* Cuadro de resultados: se elige un equipo y se resalta su fila y su columna */
-    const teams=TABLA.map(r=>r.t);
     const mx=`<h2>Cuadro de resultados</h2><div class="pick" id="mxpick"></div><div id="mxbox"></div>`;
-    /* Cuándo juega cada equipo en casa */
-    const pats=teams.map(t=>({t,pt:patron(t)})).filter(x=>x.pt);
-    const hor=pats.length?`<h2>¿Cuándo juega cada equipo en casa?</h2><div class="hr">`+pats.map(({t,pt})=>`<details class="hd3"><summary class="cell">${shirt(t,26)}<div class="txt"><div class="ttl">${esc(sn(t))}</div><div class="meta">${pt.fiable?`Suele ser el <b>${pt.lab}</b>, sobre las ${pt.hora}`:pt.empate?"Sin patrón claro todavía":`Pocos datos todavía`}</div></div><div class="end when">${pt.n?`${pt.nl} de ${pt.n}<br><small>jugados</small>`:"<small>sin jugados</small>"}</div></summary>
-      <div class="lst">${pt.todos.map(x=>`<div${x.prev?' class="pv"':""}><span>${fmt(x.f,{weekday:"short",day:"numeric",month:"short"})}${x.prev?" · previsto":""}</span><span>${x.h}</span><small>${x.prev?"sin confirmar":x.temp}</small></div>`).join("")}</div></details>`).join("")+`</div>
-      <p class="note">Según sus partidos jugados en casa esta temporada y la anterior.</p>`:"";
-    document.getElementById("p-tab").innerHTML=`<h2>Clasificación</h2>`+bars+duel+
-      `<h2>Tabla completa</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
+    const sel=`<div class="segtop" role="group" aria-label="Clasificación">${[["nuestro","Nuestro grupo"],["otros","Otros grupos"],["gol","Goleadoras"]].map(([k,t])=>`<button data-c="${k}" aria-pressed="${claSel===k}">${t}</button>`).join("")}</div>`;
+    let cuerpo="";
+    if(claSel==="nuestro")cuerpo=`<h2>Clasificación</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
       TABLA.map((r,i)=>`<tr class="tap${r.t===US?" us":""}" data-t="${esc(r.t)}"><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span><span style="display:block;padding-left:30px">${racha(r.t)}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
-      `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}</p>`+
-      `<h2>Campos</h2><div class="mapa" id="mapa"></div>`+otras()+mx+hor;
-    drawMx();bindOtras();mapaPend=true;if(!document.getElementById("p-tab").hidden)pintaMapa();
+      `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}</p>`+mx;
+    else if(claSel==="otros")cuerpo=otras();
+    else cuerpo=goleadorasHTML();
+    document.getElementById("p-tab").innerHTML=sel+cuerpo;
+    document.querySelectorAll("#p-tab .segtop button").forEach(b=>b.onclick=()=>{claSel=b.dataset.c;try{localStorage.setItem("claSel",claSel)}catch(e){}drawTab()});
+    if(claSel==="nuestro")drawMx();if(claSel==="otros")bindOtras();
     /* Al tocar un equipo se despliegan sus partidos de esta temporada */
     document.querySelectorAll("#p-tab tr.tap").forEach(tr=>tr.onclick=()=>{
       const sig=tr.nextElementSibling;if(sig&&sig.classList.contains("det")){sig.remove();tr.classList.remove("open");return}
-      const t=tr.dataset.t,H=DATA.horarios||{},jug=[],fut=[];
-      J.forEach(([j,f,ms])=>ms.forEach(([h,a,g,acta])=>{if(h!==t&&a!==t)return;const casa=h===t,rv=casa?a:h,hr=acta&&H[acta];
-        const o={j,f:hr&&hr[1]?hr[1]:f,casa,rv,g:g?(casa?g:[g[1],g[0]]):null};(g?jug:fut).push(o)}));
-      const fila=o=>{const k=o.g?(o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D"):"";
-        return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs">${shirt(o.rv,18)}<span>${esc(sn(o.rv))} <small>${o.casa?"casa":"fuera"} · ${fmt(o.f,{day:"numeric",month:"short"})}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>`:"<small>—</small>"}</div>`};
+      const t=tr.dataset.t,{jug,fut}=partidosDe(t),fila=filaP;
       const d=document.createElement("tr");d.className="det";
       d.innerHTML=`<td colspan="8"><div class="tdet">${jug.length?jug.map(fila).join(""):`<div class="hd4">Aún no ha jugado</div>`}${fut.length?`<div class="hd4">Próximo</div>${fila(fut[0])}`:""}</div></td>`;
       tr.after(d);tr.classList.add("open")});
@@ -1202,21 +1217,47 @@ function start(DATA){
     document.querySelectorAll("#tbpick .pk").forEach(b=>b.onclick=()=>{tbSel=+b.dataset.i;document.querySelectorAll("#tbpick .pk").forEach(c=>{c.classList.toggle("on",c===b);c.setAttribute("aria-pressed",c===b)});bindOtras()});
   }
 
+  /* Goleadoras de la liga (en Clasificación) */
+  function goleadorasHTML(){
+    const G=(DATA.goleadoras||[]).filter(r=>r&&r.n);
+    const norm=t=>t.replace("VILLAVICIOSA DE ODON B","VILLAVICIOSA DE ODON 'B'");
+    let pos=0,prev=null;
+    return G.length?`<h2>Goleadoras de la liga</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Jugadora</th><th>Goles</th></tr></thead><tbody>`+
+      G.map((r,i)=>{if(r.g!==prev){pos=i+1;prev=r.g}const eq=norm(r.eq);return `<tr${eq===US?' class="us"':""}><td class="pos">${pos}</td><td class="t"><span class="who">${shirt(eq,22)}<span>${esc(nomL(r.n))}<br><small style="color:var(--ink2)">${esc(sn(eq))}</small></span></span></td><td class="p">${r.g}</td></tr>`}).join("")+
+      `</tbody></table></div>`:`<p class="note">Aún no hay goleadoras.</p>`}
+
+  /* ---------- RIVALES: mapa de campos y ficha de cada equipo ---------- */
+  function drawRiv(){
+    const teams=TABLA.map(r=>r.t).filter(t=>t!==US);
+    const ficha=t=>{
+      const p=placeOf({home:false,opp:t}),campo=campoCasa(t)||p.name;
+      const pt=patron(t),{jug,fut}=partidosDe(t);
+      const nos=ours.filter(o=>!o.rest&&o.opp===t);
+      const {games}=DATA.anterior?h2h(t):{games:[]};
+      const casa=pt?(pt.fiable?`Suele jugar en casa el <b>${pt.lab}</b>, sobre las ${pt.hora}`:pt.n?`Sin patrón claro (${pt.n} partido${pt.n>1?"s":""} en casa)`:"Aún sin partidos en casa"):"Sin datos de horarios";
+      const nosTxt=nos.map(o=>{const k=kind(o);return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs"><span>${o.home?"En casa":"Fuera"} <small>· ${oficial(o)&&o.hora?fmt(o.f,{day:"numeric",month:"short"})+" "+o.hora:"finde "+rango(o)}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>`:"<small>—</small>"}</div>`}).join("");
+      const ant=games.filter(g=>g.r).map(g=>{const ourG=g.h===US?g.r[0]:g.r[1],thG=g.h===US?g.r[1]:g.r[0],k=ourG>thG?"W":ourG<thG?"L":"D";
+        return `<div class="r"><span class="j"></span><span class="vs"><span>${g.h===US?"En casa":"Fuera"} <small>· ${fmt(g.f,{day:"numeric",month:"short",year:"2-digit"})}</small></span></span><b class="${k}">${ourG}-${thG}</b></div>`}).join("");
+      return `<div class="ficha">
+        <div><div class="k2">Su campo</div><div class="campo"><span>${esc(campo)}</span><a href="${p.url}" target="_blank" rel="noopener">Cómo llegar</a></div><div class="s" style="color:var(--ink2);margin-top:2px">${casa}</div></div>
+        <div><div class="k2">Contra nosotros</div><div class="tdet">${nosTxt}${ant?`<div class="hd4">Temporada pasada</div>${ant}`:""}</div></div>
+        <div><div class="k2">Sus partidos</div><div class="tdet">${jug.length?jug.map(filaP).join(""):`<div class="hd4">Aún no ha jugado</div>`}${fut.length?`<div class="hd4">Próximo</div>${filaP(fut[0])}`:""}</div></div></div>`};
+    const nx=ours[nextIdx];
+    document.getElementById("p-riv").innerHTML=`<h2>Campos</h2><div class="mapa" id="mapa"></div>
+      <h2>Equipos</h2><div class="hr">`+teams.map(t=>{const r=S[t],o=ours.find(x=>!x.rest&&x.opp===t&&!x.g);
+        return `<details class="hd3 riv"${nx&&nx.opp===t?" open":""}><summary class="cell">${escudoDe(t,ESC[t])}<div class="txt"><div class="ttl">${esc(sn(t))}</div><div class="meta">${posOf(t)}ª · ${r.pts} pts${racha(t)}</div></div><div class="end when">${o?`J${o.j}<br><small>${o.home?"en casa":"fuera"}</small>`:"<small>jugado</small>"}</div></summary>${ficha(t)}</details>`}).join("")+`</div>`;
+    mapaPend=true;if(!document.getElementById("p-riv").hidden)pintaMapa();
+  }
+
   /* ---------- PLANTILLA ---------- */
   let orden="goles";
   function drawPla(){
     const P=[...players].sort(orden==="goles"?(a,b)=>b.g-a.g||b.pj-a.pj||a.n.localeCompare(b.n):orden==="pj"?(a,b)=>b.pj-a.pj||b.g-a.g||a.n.localeCompare(b.n):(a,b)=>nomL(a.n).localeCompare(nomL(b.n)));
-    const G=(DATA.goleadoras||[]).filter(r=>r&&r.n);
-    const norm=t=>t.replace("VILLAVICIOSA DE ODON B","VILLAVICIOSA DE ODON 'B'");
-    let pos=0,prev=null;
     document.getElementById("p-pla").innerHTML=`<h2>La plantilla</h2><div class="squad">
       <div class="seg2" role="group" aria-label="Ordenar">${[["goles","Goles"],["pj","Partidos"],["az","A–Z"]].map(([k,t])=>`<button data-o="${k}" aria-pressed="${orden===k}">${t}</button>`).join("")}</div>
       <div class="sq h"><span></span><span>Jugadora</span><span style="text-align:center">PJ</span><span style="text-align:center">Goles</span></div>`+
       (P.length?P.map(p=>`<div class="sq">${p.dorsal!=null?`<span class="dsh">${espaldaBarajas(42,p.dorsal)}</span>`:`<span class="av">${esc(ini(p.n))}</span>`}<span class="nm">${esc(nomL(p.n))}</span><span class="pj">${p.pj}</span><span class="n${p.g?"":" z"}">${p.g}</span></div>`).join(""):`<div class="sq"><span></span><span class="nm">Aún no hay actas con convocatoria</span></div>`)+
-      `</div><p class="note">PJ = partidos convocada.</p>`+
-      (G.length?`<h2>Goleadoras de la liga</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Jugadora</th><th>Goles</th></tr></thead><tbody>`+
-      G.map((r,i)=>{if(r.g!==prev){pos=i+1;prev=r.g}const eq=norm(r.eq);return `<tr${eq===US?' class="us"':""}><td class="pos">${pos}</td><td class="t"><span class="who">${shirt(eq,22)}<span>${esc(nomL(r.n))}<br><small style="color:var(--ink2)">${esc(sn(eq))}</small></span></span></td><td class="p">${r.g}</td></tr>`}).join("")+
-      `</tbody></table></div>`:"");
+      `</div><p class="note">PJ = partidos convocada.</p>`;
     document.querySelectorAll("#p-pla .seg2 button").forEach(b=>b.onclick=()=>{orden=b.dataset.o;drawPla()});
   }
 
@@ -1225,14 +1266,14 @@ function start(DATA){
   function drawJor(){
     const [j,f,ms,rest]=J[cur];
     const n=t=>t===US?`<b>${esc(sn(t))}</b>`:esc(sn(t));
-    document.getElementById("p-jor").innerHTML=`<h2>Jornadas</h2><div class="seg"><button class="round" id="jp" aria-label="Jornada anterior" ${cur===0?"disabled":""}>${ico.left}</button><div class="lbl2">Jornada ${j}<span>${fmt(f,{weekday:"long",day:"numeric",month:"long"})}</span></div><button class="round" id="jn" aria-label="Jornada siguiente" ${cur===J.length-1?"disabled":""}>${ico.right}</button></div>
+    marcoCal();document.getElementById("calL").innerHTML=`<h2>Jornadas</h2><div class="seg"><button class="round" id="jp" aria-label="Jornada anterior" ${cur===0?"disabled":""}>${ico.left}</button><div class="lbl2">Jornada ${j}<span>${fmt(f,{weekday:"long",day:"numeric",month:"long"})}</span></div><button class="round" id="jn" aria-label="Jornada siguiente" ${cur===J.length-1?"disabled":""}>${ico.right}</button></div>
       <div class="group">`+ms.map(([h,a,g,acta])=>{const us=h===US||a===US;const c=CAMPOS[h];
         const hr=acta&&DATA.horarios?DATA.horarios[acta]:null;
         const dj=us?DET[j]:null;
         const fh=dj&&dj.hora?{f:dj.fecha,h:dj.hora,c:dj.cambios&&dj.cambios.slice(-1)[0]&&dj.cambios.slice(-1)[0].antes.hora?{fecha:dj.cambios.slice(-1)[0].antes.fecha,hora:dj.cambios.slice(-1)[0].antes.hora}:null}:hr&&hr[2]?{f:hr[1],h:hr[2],c:hr[3]||null}:null;
         const prov=!g&&new Date()<lunes9({cf:f});
         const when2=fh?`<div class="when2">${fh.c?`<s>${fmt(fh.c.fecha)} ${fh.c.hora}</s>`:""}${prov?"Previsto ":""}${fmt(fh.f)} · ${fh.h}${fh.c?" <b>cambio</b>":""}${prov?" <i>(sin confirmar)</i>":""}</div>`:"";
-        const where=us&&DET[j]&&DET[j].campo?cleanCampo(DET[j].campo):c?c[0]:"";
+        const where=us&&DET[j]&&DET[j].campo?cleanCampo(DET[j].campo):campoCasa(h)||(c?c[0]:"");
         return `<div class="gm${us?" us":""}"><div class="h">${n(h)}${shirt(h,24)}</div><div class="s">${g?g[0]+" - "+g[1]:"–"}</div><div class="a">${shirt(a,24)}${n(a)}</div>${when2}${where?`<div class="where"><a href="${placeOf(us?ours.find(o=>o.j===j):{home:false,opp:h}).url}" target="_blank" rel="noopener">${esc(where)}</a></div>`:""}</div>`}).join("")+
       `</div>`+rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("")+(new Date()<lunes9({cf:f})&&!ms.some(m=>m[2])?`<p class="note">Horarios oficiales: lunes ${lunes9({cf:f}).getDate()} a las 9:00.</p>`:"");
     document.getElementById("jp").onclick=()=>{if(cur>0){cur--;drawJor();syncHero(J[cur][0])}};
@@ -1240,20 +1281,20 @@ function start(DATA){
   }
   function syncHero(j){const i=ours.findIndex(o=>o.j===j);if(i>=0){sel=i;drawHero();drawCal()}}
 
-  drawHero();drawWidgets();drawCal();drawTab();drawPla();drawJor();
+  drawHero();drawWidgets();drawCal();drawTab();drawRiv();drawPla();drawJor();
   if(DATA.actualizado){const horas=(Date.now()-new Date(DATA.actualizado))/36e5;const st=document.getElementById("stale");
     if(horas>5){st.hidden=false;st.textContent=`Los datos no se actualizan desde hace ${Math.round(horas)} horas. Prueba a darle a actualizar; si sigue así, puede que la web de la RFFM haya cambiado.`}}
   if(DATA.actualizado){const d=new Date(DATA.actualizado);document.getElementById("upd").textContent="Datos de la RFFM · actualizado el "+d.toLocaleString("es-ES",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});}
 
-  const TABS=["home","cal","tab","pla","jor"];
+  const TABS=["home","cal","tab","riv","pla"];
   function go(p){
     document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x.dataset.p===p));
     TABS.forEach(t=>document.getElementById("p-"+t).hidden=t!==p);
-    if(p==="tab")setTimeout(()=>{pintaMapa();if(MAPA)MAPA.invalidateSize()},50);
+    if(p==="riv")setTimeout(()=>{pintaMapa();if(MAPA)MAPA.invalidateSize()},50);
     try{localStorage.setItem("tab2",p)}catch(e){}
   }
   document.querySelectorAll(".tabs button").forEach(btn=>btn.onclick=()=>{go(btn.dataset.p);window.scrollTo({top:0})});
-  try{const t=localStorage.getItem("tab2");if(t&&TABS.includes(t))go(t)}catch(e){}
+  try{let t=localStorage.getItem("tab2");if(t==="jor"){t="cal";calSel="liga";marcoCal()}if(t&&TABS.includes(t))go(t)}catch(e){}
 }
 </script>
 </body>
