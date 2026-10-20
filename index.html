@@ -143,6 +143,13 @@ h2{font:700 22px/1.2 var(--font);margin:26px 4px 8px;letter-spacing:-.01em}
 .tbl tr.tap{cursor:pointer}
 .mapa{height:340px;border-radius:14px;overflow:hidden;background:var(--fill);position:relative;z-index:0}
 .mapa .leaflet-control-attribution{font-size:9px}
+.mapa.leaflet-container{background:var(--card)}
+.escp{width:28px;height:28px;flex:none;border-radius:50%;background:#fff;display:grid;place-items:center;overflow:hidden;box-shadow:0 0 0 1px var(--sep)}
+.escp>*{grid-area:1/1}
+.escp img{width:24px;height:24px;object-fit:contain}
+.escp svg{display:none}
+.escp.x{background:none;box-shadow:none}.escp.x img{display:none}.escp.x svg{display:block}
+.zl{font:600 11px -apple-system,system-ui,sans-serif;color:var(--ink2);text-align:center;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px var(--card),0 0 3px var(--card)}
 .pin{width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center;overflow:hidden;border:2px solid #fff}
 .pin img{width:28px!important;height:28px!important;object-fit:contain}
 .pin.nx{border-color:#f5c400;box-shadow:0 0 0 4px rgba(245,196,0,.45),0 2px 6px rgba(0,0,0,.35)}
@@ -1141,10 +1148,23 @@ function start(DATA){
       if(MAPA){MAPA.remove();MAPA=null}
       const oscuro=document.documentElement.dataset.theme==="dark"||(document.documentElement.dataset.theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
       MAPA=L.map(el,{scrollWheelZoom:false,attributionControl:true,zoomControl:true});
-      /* Fondo liso y limpio (Esri "Canvas", gris claro u oscuro según el modo) con los nombres encima */
-      const capa=oscuro?"Dark_Gray":"Light_Gray",esri="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_"+capa;
-      L.tileLayer(esri+"_Base/MapServer/tile/{z}/{y}/{x}",{maxZoom:16,attribution:"Esri, HERE, Garmin, © OpenStreetMap"}).addTo(MAPA);
-      L.tileLayer(esri+"_Reference/MapServer/tile/{z}/{y}/{x}",{maxZoom:16}).addTo(MAPA);
+      /* Fondo propio y muy simple: solo los municipios de la Comunidad y los distritos de Madrid (OpenStreetMap) */
+      MAPA.attributionControl.addAttribution('© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>');
+      const cs=getComputedStyle(document.documentElement),cv=v=>cs.getPropertyValue(v).trim();
+      const DIST=new Set(["Centro","Arganzuela","Retiro","Salamanca","Chamartín","Tetuán","Chamberí","Fuencarral-El Pardo","Moncloa-Aravaca","Latina","Carabanchel","Usera","Puente de Vallecas","Moratalaz","Ciudad Lineal","Hortaleza","Villaverde","Villa de Vallecas","Vicálvaro","San Blas - Canillejas","Barajas"]);
+      const dentro=(ll,geom)=>{const [y,x]=ll;const polys=geom.type==="Polygon"?[geom.coordinates]:geom.coordinates;
+        return polys.some(poly=>{let ins=false;const r=poly[0];for(let i=0,j=r.length-1;i<r.length;j=i++){const [xi,yi]=r[i],[xj,yj]=r[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)ins=!ins}return ins})};
+      fetch("zonas.json").then(r=>r.json()).then(z=>{
+        const feats=z.features.filter(f=>f.properties.l===8||DIST.has(f.properties.n));
+        const conCampo=new Set(),etiquetas=[];feats.forEach(f=>Object.entries(CAMPO_GEO).forEach(([t,ll])=>{if(S[t]&&dentro(ll,f.geometry)){conCampo.add(f);etiquetas.push([ll,f.properties.n])}}));
+        L.geoJSON({type:"FeatureCollection",features:feats},{interactive:false,style:f=>{const c=conCampo.has(f),d=f.properties.l===9;
+          return {color:oscuro?"#4a4a4e":"#c7c7cc",weight:d?.6:.8,fillOpacity:1,
+            fillColor:c?(oscuro?"#3a3520":"#fff4c2"):d?(oscuro?"#2c2c2e":"#ececf0"):(oscuro?"#232325":"#f6f6f8")}}}).addTo(MAPA).bringToBack();
+        /* Nombre de la zona de cada campo (se ve al acercar) */
+        etiquetas.forEach(([ll,n])=>L.marker(ll,{interactive:false,icon:L.divIcon({className:"zl",html:esc(n),iconSize:[140,14],iconAnchor:[70,-21]})}).addTo(zonasTxt));
+      }).catch(()=>{});
+      const zonasTxt=L.layerGroup();
+      const verTxt=()=>{if(MAPA.getZoom()>=11)zonasTxt.addTo(MAPA);else zonasTxt.remove()};MAPA.on("zoomend",verTxt);
       const nx=ours[nextIdx],sitioNx=nx&&!nx.rest?(nx.home?US:nx.opp):null;
       const pts=[];
       Object.entries(CAMPO_GEO).forEach(([t,ll])=>{if(!S[t])return;pts.push(ll);
@@ -1155,8 +1175,31 @@ function start(DATA){
         const mk=L.marker(ll,{icon,zIndexOffset:t===sitioNx?1000:t===US?500:0}).addTo(MAPA)
           .bindPopup(`<div class="pop"><b>${esc(sn(t))}</b><span>${esc(campo)}${t===sitioNx?" · próximo partido":""}</span><a href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Abrir en Google Maps</a></div>`);
       });
-      MAPA.fitBounds(pts,{padding:[24,24]});
+      MAPA.fitBounds(pts,{padding:[24,24]});MAPA.setMinZoom(8);MAPA.setMaxZoom(14);verTxt();
     }).catch(()=>{el.innerHTML='<p class="note" style="padding:12px">No se ha podido cargar el mapa.</p>'});
+  }
+
+  /* ---------- OTRAS CLASIFICACIONES (otro grupo de este año y los dos del año pasado) ---------- */
+  const TB=(DATA.tablas||[]).slice().sort((a,b)=>b.temporada.localeCompare(a.temporada)||a.grupo.localeCompare(b.grupo));
+  let tbSel=0;
+  const nomEq=t=>{if(SHORT[t])return SHORT[t];const l=base(t)!==t?" "+t.match(/'([A-Z])'$/)[1]:"";
+    return capW(base(t).replace(/^(C\.?D\.?E?\.?|A\.?D\.?(Y\.?C\.?)?|S\.?A\.?D\.?|C\.?F\.?|CDE|CDB|C\.D\.B\.|E\.?F\.?|ESC\.?\s*(DE\s*)?FUT\.?|ESCUELA (MUNICIPAL )?DE FUTBOL)\s+/i,"")).replace(/^(Futbol Femenino|De Futbol) /i,"")+l};
+  /* Qué fila de cada tabla corresponde a un equipo de nuestro grupo de este año (misma regla de letras A/B que en el resto de la app) */
+  const enNuestro=x=>{const nombres=(x.temporada==="2025-2026"?TB.filter(y=>y.temporada===x.temporada).flatMap(y=>y.filas.map(f=>f.t)):x.filas.map(f=>f.t));
+    const m={};TABLA.forEach(q=>{const r=resolver(q.t,nombres);if(r)m[r]=q.t});return m};
+  /* Escudo del club en una plaquita redonda (si no carga, se ve la camiseta) */
+  const escudoDe=(t,url)=>{const u=t===US?"escudo-barajas.png":url;if(!u)return shirt(t,22);
+    return `<span class="escp"><img src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('x')">${camiseta(t,22)}</span>`};
+  function otras(){
+    if(!TB.length)return "";
+    return `<h2>Otras clasificaciones</h2><div class="pick" id="tbpick">${TB.map((x,i)=>`<button class="pk${i===tbSel?" on":""}" data-i="${i}" aria-pressed="${i===tbSel}">${esc(x.grupo)} · ${x.temporada.replace(/^20(\d\d)-20(\d\d)$/,"$1/$2")}</button>`).join("")}</div><div id="tbbox"></div>`}
+  function bindOtras(){
+    const box=document.getElementById("tbbox");if(!box)return;const x=TB[tbSel];
+    box.innerHTML=`<div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
+      (M=>x.filas.map((r,i)=>{const hoy=M[r.t],us=hoy===US,est=!!hoy&&!us,let_=(r.t.match(/'([A-Z])'$/)||[])[1];
+        return `<tr${us?' class="us"':""}><td class="pos">${i+1}</td><td class="t"><span class="who">${escudoDe(hoy||r.t,(x.escudos||{})[r.t])}<span>${est?"<b>":""}${esc(hoy?sn(hoy).replace(/ [A-Z]$/,"")+(let_?" "+let_:""):nomEq(r.t))}${est?"</b>":""}${est?`<br><small style="color:var(--ink2)">en nuestro grupo este año</small>`:""}</span></span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`}).join(""))(enNuestro(x))+
+      `</tbody></table></div><p class="note">${x.temporada==="2026-2027"?"Clasificación actual":"Clasificación final"} · ${x.fuente==="oficial"?"datos oficiales de la RFFM":"calculada con los resultados"}.</p>`;
+    document.querySelectorAll("#tbpick .pk").forEach(b=>b.onclick=()=>{tbSel=+b.dataset.i;document.querySelectorAll("#tbpick .pk").forEach(c=>{c.classList.toggle("on",c===b);c.setAttribute("aria-pressed",c===b)});bindOtras()});
   }
 
   /* ---------- PLANTILLA ---------- */
