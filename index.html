@@ -482,7 +482,7 @@ const KITS={
 "C.D. SANFER19":{b:"#ffffff",s:"#ffffff",tr:"#1fa03a"},
 "ESCUELA MUNICIPAL DE COBEÑA":{b:"#e8191c",s:"#e8191c",tr:"#ffffff"},
 "A.D. EL REAL DE MANZANARES":{b:"#ffffff",s:"#ffffff",tr:"#1fa03a",v:"half",h:"#1fa03a"},
-"S.A.D. COLEGIO SAN GABRIEL":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
+"S.A.D. COLEGIO SAN GABRIEL":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7",v:"sga"},
 "A.D. VILLAVICIOSA DE ODON 'B'":{b:"#ffffff",s:"#ffffff",tr:"#1f3fbf",v:"vil"}};
 
 /* Coordenadas aproximadas del pueblo/barrio de cada club, para el tiempo */
@@ -610,10 +610,43 @@ function camisetaPuertaBonita(size,t,conEscudo=true){
 <path d="M11.9 4.35 Q16 6.6 20.1 4.35" fill="none" stroke="#fff" stroke-width=".35" stroke-linecap="round"/>
 <circle cx="20.5" cy="9.8" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="19.05" y="8.35" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
 }
+/* Camiseta del Colegio San Gabriel: blanca con manchas azul claro tipo camuflaje en hombros y mangas
+   que se apagan hacia abajo, cuello de pico pequeño y puños azul oscuro, y su escudo (imagen de la RFFM) */
+const SGA_TORSO="M11.2 3.5 L16 6.6 L20.8 3.5 L25.6 5.4 Q26.5 5.8 26.6 6.8 L24.5 12.4 L24.5 28.2 Q24.5 29 23.7 29 L8.3 29 Q7.5 29 7.5 28.2 L7.5 12.4 L5.4 6.8 Q5.5 5.8 6.4 5.4 Z";
+function camisetaSanGabriel(size,t,conEscudo=true){
+  const id="kg"+(++_sid),W="#fbfbfd",A="#2240b0",C1="#86b6ea",C2="#b3d3f3",line="var(--kit-line)";
+  const espejo=`transform="translate(32 0) scale(-1 1)"`;
+  const manchas=`<path d="M2 6 Q4 4.8 6.2 5.6 Q7.4 7 6.4 8.6 Q4.6 9.6 3.6 8.4 Q2.2 9.6 1.6 8 Z" fill="${C1}"/><path d="M3.8 9.4 Q5.4 8.8 6.6 9.8 Q6.8 11.2 5.4 11.4 Q3.8 11.2 3.8 9.4 Z" fill="${C2}"/>`;
+  const manga=`<g clip-path="url(#${id}m)"><path d="${BAR_MANGA}" fill="${W}"/>${manchas}</g><path d="${BAR_MANGA}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+    <path d="M1.65 13.25 L6.65 14.65" stroke="${A}" stroke-width=".7" stroke-linecap="round"/>`;
+  const esc0=conEscudo&&typeof ESC!=="undefined"&&ESC[t];
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>
+<clipPath id="${id}c"><path d="${SGA_TORSO}"/></clipPath><clipPath id="${id}m"><path d="${BAR_MANGA}"/></clipPath><clipPath id="${id}e"><circle cx="20.4" cy="10.2" r="1.45"/></clipPath>
+<linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset=".32" stop-color="#fff" stop-opacity="1"/><stop offset=".62" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<mask id="${id}k"><rect x="0" y="0" width="32" height="32" fill="url(#${id}f)"/></mask>
+<linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></linearGradient></defs>
+<g>${manga}</g><g ${espejo}>${manga}</g>
+<path d="${SGA_TORSO}" fill="${W}"/>
+<g clip-path="url(#${id}c)"><g mask="url(#${id}k)">
+<path d="M5 4 Q8.5 3 11.5 4.6 Q12.6 6.6 11 8.2 Q9 9.6 7.4 8.8 Q6 10.4 5 9 Z" fill="${C1}"/>
+<path d="M27 4 Q23.5 3 20.5 4.6 Q19.4 6.6 21 7.8 Q23 9 24.6 8.2 Q26 9.8 27 8.6 Z" fill="${C1}"/>
+<path d="M9.6 9.6 Q12 9 13.4 10.4 Q13.2 12 11.4 12.2 Q9.4 11.8 9.6 9.6 Z" fill="${C2}"/>
+<path d="M14.6 8.2 Q16.6 7.4 18 8.6 Q17.8 10 16.2 10.2 Q14.4 9.8 14.6 8.2 Z" fill="${C2}"/>
+<path d="M21.6 10.6 Q23.6 10 24.8 11.4 Q24.4 12.8 22.8 12.8 Q21.2 12.4 21.6 10.6 Z" fill="${C2}"/>
+<path d="M7.6 12.4 Q9.4 12 10.2 13.4 Q9.6 14.6 8.2 14.4 Z" fill="${C2}"/>
+<path d="M12.4 6.6 Q14 6.4 14.6 7.6 Q13.8 8.6 12.6 8.2 Z" fill="${C1}"/><path d="M17.8 11.8 Q19.6 11.4 20.2 12.8 Q19.4 14 18 13.6 Z" fill="${C1}"/>
+<path d="M13.2 13.4 Q15.4 12.8 16.6 14.2 Q16 15.8 14.2 15.6 Q12.8 15 13.2 13.4 Z" fill="${C1}"/><path d="M22.6 14.6 Q24.4 14.2 24.8 15.8 Q23.8 16.8 22.6 16.2 Z" fill="${C2}"/></g>
+<rect x="0" y="0" width="32" height="32" fill="url(#${id}s)"/></g>
+<path d="M11.2 3.5 Q16 5.2 20.8 3.5 L16 6.6 Z" fill="#dfe3ee"/>
+<path d="${SGA_TORSO}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M11.2 3.5 L16 6.6 L20.8 3.5" fill="none" stroke="${A}" stroke-width="1.15" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="20.4" cy="10.2" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="18.95" y="8.75" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
+}
 function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="bar")return camisetaBarajas(size);
   if(KITS[t]&&KITS[t].v==="vil")return camisetaVillaviciosa(size,t);
   if(KITS[t]&&KITS[t].v==="npb")return camisetaPuertaBonita(size,t);
+  if(KITS[t]&&KITS[t].v==="sga")return camisetaSanGabriel(size,t);
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
   const id="k"+(++_sid);let defs="",body=k.b,extra="";
   if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
