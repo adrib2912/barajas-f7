@@ -476,7 +476,7 @@ const KITS={
 "C.D. ALGETE":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
 "C.F. SAN AGUSTIN DE GUADALIX":{b:"#ffffff",s:"#ffffff",tr:"#1c2f5e",v:"sag"},
 "ESC.FUT. EL OLIVO DE COSLADA":{b:"#e8191c",s:"#e8191c",tr:"#ffffff"},
-"CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":{b:"#1f44b8",s:"#1f44b8",tr:"#ffffff"},
+"CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":{b:"#1d2a5c",s:"#1d2a5c",tr:"#ffffff",v:"oly"},
 "A.D. MADRID SUR":{b:"#7cc8f0",s:"#7cc8f0",tr:"#ffffff"},
 "C.D. NUEVO PUERTA BONITA DE CARABANCHEL":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7",v:"npb"},
 "C.D. SANFER19":{b:"#ffffff",s:"#ffffff",tr:"#1fa03a"},
@@ -661,12 +661,33 @@ function camisetaSanAgustin(size,t,conEscudo=true){
 <path d="M11.6 4.2 Q16 6.9 20.4 4.2" fill="none" stroke="#d5d8e0" stroke-width=".3"/>
 <circle cx="18.9" cy="10.4" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="17.45" y="8.95" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
 }
+/* Camiseta del Olympia Las Rozas: azul marino con ondas color crema arriba que se convierten en
+   lunares hacia abajo, cuello redondo blanco y su escudo (imagen de la RFFM) */
+function camisetaOlympia(size,t,conEscudo=true){
+  const id="ko"+(++_sid),N="#1d2a5c",C="#e8dcc0",line="var(--kit-line)";
+  const espejo=`transform="translate(32 0) scale(-1 1)"`;
+  const onda=y=>{let d=`M-1 ${y}`;for(let x=-1;x<33;x+=2)d+=` q1 -1.1 2 0`;return `<path d="${d}" fill="none" stroke="${C}" stroke-width=".75" stroke-linecap="round"/>`};
+  const manga=`<g clip-path="url(#${id}m)"><path d="${BAR_MANGA}" fill="${N}"/>${[7.2,9.4,11.6].map(onda).join("")}</g>
+    <path d="${BAR_MANGA}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/><path d="M1.75 13.25 L6.75 14.65" stroke="${C}" stroke-width=".55" stroke-linecap="round"/>`;
+  let lunares="";for(let f=0;f<8;f++){const y=14.6+f*1.85,r=Math.max(.32,.78-f*.06);for(let x=(f%2?8.6:7.7);x<25;x+=1.8)lunares+=`<ellipse cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" rx="${(r*1.1).toFixed(2)}" ry="${r.toFixed(2)}" fill="${C}"/>`}
+  const esc0=conEscudo&&typeof ESC!=="undefined"&&ESC[t];
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>
+<clipPath id="${id}c"><path d="${NPB_TORSO}"/></clipPath><clipPath id="${id}m"><path d="${BAR_MANGA}"/></clipPath><clipPath id="${id}e"><circle cx="20.4" cy="10.2" r="1.45"/></clipPath>
+<linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".15"/></linearGradient></defs>
+<g>${manga}</g><g ${espejo}>${manga}</g>
+<path d="${NPB_TORSO}" fill="${N}"/>
+<g clip-path="url(#${id}c)">${[6.6,8.6,10.6,12.6].map(onda).join("")}${lunares}<rect x="0" y="0" width="32" height="32" fill="url(#${id}s)"/></g>
+<path d="${NPB_TORSO}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M11.2 3.5 Q16 6.4 20.8 3.5" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+<circle cx="20.4" cy="10.2" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="18.95" y="8.75" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
+}
 function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="bar")return camisetaBarajas(size);
   if(KITS[t]&&KITS[t].v==="vil")return camisetaVillaviciosa(size,t);
   if(KITS[t]&&KITS[t].v==="npb")return camisetaPuertaBonita(size,t);
   if(KITS[t]&&KITS[t].v==="sga")return camisetaSanGabriel(size,t);
   if(KITS[t]&&KITS[t].v==="sag")return camisetaSanAgustin(size,t);
+  if(KITS[t]&&KITS[t].v==="oly")return camisetaOlympia(size,t);
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
   const id="k"+(++_sid);let defs="",body=k.b,extra="";
   if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
