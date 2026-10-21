@@ -483,7 +483,7 @@ const KITS={
 "ESCUELA MUNICIPAL DE COBEÑA":{b:"#e8191c",s:"#e8191c",tr:"#ffffff"},
 "A.D. EL REAL DE MANZANARES":{b:"#ffffff",s:"#ffffff",tr:"#1fa03a",v:"half",h:"#1fa03a"},
 "S.A.D. COLEGIO SAN GABRIEL":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
-"A.D. VILLAVICIOSA DE ODON 'B'":{b:"#ffffff",s:"#ffffff",tr:"#9aa0a6",dudosa:1}};
+"A.D. VILLAVICIOSA DE ODON 'B'":{b:"#ffffff",s:"#ffffff",tr:"#1f3fbf",v:"vil"}};
 
 /* Coordenadas aproximadas del pueblo/barrio de cada club, para el tiempo */
 const GEO={"C.D. BARAJAS":[40.474,-3.578],"A.D. MADRID SUR":[40.385,-3.650],"S.A.D. COLEGIO SAN GABRIEL":[40.482,-3.364],"C.D. ALGETE":[40.597,-3.497],
@@ -554,8 +554,35 @@ function espaldaBarajas(size,num,texto=size>=60){
 <text x="16" y="${ny}" text-anchor="middle" font-family="'Arial Narrow','Roboto Condensed','SF Compact Display',-apple-system,sans-serif" font-weight="800" font-size="${fs}" letter-spacing="-.4" fill="${Y}">${esc(n)}</text>
 ${texto?`<text x="16" y="18.4" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" font-weight="800" font-size="1.75" letter-spacing=".05" fill="${Y}">C.D. BARAJAS</text>`:""}</svg>`;
 }
+/* Camiseta del Villaviciosa de Odón: blanca, hombros azules con raya roja y raya azul, cuello de pico,
+   puños azul-rojo-azul, franja azul del patrocinador y su escudo (imagen de la RFFM) */
+function camisetaVillaviciosa(size,t,conEscudo=true){
+  const id="kv"+(++_sid),W="#f7f7f9",A="#1f3fbf",R="#d6293e",line="var(--kit-line)";
+  const espejo=`transform="translate(32 0) scale(-1 1)"`;
+  const manga=`<g clip-path="url(#${id}m)"><path d="${BAR_MANGA}" fill="${W}"/><path d="M0 4 L8 4 L8 7.6 L0 10.2 Z" fill="${A}"/><path d="M0 10.2 L8 7.6 L8 8.5 L0 11.1 Z" fill="${R}"/></g>
+    <path d="${BAR_MANGA}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+    <path d="M1.75 13.05 L6.75 14.45" stroke="${A}" stroke-width=".55"/><path d="M1.6 13.55 L6.6 14.95" stroke="${R}" stroke-width=".45"/><path d="M1.45 14.05 L6.45 15.45" stroke="${A}" stroke-width=".55"/>`;
+  const esc0=conEscudo&&typeof ESC!=="undefined"&&ESC[t];
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>
+<clipPath id="${id}c"><path d="${BAR_TORSO}"/></clipPath><clipPath id="${id}m"><path d="${BAR_MANGA}"/></clipPath><clipPath id="${id}e"><circle cx="20.6" cy="12.2" r="1.45"/></clipPath>
+<linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></linearGradient></defs>
+<g>${manga}</g><g ${espejo}>${manga}</g>
+<path d="${BAR_TORSO}" fill="${W}"/>
+<g clip-path="url(#${id}c)">
+<path d="M0 3 H32 V7.4 Q16 8.4 0 7.4 Z" fill="${A}"/>
+<path d="M0 7.4 Q16 8.4 32 7.4 V8.5 Q16 9.5 0 8.5 Z" fill="${R}"/>
+<path d="M0 9.1 Q16 10.1 32 9.1 V10.1 Q16 11.1 0 10.1 Z" fill="${A}"/>
+<path d="M11.2 3.5 L16 7.6 L20.8 3.5" fill="none" stroke="${W}" stroke-width="2.6"/>
+<rect x="10.4" y="16.6" width="11.2" height="2.9" rx=".3" fill="${A}"/>
+<rect x="0" y="0" width="32" height="32" fill="url(#${id}s)"/></g>
+<path d="M11.2 3.5 Q16 5.3 20.8 3.5 L16 7.6 Z" fill="#d9dbe3"/>
+<path d="${BAR_TORSO}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M11.2 3.5 L16 7.6 L20.8 3.5" fill="none" stroke="${A}" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="20.6" cy="12.2" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="19.15" y="10.75" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
+}
 function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="bar")return camisetaBarajas(size);
+  if(KITS[t]&&KITS[t].v==="vil")return camisetaVillaviciosa(size,t);
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
   const id="k"+(++_sid);let defs="",body=k.b,extra="";
   if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
