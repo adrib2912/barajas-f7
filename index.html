@@ -472,7 +472,7 @@ const CAMPOS={
 /* Camisetas (colores tomados de Matchapp). b: cuerpo, s: mangas, tr: cuello y puños, st: rayas, v: diseño */
 const KITS={
 "C.D. BARAJAS":{b:"#151515",s:"#151515",tr:"#f5d000",v:"bar"},
-"C.D. FUTBOL TRES CANTOS":{b:"#ffffff",s:"#ffffff",tr:"#6b2fa0"},
+"C.D. FUTBOL TRES CANTOS":{b:"#ffffff",s:"#ffffff",tr:"#6b2fa0",v:"tca"},
 "C.D. ALGETE":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
 "C.F. SAN AGUSTIN DE GUADALIX":{b:"#ffffff",s:"#ffffff",tr:"#1c2f5e",v:"sag"},
 "ESC.FUT. EL OLIVO DE COSLADA":{b:"#e8191c",s:"#e8191c",tr:"#ffffff"},
@@ -732,6 +732,25 @@ function camisetaMadridSur(size,t,conEscudo=true){
 <path d="M11.2 3.5 Q16 6.4 20.8 3.5" fill="none" stroke="#6fb4dd" stroke-width="1.2" stroke-linecap="round"/>
 <circle cx="20.4" cy="10.2" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="18.95" y="8.75" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
 }
+/* Camiseta del Tres Cantos: blanca con rayas diagonales muy suaves del mismo color, cuello redondo blanco
+   y su escudo (imagen de la RFFM) */
+function camisetaTresCantos(size,t,conEscudo=true){
+  const id="kt"+(++_sid),W="#fbfbfd",line="var(--kit-line)";
+  const espejo=`transform="translate(32 0) scale(-1 1)"`;
+  const manga=`<path d="${BAR_MANGA}" fill="${W}" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>`;
+  let rayas="";for(let k=-30;k<40;k+=2.6)rayas+=`<path d="M${k} 32 L${k+32} 0" stroke="#eef0f4" stroke-width=".6"/>`;
+  const esc0=conEscudo&&typeof ESC!=="undefined"&&ESC[t];
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>
+<clipPath id="${id}c"><path d="${NPB_TORSO}"/></clipPath><clipPath id="${id}e"><circle cx="20.4" cy="10.4" r="1.45"/></clipPath>
+<linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></linearGradient></defs>
+<g>${manga}</g><g ${espejo}>${manga}</g>
+<path d="${NPB_TORSO}" fill="${W}"/>
+<g clip-path="url(#${id}c)">${rayas}<rect x="0" y="0" width="32" height="32" fill="url(#${id}s)"/></g>
+<path d="${NPB_TORSO}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M11.2 3.5 Q16 6.4 20.8 3.5" fill="none" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>
+<path d="M11.6 4.2 Q16 6.9 20.4 4.2" fill="none" stroke="#d5d8e0" stroke-width=".3"/>
+<circle cx="20.4" cy="10.4" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="18.95" y="8.95" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
+}
 function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="bar")return camisetaBarajas(size);
   if(KITS[t]&&KITS[t].v==="vil")return camisetaVillaviciosa(size,t);
@@ -742,6 +761,7 @@ function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="cob")return camisetaCobena(size,t);
   if(KITS[t]&&KITS[t].v==="s19")return camisetaSanfer(size,t);
   if(KITS[t]&&KITS[t].v==="msu")return camisetaMadridSur(size,t);
+  if(KITS[t]&&KITS[t].v==="tca")return camisetaTresCantos(size,t);
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
   const id="k"+(++_sid);let defs="",body=k.b,extra="";
   if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
