@@ -473,7 +473,7 @@ const CAMPOS={
 const KITS={
 "C.D. BARAJAS":{b:"#151515",s:"#151515",tr:"#f5d000",v:"bar"},
 "C.D. FUTBOL TRES CANTOS":{b:"#ffffff",s:"#ffffff",tr:"#6b2fa0",v:"tca"},
-"C.D. ALGETE":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7"},
+"C.D. ALGETE":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7",v:"alg"},
 "C.F. SAN AGUSTIN DE GUADALIX":{b:"#ffffff",s:"#ffffff",tr:"#1c2f5e",v:"sag"},
 "ESC.FUT. EL OLIVO DE COSLADA":{b:"#e02028",s:"#e02028",tr:"#ffffff",v:"oli"},
 "CDB FUTBOL FEMENINO OLYMPIA LAS ROZAS":{b:"#1d2a5c",s:"#1d2a5c",tr:"#ffffff",v:"oly"},
@@ -788,6 +788,25 @@ function camisetaManzanares(size,t,conEscudo=true){
 <path d="M11.2 3.5 Q16 6.4 20.8 3.5" fill="none" stroke="${O}" stroke-width="1.2" stroke-linecap="round"/>
 <circle cx="20.4" cy="10.2" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="18.95" y="8.75" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
 }
+/* Camiseta del Algete: blanca con puntitos azules en los hombros que se van haciendo pequeños hacia abajo,
+   cuello redondo y puños azules, y su escudo (imagen de la RFFM) */
+function camisetaAlgete(size,t,conEscudo=true){
+  const id="kq"+(++_sid),W="#fbfbfd",A="#2846c4",line="var(--kit-line)";
+  const espejo=`transform="translate(32 0) scale(-1 1)"`;
+  const puntos=(x0,x1,y0,filas)=>{let d="";for(let f=0;f<filas;f++){const r=Math.max(.12,.42-f*.055),y=y0+f*.85;for(let x=x0+(f%2?.42:0);x<x1;x+=.85)d+=`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r.toFixed(2)}"/>`}return d};
+  const manga=`<g clip-path="url(#${id}m)"><path d="${BAR_MANGA}" fill="${W}"/><g fill="${A}">${puntos(0,8,5.2,6)}</g></g>
+    <path d="${BAR_MANGA}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/><path d="M1.75 13.2 L6.75 14.6" stroke="${A}" stroke-width="1.2" stroke-linecap="round"/>`;
+  const esc0=conEscudo&&typeof ESC!=="undefined"&&ESC[t];
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>
+<clipPath id="${id}c"><path d="${NPB_TORSO}"/></clipPath><clipPath id="${id}m"><path d="${BAR_MANGA}"/></clipPath><clipPath id="${id}e"><circle cx="20.4" cy="10.8" r="1.45"/></clipPath>
+<linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></linearGradient></defs>
+<g>${manga}</g><g ${espejo}>${manga}</g>
+<path d="${NPB_TORSO}" fill="${W}"/>
+<g clip-path="url(#${id}c)"><g fill="${A}">${puntos(5.6,12.6,4.4,7)}${puntos(19.4,26.6,4.4,7)}</g><rect x="0" y="0" width="32" height="32" fill="url(#${id}s)"/></g>
+<path d="${NPB_TORSO}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M11.2 3.5 Q16 6.4 20.8 3.5" fill="none" stroke="${A}" stroke-width="1.2" stroke-linecap="round"/>
+<circle cx="20.4" cy="10.8" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="18.95" y="9.35" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
+}
 function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="bar")return camisetaBarajas(size);
   if(KITS[t]&&KITS[t].v==="vil")return camisetaVillaviciosa(size,t);
@@ -801,6 +820,7 @@ function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="tca")return camisetaTresCantos(size,t);
   if(KITS[t]&&KITS[t].v==="oli")return camisetaOlivo(size,t);
   if(KITS[t]&&KITS[t].v==="erm")return camisetaManzanares(size,t);
+  if(KITS[t]&&KITS[t].v==="alg")return camisetaAlgete(size,t);
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
   const id="k"+(++_sid);let defs="",body=k.b,extra="";
   if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
