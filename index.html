@@ -481,7 +481,7 @@ const KITS={
 "C.D. NUEVO PUERTA BONITA DE CARABANCHEL":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7",v:"npb"},
 "C.D. SANFER19":{b:"#ffffff",s:"#ffffff",tr:"#1fa03a",v:"s19"},
 "ESCUELA MUNICIPAL DE COBEÑA":{b:"#d01f3c",s:"#d01f3c",tr:"#ffffff",v:"cob"},
-"A.D. EL REAL DE MANZANARES":{b:"#ffffff",s:"#ffffff",tr:"#1fa03a",v:"half",h:"#1fa03a"},
+"A.D. EL REAL DE MANZANARES":{b:"#2f9a43",s:"#2f9a43",tr:"#ffffff",v:"erm"},
 "S.A.D. COLEGIO SAN GABRIEL":{b:"#ffffff",s:"#ffffff",tr:"#2a4bd7",v:"sga"},
 "A.D. VILLAVICIOSA DE ODON 'B'":{b:"#ffffff",s:"#ffffff",tr:"#1f3fbf",v:"vil"}};
 
@@ -771,6 +771,23 @@ function camisetaOlivo(size,t,conEscudo=true){
 <path d="M11.2 3.5 Q16 6.4 20.8 3.5" fill="none" stroke="${N}" stroke-width="1.3" stroke-linecap="round"/>
 <circle cx="18.9" cy="10.4" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="17.45" y="8.95" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
 }
+/* Camiseta de El Real de Manzanares: verde lisa con costuras raglán un poco más oscuras,
+   cuello redondo y su escudo (imagen de la RFFM) */
+function camisetaManzanares(size,t,conEscudo=true){
+  const id="kz"+(++_sid),V="#2f9a43",O="#27843a",line="var(--kit-line)";
+  const espejo=`transform="translate(32 0) scale(-1 1)"`;
+  const manga=`<path d="${BAR_MANGA}" fill="${V}" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/><path d="M1.75 13.25 L6.75 14.65" stroke="${O}" stroke-width=".9" stroke-linecap="round"/>`;
+  const esc0=conEscudo&&typeof ESC!=="undefined"&&ESC[t];
+  return `<svg class="shirt" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><defs>
+<clipPath id="${id}e"><circle cx="20.4" cy="10.2" r="1.45"/></clipPath>
+<linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient></defs>
+<g>${manga}</g><g ${espejo}>${manga}</g>
+<path d="${NPB_TORSO}" fill="${V}"/><path d="${NPB_TORSO}" fill="url(#${id}s)"/>
+<path d="M12.4 4.3 Q9.6 8.6 7.9 12.2 M19.6 4.3 Q22.4 8.6 24.1 12.2" fill="none" stroke="${O}" stroke-width=".45"/>
+<path d="${NPB_TORSO}" fill="none" stroke="${line}" stroke-width=".8" stroke-linejoin="round"/>
+<path d="M11.2 3.5 Q16 6.4 20.8 3.5" fill="none" stroke="${O}" stroke-width="1.2" stroke-linecap="round"/>
+<circle cx="20.4" cy="10.2" r="1.5" fill="#fff" stroke="#c9cdd8" stroke-width=".25"/>${esc0?`<image href="${esc(ESC[t])}" x="18.95" y="8.75" width="2.9" height="2.9" clip-path="url(#${id}e)" preserveAspectRatio="xMidYMid meet"/>`:""}</svg>`;
+}
 function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="bar")return camisetaBarajas(size);
   if(KITS[t]&&KITS[t].v==="vil")return camisetaVillaviciosa(size,t);
@@ -783,6 +800,7 @@ function camiseta(t,size){
   if(KITS[t]&&KITS[t].v==="msu")return camisetaMadridSur(size,t);
   if(KITS[t]&&KITS[t].v==="tca")return camisetaTresCantos(size,t);
   if(KITS[t]&&KITS[t].v==="oli")return camisetaOlivo(size,t);
+  if(KITS[t]&&KITS[t].v==="erm")return camisetaManzanares(size,t);
   const k=KITS[t]||{b:"var(--kit)",s:"var(--kit)",tr:"var(--kit-line)"};
   const id="k"+(++_sid);let defs="",body=k.b,extra="";
   if(k.st){defs=`<pattern id="${id}" width="6" height="32" patternUnits="userSpaceOnUse"><rect width="6" height="32" fill="${k.b}"/><rect x="3.5" width="2.5" height="32" fill="${k.st}"/></pattern>`;body=`url(#${id})`}
