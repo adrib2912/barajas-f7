@@ -5,6 +5,6 @@ Horarios pendientes: 12 de esta temporada, 0 de la pasada
 Horarios guardados: 120
 Clasificación oficial: 13 equipos, líder C.D. BARAJAS con 6
 Goleadoras: 46 filas
-Plantilla: 17 jugadoras
+No se pudo leer la plantilla: page.waitForFunction: Timeout 40000ms exceeded.
 data.json actualizado
 calendario.ics: 24 partidos
