@@ -1050,8 +1050,12 @@ function start(DATA){
     const fiable=L.length>=3&&!empate&&n/L.length>=.5;
     return {n:L.length,lab,nl:n,hora,fiable,empate,todos:T,resto:top.slice(1)};
   }
+  /* Búsqueda exacta en Google Maps para campos cuyo nombre del acta lleva a un sitio equivocado
+     (según la ubicación que nos ha pasado el equipo) */
+  const MAPS_EXACTO={"A.D. VILLAVICIOSA DE ODON 'B'":"Campos Municipales de Villaviciosa de Odón, Calle Alexander Graham Bell 2, 28670 Villaviciosa de Odón"};
   const placeOf=o=>{
     const t=o.home?US:o.opp, c=CAMPOS[t];
+    if(MAPS_EXACTO[t]){const name=o.campo?cleanCampo(o.campo):(c?c[0]:"");return {name,sub:"Campos Municipales · C/ Alexander Graham Bell, 2",url:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(MAPS_EXACTO[t])}}
     const name=o.campo?cleanCampo(o.campo):(c?c[0]:"Campo por confirmar");
     const sub=o.campo?(c?c[1].split(",").pop().trim():""):(c?c[1]+" · campo habitual del club":"");
     const q=o.campo?"campo de fútbol "+o.campo.replace(/\(.*?\)/g,"").trim()+(c?", "+c[1]:", Madrid"):(c?c[0]+", "+c[1]:"");
@@ -1451,7 +1455,7 @@ function start(DATA){
         const img=t===US?"escudo-barajas.png":ESC[t];
         const html=`<div class="pin${t===US?" us":""}${t===sitioNx?" nx":""}">${img?`<img src="${esc(img)}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none">${camiseta(t,26)}</span>`:camiseta(t,26)}</div>`;
         const icon=L.divIcon({className:"",html,iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-16]});
-        const campo=campoCasa(t),q=encodeURIComponent("campo de fútbol "+campo+", "+(CAMPOS[t]?CAMPOS[t][1].split(",").pop().trim():"Madrid"));
+        const campo=campoCasa(t),q=encodeURIComponent(MAPS_EXACTO[t]||("campo de fútbol "+campo+", "+(CAMPOS[t]?CAMPOS[t][1].split(",").pop().trim():"Madrid")));
         const mk=L.marker(ll,{icon,zIndexOffset:t===sitioNx?1000:t===US?500:0}).addTo(MAPA)
           .bindPopup(`<div class="pop"><b>${esc(sn(t))}</b><span>${esc(campo)}${t===sitioNx?" · próximo partido":""}</span><a href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Abrir en Google Maps</a></div>`);
       });
