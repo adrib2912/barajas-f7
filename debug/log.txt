@@ -1,4 +1,10 @@
 Modo rápido
-Fallo leyendo el calendario: page.waitForFunction: Timeout 60000ms exceeded.
-Goleadoras: 0 filas
-No se pudo leer la plantilla: page.waitForFunction: Timeout 40000ms exceeded.
+Calendario: 26 jornadas, 156 partidos
+Detalles de 24 partidos del Barajas
+Horarios pendientes: 12 de esta temporada, 0 de la pasada
+Horarios guardados: 120
+Clasificación oficial: 13 equipos, líder C.D. BARAJAS con 6
+Goleadoras: 50 filas
+Plantilla: 17 jugadoras
+data.json actualizado
+calendario.ics: 24 partidos
