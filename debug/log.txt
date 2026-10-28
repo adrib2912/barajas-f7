@@ -1,12 +1,7 @@
 Modo rápido
 Calendario: 26 jornadas, 156 partidos
-Acta https://www.rffm.es/acta-partido/5697445?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5697445?temporada=22&competicion=26738230&grupo=26738231 (intento 2): page.waitForFunction: Timeout 45000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5697451?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 45000ms exceeded.
-Acta https://www.rffm.es/acta-partido/5697451?temporada=22&competicion=26738230&grupo=26738231 (intento 2): page.waitForFunction: Timeout 45000ms exceeded.
 Detalles de 24 partidos del Barajas
 Horarios pendientes: 6 de esta temporada, 0 de la pasada
-Acta https://www.rffm.es/acta-partido/5697444?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
 Horarios guardados: 126
 Clasificación oficial: 13 equipos, líder A.D. VILLAVICIOSA DE ODON 'B' con 6
 Goleadoras: 61 filas
