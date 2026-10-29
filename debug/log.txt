@@ -1,10 +1,11 @@
-Modo rápido
+Modo completo
 Calendario: 26 jornadas, 156 partidos
 Detalles de 24 partidos del Barajas
+Actas de la temporada pasada guardadas: 15
 Horarios pendientes: 12 de esta temporada, 0 de la pasada
-Acta https://www.rffm.es/acta-partido/5731126?temporada=22&competicion=26738230&grupo=26738231 (intento 1): page.waitForFunction: Timeout 20000ms exceeded.
 Horarios guardados: 126
 Clasificación oficial: 13 equipos, líder A.D. VILLAVICIOSA DE ODON 'B' con 6
+Tabla 2026-2027 Grupo 2: 14 equipos (oficial), 14 escudos
 Goleadoras: 61 filas
 Plantilla: 17 jugadoras
 data.json actualizado
