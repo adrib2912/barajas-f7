@@ -73,6 +73,15 @@ header h1{margin:2px 0 0;font:700 34px/1.1 var(--font);letter-spacing:-.02em}
 .pill{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--hf2);color:var(--hero-ink)}
 .pill.W{background:var(--green);color:#fff}.pill.L{background:var(--red);color:#fff}.pill.D{background:var(--orange);color:#fff}
 .old{font-size:13px;color:var(--hero-ink2);text-decoration:line-through;margin-bottom:4px}
+.rsg{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin:6px 0 14px}
+.rsg .eqr{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-weight:600;font-size:14px}
+.rsg .num{display:flex;flex-direction:column;align-items:center;gap:6px}
+.rsg .num b{font:800 44px var(--round);min-width:44px;text-align:center}
+.rsg .num button{width:44px;height:36px;border-radius:10px;background:var(--fill);font:700 20px var(--round);color:var(--ink)}
+.rsg .guion{font:700 30px var(--round);color:var(--ink3)}
+.rsm{font-size:13px;color:var(--ink2);text-align:center;margin:4px 0 0}
+.edr{grid-column:1/-1;display:block;margin:6px auto 0;font-size:13px;font-weight:600;color:var(--acc);background:none}
+.pv{display:inline-block;margin-left:5px;font:700 10px -apple-system,system-ui,sans-serif;color:var(--acc);border:1px dashed var(--acc);border-radius:6px;padding:0 4px;vertical-align:middle;letter-spacing:.02em}
 .pill.prov{background:var(--hf2);color:var(--acc);border:1px dashed var(--acc)}
 .pill.chg{background:var(--orange);color:#fff}
 .gm .when2{grid-column:1/-1;text-align:center;font-size:12px;color:var(--ink2);margin-top:-2px}
@@ -423,12 +432,19 @@ td.pos{color:var(--ink2);width:28px;padding-left:12px}
   <div class="clv"><a class="btn" style="height:40px;border-radius:12px" href="webcal://adrib2912.github.io/barajas-f7/calendario.ics">Suscribirse</a><button class="sec" id="calCp" style="background:var(--card);color:var(--blue)">Copiar enlace</button></div>
   <div class="k">Actualizar datos</div>
   <div class="clv" id="clvBox"></div>
+  <div class="k">Resultados provisionales</div>
+  <div class="clv" id="resBox"></div>
 </div></div>
 
 <div class="sheet" id="shs" hidden><div class="sbox" role="dialog" aria-label="Compartir resultado">
   <div class="shd"><b>Compartir resultado</b><button id="shsX" class="round" aria-label="Cerrar">✕</button></div>
   <img class="shimg" id="shImg" alt="Imagen del resultado">
   <div class="btns"><button class="btn" id="shGo">Compartir</button><a class="btn ghost" id="shDl" download="resultado.png" style="width:auto;padding:0 14px;color:var(--ink);background:var(--card)">Guardar</a></div>
+</div></div>
+
+<div class="sheet" id="rs" hidden><div class="sbox" role="dialog" aria-label="Resultado provisional">
+  <div class="shd"><b>Resultado provisional</b><button id="rsX" class="round" aria-label="Cerrar">✕</button></div>
+  <div id="rsC"></div>
 </div></div>
 
 <div class="sheet" id="up" hidden><div class="sbox" role="dialog" aria-label="Actualizando datos">
@@ -845,7 +861,9 @@ const DIAS=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"
 ico.cal='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v4M10 15h4"/></svg>';
 ico.share='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 14v5h14v-5"/></svg>';
 
-fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(start).catch(e=>{
+Promise.all([fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()),
+  fetch("provisionales.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():{}).catch(()=>({}))])
+.then(([d,pv])=>{d.prov=pv||{};start(d)}).catch(e=>{
   console.error(e);
   document.getElementById("hero").innerHTML='<div class="lbl">No se han podido cargar los datos. Prueba a recargar la página.</div>';
 });
@@ -864,6 +882,18 @@ fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(start
 document.getElementById("calCp").onclick=e=>{const b=e.currentTarget;
   navigator.clipboard?.writeText("https://adrib2912.github.io/barajas-f7/calendario.ics").then(()=>{b.textContent="¡Copiado!";setTimeout(()=>b.textContent="Copiar enlace",1500)}).catch(()=>{})};
 document.getElementById("shsX").onclick=()=>{document.getElementById("shs").hidden=true};
+
+/* ---- Clave de resultados: solo quien la tenga puede meter resultados provisionales.
+   Es otra clave de GitHub (con permiso para escribir el archivo provisionales.json), distinta de la de actualizar */
+const claveRes=()=>{try{return localStorage.getItem("ghres")||""}catch(e){return ""}};
+(function(){const box=document.getElementById("resBox");
+  const pinta=()=>{box.innerHTML=claveRes()
+    ?`<p class="clvt" style="flex:1;align-self:center">Puedes meter resultados desde Calendario → Toda la liga</p><button class="sec" id="resDel">Quitar</button>`
+    :`<input id="resIn" type="password" placeholder="Clave de resultados" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="resOk">Guardar</button>`;
+    const ok=document.getElementById("resOk"),del=document.getElementById("resDel");
+    if(ok)ok.onclick=()=>{const v=document.getElementById("resIn").value.trim();if(!v)return;try{localStorage.setItem("ghres",v)}catch(e){}location.reload()};
+    if(del)del.onclick=()=>{try{localStorage.removeItem("ghres")}catch(e){}location.reload()};};
+  pinta();})();
 
 /* ---- Actualizar datos desde la app ----
    Con la clave de GitHub guardada en este móvil, el botón de recargar le pide a GitHub que lea la RFFM
@@ -971,6 +1001,14 @@ function start(DATA){
   ESC=DATA.escudos||{};
   _loadedVer=DATA.actualizado;
   try{const a=JSON.parse(localStorage.getItem("upAct")||"null");if(a&&clave()&&Date.now()-a.t0<15*60e3)setTimeout(actualizar,300);else localStorage.removeItem("upAct")}catch(e){}
+  /* Resultados provisionales (metidos a mano hasta que la RFFM publica el oficial; el oficial siempre manda) */
+  let LOCALPV={};try{LOCALPV=JSON.parse(localStorage.getItem("provLocal")||"{}")}catch(e){}
+  const PV={...(DATA.prov||{})};
+  Object.entries(LOCALPV).forEach(([k,x])=>{if(Date.now()-x.t>15*60e3)return;if(x.v)PV[k]=x.v;else delete PV[k]});
+  const PROV=new Set();
+  DATA.jornadas.forEach(([j,,ms])=>ms.forEach(m=>{const k=j+"|"+m[0]+"|"+m[1];if(!m[2]&&PV[k]){m[2]=PV[k].slice(0,2);PROV.add(k)}}));
+  const esProv=(j,h,a)=>PROV.has(j+"|"+h+"|"+a);
+  const pvTag=(j,h,a)=>esProv(j,h,a)?'<small class="pv">prov.</small>':"";
   const J=DATA.jornadas, DET=DATA.detalles||{};
   /* Nombre y la inicial del primer apellido (la página es pública) */
   const nomC=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return capW(no?no.split(" ")[0]:"")+(ap?" "+ap[0].toUpperCase()+".":"")};
@@ -983,7 +1021,7 @@ function start(DATA){
     if(!m) return {j,f,cf:f,rest:true};
     const d=DET[j]||{}, home=m[0]===US;
     return {j,cf:f,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,dors:d.dorsales||{},camb:(d.cambios||[]).slice(-1)[0]||null,home,opp:home?m[1]:m[0],
-      g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2]};
+      g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2], prov:esProv(j,m[0],m[1])};
   });
   /* ¿Ya tiene día y hora oficiales? Si no, se habla del fin de semana entero */
   /* La RFFM publica los horarios oficiales el lunes de la semana del partido a las 9:00.
@@ -1199,7 +1237,7 @@ function start(DATA){
     const L=o.home?US:o.opp, V=o.home?o.opp:US;
     const days=Math.round(((oficial(o)?dOf(o.f):finde(o)[0])-today)/864e5);
     let mid,count="",pred="",btns="";
-    if(o.raw){const k=kind(o);mid=`<div class="big">${o.raw[0]} - ${o.raw[1]}</div><div class="small">${fmt(o.f)}</div><span class="pill ${k}">${kindTxt[k]}</span>`;
+    if(o.raw){const k=kind(o);mid=`<div class="big">${o.raw[0]} - ${o.raw[1]}</div><div class="small">${fmt(o.f)}</div><span class="pill ${k}">${kindTxt[k]}</span>${o.prov?' <span class="pill prov">Provisional</span>':""}`;
       btns=`<div class="btns"><button class="btn" id="resImg">${ico.share}Compartir resultado</button></div>`}
     else{
       const when=days<0?"Sin resultado":days===0?"Hoy":days===1?"Mañana":`En ${days} días`;
@@ -1292,7 +1330,7 @@ function start(DATA){
         const L=o.home?US:o.opp,V=o.home?o.opp:US;
         return `<button class="tli" data-i="${i}"><span class="dot ${k||(isN?"next":"")}"></span><div class="tc${isN?" next":""}${!o.g&&!isN?" future":""}${i===sel?" sel":""}">
           <div class="m1"><span>J${o.j} · ${oficial(o)?fmt(o.f):"finde "+rango(o)} · ${o.home?"En casa":"Fuera"}${provisional(o)?" · prev. "+o.hora:""}</span><span>${!o.raw&&o.camb?'<b style="color:var(--orange)">Cambio de horario</b>':k?kindTxt[k]:isN?"Próximo":o.hora||""}</span></div>
-          <div class="m2"><span class="nm">${shirt(o.opp,24)}${esc(sn(L))} – ${esc(sn(V))}</span><span class="sc">${o.raw?o.raw[0]+"-"+o.raw[1]:oficial(o)&&isN?o.hora:""}</span></div>${chips}</div></button>`;
+          <div class="m2"><span class="nm">${shirt(o.opp,24)}${esc(sn(L))} – ${esc(sn(V))}</span><span class="sc">${o.raw?o.raw[0]+"-"+o.raw[1]+(o.prov?'<small class="pv">prov.</small>':""):oficial(o)&&isN?o.hora:""}</span></div>${chips}</div></button>`;
       }).join("")+`</div>`;
     document.querySelectorAll("#p-cal .tli[data-i]").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;drawHero();drawCal();go("home");window.scrollTo({top:0,behavior:"smooth"})});
     document.querySelectorAll("#p-cal .seg2 button[data-f]").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;drawCal()});
@@ -1352,9 +1390,9 @@ function start(DATA){
   /* Partidos de un equipo esta temporada (jugados y por jugar) */
   function partidosDe(t){const H=DATA.horarios||{},jug=[],fut=[];
     J.forEach(([j,f,ms])=>ms.forEach(([h,a,g,acta])=>{if(h!==t&&a!==t)return;const casa=h===t,rv=casa?a:h,hr=acta&&H[acta];
-      const o={j,f:hr&&hr[1]?hr[1]:f,casa,rv,g:g?(casa?g:[g[1],g[0]]):null};(g?jug:fut).push(o)}));return {jug,fut}}
+      const o={j,f:hr&&hr[1]?hr[1]:f,casa,rv,g:g?(casa?g:[g[1],g[0]]):null,prov:esProv(j,h,a)};(g?jug:fut).push(o)}));return {jug,fut}}
   function filaP(o){const k=o.g?(o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D"):"";
-    return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs">${shirt(o.rv,18)}<span>${esc(sn(o.rv))} <small>${o.casa?"casa":"fuera"} · ${fmt(o.f,{day:"numeric",month:"short"})}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>`:"<small>—</small>"}</div>`}
+    return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs">${shirt(o.rv,18)}<span>${esc(sn(o.rv))} <small>${o.casa?"casa":"fuera"} · ${fmt(o.f,{day:"numeric",month:"short"})}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>${o.prov?'<small class="pv">prov.</small>':""}`:"<small>—</small>"}</div>`}
   /* El duelo con el próximo rival (va en Inicio) */
   function duelo(){
     const nx=ours[nextIdx];if(!(nx&&!nx.rest&&!nx.g))return "";
@@ -1504,7 +1542,7 @@ function start(DATA){
       const nos=ours.filter(o=>!o.rest&&o.opp===t);
       const {games}=DATA.anterior?h2h(t):{games:[]};
       const casa=pt?(pt.fiable?`Suele jugar en casa el <b>${pt.lab}</b>, sobre las ${pt.hora}`:pt.n?`Sin patrón claro (${pt.n} partido${pt.n>1?"s":""} en casa)`:"Aún sin partidos en casa"):"Sin datos de horarios";
-      const nosTxt=nos.map(o=>{const k=kind(o);return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs"><span>${o.home?"En casa":"Fuera"} <small>· ${oficial(o)&&o.hora?fmt(o.f,{day:"numeric",month:"short"})+" "+o.hora:"finde "+rango(o)}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>`:"<small>—</small>"}</div>`}).join("");
+      const nosTxt=nos.map(o=>{const k=kind(o);return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs"><span>${o.home?"En casa":"Fuera"} <small>· ${oficial(o)&&o.hora?fmt(o.f,{day:"numeric",month:"short"})+" "+o.hora:"finde "+rango(o)}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>${o.prov?'<small class="pv">prov.</small>':""}`:"<small>—</small>"}</div>`}).join("");
       const ant=games.filter(g=>g.r).map(g=>{const ourG=g.h===US?g.r[0]:g.r[1],thG=g.h===US?g.r[1]:g.r[0],k=ourG>thG?"W":ourG<thG?"L":"D";
         return `<div class="r"><span class="j"></span><span class="vs"><span>${g.h===US?"En casa":"Fuera"} <small>· ${fmt(g.f,{day:"numeric",month:"short",year:"2-digit"})}</small></span></span><b class="${k}">${ourG}-${thG}</b></div>`}).join("");
       return `<div class="ficha">
@@ -1543,11 +1581,62 @@ function start(DATA){
         const prov=!g&&new Date()<lunes9({cf:f});
         const when2=fh?`<div class="when2">${fh.c?`<s>${fmt(fh.c.fecha)} ${fh.c.hora}</s>`:""}${prov?"Previsto ":""}${fmt(fh.f)} · ${fh.h}${fh.c?" <b>cambio</b>":""}${prov?" <i>(sin confirmar)</i>":""}</div>`:"";
         const where=us&&DET[j]&&DET[j].campo?cleanCampo(DET[j].campo):campoCasa(h)||(c?c[0]:"");
-        return `<div class="gm${us?" us":""}"><div class="h">${n(h)}${shirt(h,24)}</div><div class="s">${g?g[0]+" - "+g[1]:"–"}</div><div class="a">${shirt(a,24)}${n(a)}</div>${when2}${where?`<div class="where"><a href="${placeOf(us?ours.find(o=>o.j===j):{home:false,opp:h}).url}" target="_blank" rel="noopener">${esc(where)}</a></div>`:""}</div>`}).join("")+
+        return `<div class="gm${us?" us":""}"><div class="h">${n(h)}${shirt(h,24)}</div><div class="s">${g?g[0]+" - "+g[1]+pvTag(j,h,a):"–"}</div><div class="a">${shirt(a,24)}${n(a)}</div>${when2}${puedeRes(j,f,h,a,g)?`<button class="edr" data-rj="${j}" data-rh="${esc(h)}" data-ra="${esc(a)}">${esProv(j,h,a)?"✎ Cambiar resultado provisional":"✎ Meter resultado provisional"}</button>`:""}${where?`<div class="where"><a href="${placeOf(us?ours.find(o=>o.j===j):{home:false,opp:h}).url}" target="_blank" rel="noopener">${esc(where)}</a></div>`:""}</div>`}).join("")+
       `</div>`+rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("")+(new Date()<lunes9({cf:f})&&!ms.some(m=>m[2])?`<p class="note">Horarios oficiales: lunes ${lunes9({cf:f}).getDate()} a las 9:00.</p>`:"");
+    document.querySelectorAll("#calL .edr").forEach(b=>b.onclick=()=>abrirRes(+b.dataset.rj,b.dataset.rh,b.dataset.ra));
     document.getElementById("jp").onclick=()=>{if(cur>0){cur--;drawJor();syncHero(J[cur][0])}};
     document.getElementById("jn").onclick=()=>{if(cur<J.length-1){cur++;drawJor();syncHero(J[cur][0])}};
   }
+  /* ---- Meter un resultado provisional (solo con la clave de resultados) ---- */
+  function puedeRes(j,f,h,a,g){
+    if(!claveRes())return false;
+    if(g&&!esProv(j,h,a))return false;         /* ya hay resultado oficial */
+    const hr=(DATA.jornadas.find(x=>x[0]===j)[2].find(m=>m[0]===h&&m[1]===a)||[])[3];
+    const fh=hr&&DATA.horarios&&DATA.horarios[hr]&&DATA.horarios[hr][1];
+    const dia=dOf(fh||f);dia.setHours(0,0,0,0);
+    return dia<=new Date();                     /* solo partidos de hoy o ya pasados */
+  }
+  function abrirRes(j,h,a){
+    const k=j+"|"+h+"|"+a,act=PV[k]||[0,0];let x=[act[0],act[1]];
+    const pinta=()=>{document.getElementById("rsC").innerHTML=`<div class="rsg">
+      <div class="eqr">${shirt(h,48)}${esc(sn(h))}</div>
+      <div style="display:flex;gap:10px;align-items:center"><div class="num"><button data-d="0,1">+</button><b>${x[0]}</b><button data-d="0,-1">−</button></div><span class="guion">-</span><div class="num"><button data-d="1,1">+</button><b>${x[1]}</b><button data-d="1,-1">−</button></div></div>
+      <div class="eqr">${shirt(a,48)}${esc(sn(a))}</div></div>
+      <div class="btns"><button class="btn" id="rsOk">Guardar</button>${PV[k]?`<button class="btn ghost" id="rsDel" style="width:auto;padding:0 14px;color:var(--red);background:var(--card)">Borrar</button>`:""}</div>
+      <p class="rsm" id="rsMsg">Jornada ${j}. Saldrá como provisional hasta que la RFFM publique el oficial.</p>`;
+      document.querySelectorAll("#rsC [data-d]").forEach(b=>b.onclick=()=>{const [i,d]=b.dataset.d.split(",").map(Number);x[i]=Math.max(0,Math.min(30,x[i]+d));pinta()});
+      document.getElementById("rsOk").onclick=()=>guardarRes(k,x);
+      const del=document.getElementById("rsDel");if(del)del.onclick=()=>guardarRes(k,null);};
+    pinta();document.getElementById("rs").hidden=false;
+  }
+  async function guardarRes(k,val){
+    const msg=document.getElementById("rsMsg");msg.textContent="Guardando…";
+    document.querySelectorAll("#rsC button").forEach(b=>b.disabled=true);
+    const api="https://api.github.com/repos/adrib2912/barajas-f7/contents/provisionales.json";
+    const H={Accept:"application/vnd.github+json",Authorization:"Bearer "+claveRes()};
+    const dec=b=>decodeURIComponent(escape(atob(b.replace(/\n/g,"")))),enc=t=>btoa(unescape(encodeURIComponent(t)));
+    try{
+      for(let intento=0;intento<2;intento++){
+        const r=await fetch(api+"?ref=main&t="+Date.now(),{headers:H,cache:"no-store"});
+        if(r.status===401||r.status===403)throw new Error("La clave de resultados no vale o no tiene permiso. Revísala en Ajustes.");
+        let sha=null,obj={};
+        if(r.ok){const f=await r.json();sha=f.sha;try{obj=JSON.parse(dec(f.content))}catch(e){obj={}}}
+        else if(r.status!==404)throw new Error("GitHub no ha respondido ("+r.status+").");
+        if(val)obj[k]=[val[0],val[1],new Date().toISOString()];else delete obj[k];
+        const [j,h,a]=k.split("|");
+        const w=await fetch(api,{method:"PUT",headers:{...H,"Content-Type":"application/json"},body:JSON.stringify({
+          message:val?`Resultado provisional J${j}: ${sn(h)} ${val[0]}-${val[1]} ${sn(a)}`:`Quitar resultado provisional J${j}: ${sn(h)} - ${sn(a)}`,
+          content:enc(JSON.stringify(obj,null,1)),branch:"main",...(sha?{sha}:{})})});
+        if(w.ok){
+          try{const L=JSON.parse(localStorage.getItem("provLocal")||"{}");L[k]={v:val?[val[0],val[1]]:null,t:Date.now()};localStorage.setItem("provLocal",JSON.stringify(L))}catch(e){}
+          msg.textContent="¡Guardado! En un par de minutos lo verá todo el mundo.";setTimeout(()=>location.reload(),900);return}
+        if(w.status!==409&&w.status!==422)throw new Error(w.status===403||w.status===404?"La clave de resultados no tiene permiso para escribir. Revísala en Ajustes.":"GitHub no ha respondido ("+w.status+").");
+      }
+      throw new Error("Alguien ha guardado a la vez. Prueba otra vez.");
+    }catch(e){msg.textContent=e.message||"Sin conexión. Prueba otra vez.";document.querySelectorAll("#rsC button").forEach(b=>b.disabled=false)}
+  }
+  document.getElementById("rsX").onclick=()=>{document.getElementById("rs").hidden=true};
+
   function syncHero(j){const i=ours.findIndex(o=>o.j===j);if(i>=0){sel=i;drawHero();drawCal()}}
 
   drawHero();drawWidgets();drawCal();drawTab();drawRiv();drawPla();drawJor();
