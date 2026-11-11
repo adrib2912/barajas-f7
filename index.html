@@ -1010,6 +1010,9 @@ function start(DATA){
   const esProv=(j,h,a)=>PROV.has(j+"|"+h+"|"+a);
   const pvTag=(j,h,a)=>esProv(j,h,a)?'<small class="pv">prov.</small>':"";
   const J=DATA.jornadas, DET=DATA.detalles||{};
+  /* Equipos retirados: la RFFM los quita de la clasificación y anula sus partidos */
+  const TODOS=[...new Set(J.flatMap(([,,ms])=>ms.flatMap(m=>[m[0],m[1]])))];
+  const RET=new Set(Array.isArray(DATA.clasif)&&DATA.clasif.length>=TODOS.length-2?TODOS.filter(t=>!DATA.clasif.some(r=>r.t===t)):[]);
   /* Nombre y la inicial del primer apellido (la página es pública) */
   const nomC=n=>{const [ap,no]=String(n).split(",").map(x=>x.trim());return capW(no?no.split(" ")[0]:"")+(ap?" "+ap[0].toUpperCase()+".":"")};
   const nomL=nomC;
@@ -1020,6 +1023,7 @@ function start(DATA){
     const m=ms.find(x=>x[0]===US||x[1]===US);
     if(!m) return {j,f,cf:f,rest:true};
     const d=DET[j]||{}, home=m[0]===US;
+    if(RET.has(home?m[1]:m[0]))return {j,f,cf:f,rest:true,ret:home?m[1]:m[0]};
     return {j,cf:f,f:d.fecha||f,hora:d.hora||null,campo:d.campo||null,goles:d.goles||null,conv:d.convocadas||null,dors:d.dorsales||{},camb:(d.cambios||[]).slice(-1)[0]||null,home,opp:home?m[1]:m[0],
       g:m[2]?(home?m[2]:[m[2][1],m[2][0]]):null, raw:m[2], prov:esProv(j,m[0],m[1])};
   });
@@ -1045,12 +1049,12 @@ function start(DATA){
   let TABLA=Object.values(S).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf||sn(x.t).localeCompare(sn(y.t)));
   /* Si la RFFM ha dado su clasificación oficial (con sanciones, etc.), manda esa */
   let OFICIAL=false;
-  if(Array.isArray(DATA.clasif)&&DATA.clasif.length===TABLA.length&&DATA.clasif.every(r=>S[r.t])){
+  if(Array.isArray(DATA.clasif)&&DATA.clasif.length===TABLA.length-RET.size&&DATA.clasif.every(r=>S[r.t])){
     TABLA=DATA.clasif.map(r=>({...r})).sort((x,y)=>y.pts-x.pts||(y.gf-y.gc)-(x.gf-x.gc)||y.gf-x.gf||sn(x.t).localeCompare(sn(y.t)));TABLA.forEach(r=>{S[r.t]=r});OFICIAL=true;
   }
   const posOf=t=>TABLA.findIndex(r=>r.t===t)+1;
   /* Racha: resultados de los últimos 5 partidos jugados (de más antiguo a más reciente) */
-  const forma=t=>{const r=[];J.forEach(([,,ms])=>ms.forEach(([h,a,g])=>{if(!g||(h!==t&&a!==t))return;const x=h===t?g[0]-g[1]:g[1]-g[0];r.push(x>0?"W":x<0?"L":"D")}));return r.slice(-5)};
+  const forma=t=>{const r=[];J.forEach(([,,ms])=>ms.forEach(([h,a,g])=>{if(!g||(h!==t&&a!==t)||RET.has(h)||RET.has(a))return;const x=h===t?g[0]-g[1]:g[1]-g[0];r.push(x>0?"W":x<0?"L":"D")}));return r.slice(-5)};
   const rkTxt={W:"ganado",D:"empatado",L:"perdido"};
   const racha=t=>{const f=forma(t);return f.length?`<span class="rk" aria-label="Últimos partidos: ${f.map(k=>rkTxt[k]).join(", ")}">${f.map(k=>`<i class="${k}"></i>`).join("")}</span>`:""};
 
@@ -1233,7 +1237,7 @@ function start(DATA){
       <div class="lbl">Jornada ${o.j}${isNext?" · <b>Próximo partido</b>":""}</div>
       <button class="arrow" id="hn" aria-label="Partido siguiente" ${sel===ours.length-1?"disabled":""}>${ico.right}</button></div>`;
     const dots=`<div class="dots">${ours.map((_,i)=>`<i class="${i===sel?"on":""}"></i>`).slice(Math.max(0,sel-6),sel+7).join("")}</div>`;
-    if(o.rest){h.innerHTML=head+`<div class="match"><div></div><div class="mid"><div class="big">Descanso</div><div class="small">${fmt(o.f,{weekday:"long",day:"numeric",month:"long"})}</div></div><div></div></div>`+dots;bindHero();return}
+    if(o.rest){h.innerHTML=head+`<div class="match"><div></div><div class="mid"><div class="big">${o.ret?"Sin partido":"Descanso"}</div><div class="small">${fmt(o.f,{weekday:"long",day:"numeric",month:"long"})}</div>${o.ret?`<div class="small">${esc(sn(o.ret))} se ha retirado de la liga</div>`:""}</div><div></div></div>`+dots;bindHero();return}
     const L=o.home?US:o.opp, V=o.home?o.opp:US;
     const days=Math.round(((oficial(o)?dOf(o.f):finde(o)[0])-today)/864e5);
     let mid,count="",pred="",btns="";
@@ -1323,7 +1327,7 @@ function start(DATA){
     document.getElementById("calN").innerHTML=vistaSel()+`<h2>Nuestro camino</h2>
       <div class="seg2" role="group" aria-label="Filtrar partidos">${[["todo","Todo"],["casa","En casa"],["fuera","Fuera"]].map(([k,t])=>`<button data-f="${k}" aria-pressed="${filtro===k}">${t}</button>`).join("")}</div>
       <div class="tl">`+list.map(({o,i})=>{
-        if(o.rest)return `<div class="tli"><span class="dot"></span><div class="tc future"><div class="m1"><span>J${o.j} · ${fmt(o.f)}</span></div><div class="m2"><span class="nm">Descanso</span></div></div></div>`;
+        if(o.rest)return `<div class="tli"><span class="dot"></span><div class="tc future"><div class="m1"><span>J${o.j} · ${fmt(o.f)}</span></div><div class="m2"><span class="nm">${o.ret?`Sin partido · ${esc(sn(o.ret))} retirado`:"Descanso"}</span></div></div></div>`;
         const k=kind(o),isN=i===nextIdx&&!o.g;
         const cnt={};(o.goles||[]).filter(g=>g.nuestro&&!g.propia).forEach(g=>cnt[g.nombre]=(cnt[g.nombre]||0)+1);
         const chips=Object.keys(cnt).length?`<div class="chips">${Object.entries(cnt).map(([n,c])=>`<span class="chip">${esc(nomC(n))}${c>1?" ×"+c:""}</span>`).join("")}</div>`:"";
@@ -1389,7 +1393,7 @@ function start(DATA){
 
   /* Partidos de un equipo esta temporada (jugados y por jugar) */
   function partidosDe(t){const H=DATA.horarios||{},jug=[],fut=[];
-    J.forEach(([j,f,ms])=>ms.forEach(([h,a,g,acta])=>{if(h!==t&&a!==t)return;const casa=h===t,rv=casa?a:h,hr=acta&&H[acta];
+    J.forEach(([j,f,ms])=>ms.forEach(([h,a,g,acta])=>{if(h!==t&&a!==t)return;if(RET.has(h)||RET.has(a))return;const casa=h===t,rv=casa?a:h,hr=acta&&H[acta];
       const o={j,f:hr&&hr[1]?hr[1]:f,casa,rv,g:g?(casa?g:[g[1],g[0]]):null,prov:esProv(j,h,a)};(g?jug:fut).push(o)}));return {jug,fut}}
   function filaP(o){const k=o.g?(o.g[0]>o.g[1]?"W":o.g[0]<o.g[1]?"L":"D"):"";
     return `<div class="r${o.g?"":" fut"}"><span class="j">J${o.j}</span><span class="vs">${shirt(o.rv,18)}<span>${esc(sn(o.rv))} <small>${o.casa?"casa":"fuera"} · ${fmt(o.f,{day:"numeric",month:"short"})}</small></span></span>${o.g?`<b class="${k}">${o.g[0]}-${o.g[1]}</b>${o.prov?'<small class="pv">prov.</small>':""}`:"<small>—</small>"}</div>`}
@@ -1410,7 +1414,7 @@ function start(DATA){
     let cuerpo="";
     if(claSel==="nuestro")cuerpo=`<h2>Clasificación</h2><div class="tbl"><table><thead><tr><th class="t" colspan="2">Equipo</th><th>Pts</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th></tr></thead><tbody>`+
       TABLA.map((r,i)=>`<tr class="tap${r.t===US?" us":""}" data-t="${esc(r.t)}"><td class="pos">${i+1}</td><td class="t"><span class="who">${shirt(r.t,22)}${esc(sn(r.t))}</span><span style="display:block;padding-left:30px">${racha(r.t)}</span></td><td class="p">${r.pts}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf-r.gc>0?"+":""}${r.gf-r.gc}</td></tr>`).join("")+
-      `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}</p>`+mx;
+      `</tbody></table></div><p class="note">${OFICIAL?"Datos oficiales de la RFFM, ordenados por puntos.":"Calculada con los resultados."}${RET.size?` ${[...RET].map(sn).join(" y ")} se ha retirado: la RFFM ha anulado sus partidos.`:""}</p>`+mx;
     else if(claSel==="otros")cuerpo=otras();
     else cuerpo=goleadorasHTML();
     document.getElementById("p-tab").innerHTML=sel+cuerpo;
@@ -1582,7 +1586,7 @@ function start(DATA){
         const when2=fh?`<div class="when2">${fh.c?`<s>${fmt(fh.c.fecha)} ${fh.c.hora}</s>`:""}${prov?"Previsto ":""}${fmt(fh.f)} · ${fh.h}${fh.c?" <b>cambio</b>":""}${prov?" <i>(sin confirmar)</i>":""}</div>`:"";
         const where=us&&DET[j]&&DET[j].campo?cleanCampo(DET[j].campo):campoCasa(h)||(c?c[0]:"");
         return `<div class="gm${us?" us":""}"><div class="h">${n(h)}${shirt(h,24)}</div><div class="s">${g?g[0]+" - "+g[1]+pvTag(j,h,a):"–"}</div><div class="a">${shirt(a,24)}${n(a)}</div>${when2}${puedeRes(j,f,h,a,g)?`<button class="edr" data-rj="${j}" data-rh="${esc(h)}" data-ra="${esc(a)}">${esProv(j,h,a)?"✎ Cambiar resultado provisional":"✎ Meter resultado provisional"}</button>`:""}${where?`<div class="where"><a href="${placeOf(us?ours.find(o=>o.j===j):{home:false,opp:h}).url}" target="_blank" rel="noopener">${esc(where)}</a></div>`:""}</div>`}).join("")+
-      `</div>`+rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("")+(new Date()<lunes9({cf:f})&&!ms.some(m=>m[2])?`<p class="note">Horarios oficiales: lunes ${lunes9({cf:f}).getDate()} a las 9:00.</p>`:"");
+      `</div>`+rest.map(t=>`<p class="note">Descansa: ${esc(sn(t))}</p>`).join("")+(ms.some(m=>RET.has(m[0])||RET.has(m[1]))?`<p class="note">${[...RET].map(sn).join(" y ")} se ha retirado: su partido no se juega y no cuenta.</p>`:"")+(new Date()<lunes9({cf:f})&&!ms.some(m=>m[2])?`<p class="note">Horarios oficiales: lunes ${lunes9({cf:f}).getDate()} a las 9:00.</p>`:"");
     document.querySelectorAll("#calL .edr").forEach(b=>b.onclick=()=>abrirRes(+b.dataset.rj,b.dataset.rh,b.dataset.ra));
     document.getElementById("jp").onclick=()=>{if(cur>0){cur--;drawJor();syncHero(J[cur][0])}};
     document.getElementById("jn").onclick=()=>{if(cur<J.length-1){cur++;drawJor();syncHero(J[cur][0])}};

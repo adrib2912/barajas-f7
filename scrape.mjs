@@ -405,8 +405,8 @@ if (ok) {
 }
 
 // ---------- CLASIFICACIÓN OFICIAL ----------
-let clasif = null;
-try { clasif = JSON.parse(fs.readFileSync("data.json", "utf8")).clasif || null; } catch {}
+let clasif = null, retirados = [];
+try { const d0 = JSON.parse(fs.readFileSync("data.json", "utf8")); clasif = d0.clasif || null; retirados = d0.retirados || []; } catch {}
 if (ok) {
   try {
     await abrir("clasificaciones", null);
@@ -427,9 +427,12 @@ if (ok) {
     }
     filas.sort((a, b) => a.idx - b.idx);
     // Comprobaciones: estén todos, jugados = G+E+P y puntos coherentes (puede haber sanciones, se toleran)
-    const coherente = filas.length === equipos.length && filas.every((f) => f.pj === f.g + f.e + f.p && f.pts <= 3 * f.g + f.e);
+    // Si un equipo se retira, la RFFM lo quita de la clasificación (y anula sus partidos): se admite que falten 1 o 2
+    const coherente = filas.length >= equipos.length - 2 && filas.length >= 8 && filas.every((f) => f.pj === f.g + f.e + f.p && f.pts <= 3 * f.g + f.e);
     if (coherente) {
       clasif = filas.map(({ idx, ...f }) => f);
+      retirados = equipos.filter((t) => !filas.some((f) => f.t === t));
+      if (retirados.length) console.log("Equipos fuera de la clasificación (retirados):", retirados.join(", "));
       console.log(`Clasificación oficial: ${clasif.length} equipos, líder ${clasif[0].t} con ${clasif[0].pts}`);
     } else console.error(`Clasificación oficial no válida (${filas.length}/${equipos.length} equipos); se mantiene la anterior`);
   } catch (e) {
@@ -570,6 +573,7 @@ if (ok) {
     anterior,
     horarios,
     clasif,
+    retirados,
     escudos: ESCUDOS,
     plantilla,
     tablas,
