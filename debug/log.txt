@@ -3,7 +3,8 @@ Calendario: 26 jornadas, 156 partidos
 Detalles de 24 partidos del Barajas
 Horarios pendientes: 6 de esta temporada, 0 de la pasada
 Horarios guardados: 138
-Clasificación oficial no válida (12/13 equipos); se mantiene la anterior
+Equipos fuera de la clasificación (retirados): C.D. ALGETE
+Clasificación oficial: 12 equipos, líder A.D. VILLAVICIOSA DE ODON 'B' con 18
 Goleadoras: 82 filas
 Plantilla: 17 jugadoras
 data.json actualizado
