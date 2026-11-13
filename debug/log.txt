@@ -6,6 +6,6 @@ Horarios guardados: 138
 Equipos fuera de la clasificación (retirados): C.D. ALGETE
 Clasificación oficial: 12 equipos, líder A.D. VILLAVICIOSA DE ODON 'B' con 18
 Goleadoras: 82 filas
-Plantilla: 17 jugadoras
+No se pudo leer la plantilla: page.waitForFunction: Timeout 40000ms exceeded.
 data.json actualizado
 calendario.ics: 24 partidos
