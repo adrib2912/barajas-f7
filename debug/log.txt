@@ -1,11 +1,7 @@
 Modo rápido
-Calendario: 26 jornadas, 156 partidos
-Detalles de 24 partidos del Barajas
-Horarios pendientes: 12 de esta temporada, 0 de la pasada
-Horarios guardados: 144
-Equipos fuera de la clasificación (retirados): C.D. ALGETE
-Clasificación oficial: 12 equipos, líder ESC.FUT. EL OLIVO DE COSLADA con 19
-Goleadoras: 85 filas
-Plantilla: 17 jugadoras
-data.json actualizado
-calendario.ics: 24 partidos
+Fallo leyendo el calendario: page.goto: Timeout 90000ms exceeded.
+Call log:
+  - navigating to "https://www.rffm.es/competicion/calendario?temporada=22&tipojuego=2&competicion=26738230&grupo=26738231", waiting until "domcontentloaded"
+
+Goleadoras: 0 filas
+No se pudo leer la plantilla: page.waitForFunction: Timeout 40000ms exceeded.
